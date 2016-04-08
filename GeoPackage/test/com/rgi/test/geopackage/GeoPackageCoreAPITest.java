@@ -69,10 +69,6 @@ public class GeoPackageCoreAPITest
         {
             assertEquals("The file given to the GeoPackage using the method create(File file) does not return the same file", gpkg.getFile(), testFile);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -89,10 +85,6 @@ public class GeoPackageCoreAPITest
         {
             fail("This test should throw a FileAlreadyExistsException when trying to create a file that already exists.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -107,10 +99,6 @@ public class GeoPackageCoreAPITest
         try(final GeoPackage ignored = new GeoPackage(testFile, GeoPackage.OpenMode.Open))
         {
             fail("The GeoPackage should throw a FileNotFoundException when trying to open a GeoPackage with a file that hasn't been created.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -146,10 +134,6 @@ public class GeoPackageCoreAPITest
                          geoPackageApplicationId,
                          gpkg.getApplicationId());
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -171,10 +155,6 @@ public class GeoPackageCoreAPITest
                                        sqliteVersion.toString()),
                          geoPackageSqliteMajorVersion,
                          sqliteVersion.getMajor());
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -209,10 +189,6 @@ public class GeoPackageCoreAPITest
                                                sqliteVersionChanged), sqliteVersionChanged.toString(), GeoPackageCoreAPITest.sqliteVersionToString(versionNumber));
                 }
             }
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -252,10 +228,6 @@ public class GeoPackageCoreAPITest
                        content.getSpatialReferenceSystemIdentifier().equals(tileSet.getSpatialReferenceSystemIdentifier()));
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -279,10 +251,6 @@ public class GeoPackageCoreAPITest
             fail("Expected GeoPackage Core to throw an IllegalArgumentException when trying to add content with the same tablename but differing other fields");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
 
@@ -300,10 +268,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().addSpatialReferenceSystem(null, "organization", 123, "definition", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with a null parameter for name.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -319,10 +283,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().addSpatialReferenceSystem("", "organization", 123, "definition", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with an empty string for name.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -340,10 +300,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().addSpatialReferenceSystem("srsName", null, 123, "definition", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with a null parameter for organization.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -359,10 +315,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().addSpatialReferenceSystem("srsName", "", 123, "definition", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with an empty string for organization.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -380,10 +332,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().addSpatialReferenceSystem("srsName", "organization", 123, null, "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create a SRS with a null parameter for definition.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -399,10 +347,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().addSpatialReferenceSystem("srsName", "organization", 123, "", "description");
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to create an SRS with an empty string for definition.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -427,10 +371,6 @@ public class GeoPackageCoreAPITest
             final SpatialReferenceSystem secondSRS = gpkg.core().addSpatialReferenceSystem(name, organization, organizationId, definition, description);
 
             assertEquals("GeoPackage did not return the same SRS objects as expected.", firstSRS, secondSRS);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -457,10 +397,6 @@ public class GeoPackageCoreAPITest
             final SpatialReferenceSystem gpkgSrs = gpkg.core().getSpatialReferenceSystem(organization, id);
 
             assertEquals("The GeoPackage get Spatial Reference System does not give back the value expeced.", testSrs, gpkgSrs);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -489,10 +425,6 @@ public class GeoPackageCoreAPITest
                                                   "description");
 
             fail("The GeoPackage should throw a RuntimeException when adding Spatial Reference System with the same SRS id but have different definition fields.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -524,10 +456,6 @@ public class GeoPackageCoreAPITest
 
           fail("The GeoPackage should throw a IllegalArgumentException when adding a Spatial Reference System with the same SRS id but have different names.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -558,10 +486,6 @@ public class GeoPackageCoreAPITest
             fail("The GeoPackage should throw a IllegalArgumentException when adding a Spatial Reference System "
                     + "with the same and SRS identifier but diffent names");
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -596,10 +520,6 @@ public class GeoPackageCoreAPITest
                          srs.getDescription()      .equals(description));
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -625,10 +545,6 @@ public class GeoPackageCoreAPITest
             assertEquals("The HashCode for the same srs differed.", srs1.hashCode(), srs2.hashCode());
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -647,10 +563,6 @@ public class GeoPackageCoreAPITest
 
             assertEquals("The GeoPackage did not return expected result for SpatialReferenceSystem in method getSpatialReferenceSystem.", gpkgSrs, testSrs);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -666,10 +578,6 @@ public class GeoPackageCoreAPITest
             final SpatialReferenceSystem gpkgSrs = gpkg.core().getSpatialReferenceSystem(555);
 
             assertNull("The GeoPackage did not return null for SpatialReferenceSystem that did not exist in method getSpatialReferenceSystem.", gpkgSrs);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -689,10 +597,6 @@ public class GeoPackageCoreAPITest
             assertNull("The GeoPackage did not return a null value for spatial reference system as expected "
                                + "using the method getSpatialReferenceSystem(String, int) when searching for a spatial "
                                + "reference system that did not exist in the GeoPackage.", gpkgSrs);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -728,10 +632,6 @@ public class GeoPackageCoreAPITest
             assertEquals("The GeoPackage did not return the expected values for the Spatial Reference System Object when "
                                  + "asking to retrieve the SRS object through the getSpatialReferenceSystem(String, int) method.", srsFound, srsAdded);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -756,10 +656,6 @@ public class GeoPackageCoreAPITest
             assertEquals("The GeoPackage did not return the expected values for the Spatial Reference System Object when "
                                  + "asking to retrieve the SRS object through the getSpatialReferenceSystem(String, int) method.", srsFound, srsAdded);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
 
@@ -778,10 +674,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().addContent("", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method an empty string for tableName");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -797,10 +689,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().addContent(null, "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a null value for tableName");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -818,10 +706,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().addContent("123", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a table name that does not begin with letters or underscore");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -838,10 +722,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().addContent("gpkg_table", "dataType", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a table name that begins with gpkg");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
     /**
      * Tests if GeoPackage Core would throw
@@ -856,10 +736,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().addContent("tablename", "tiles", "identifier", "description", null, gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
             fail("Expected GeoPackageCore to throw an IllegalArgumentException when giving a null balue for bounding box");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
 
     }
@@ -877,10 +753,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().getContent("", null);
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a table name that is an empty string");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -895,10 +767,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().getContent(null, null);
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a table name that is null");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -915,10 +783,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().getContent("tables", null);
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a null value for contentFactory");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -933,10 +797,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().addContent("thetable", "", "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method an empty string for data type");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -953,10 +813,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().addContent("thetable", null, "identifier", "description", new BoundingBox(0.0,0.0,0.0,0.0), gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException for passing the method a null value for data type");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -971,10 +827,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().getContent(null, null, gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackage Core to throw an IllegalArgumentException when passing null for the dataType in getContent method");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -991,10 +843,6 @@ public class GeoPackageCoreAPITest
             gpkg.core().getContent("", null, gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackage Core to throw an IllegalArgumentException when passing an empty string for the dataType in getContent method");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1009,10 +857,6 @@ public class GeoPackageCoreAPITest
         {
             gpkg.core().getContent("tiles", null, gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected the GeoPackage to throw an IllegalArgumentException when given a null parameter for ContentFactory in getContent");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1047,10 +891,6 @@ public class GeoPackageCoreAPITest
                                        boundingBox.getMinimumY(), boundingBox.getMaximumX(),
                                        boundingBox.getMaximumY(),
                                        spatialReferenceSystem.getIdentifier()));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
 
     }
@@ -1089,10 +929,6 @@ public class GeoPackageCoreAPITest
                                         3.0,
                                         spatialReferenceSystem.getIdentifier()));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
 
     }
 
@@ -1126,10 +962,6 @@ public class GeoPackageCoreAPITest
                                        boundingBox.getMinimumY(), boundingBox.getMaximumX(),
                                        boundingBox.getMaximumY(),
                                        spatialReferenceSystem.getIdentifier()));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1166,10 +998,6 @@ public class GeoPackageCoreAPITest
                                            .getSpatialReferenceSystem(0)
                                            .getIdentifier()));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1202,10 +1030,6 @@ public class GeoPackageCoreAPITest
                                        boundingBox.getMinimumY(), boundingBox.getMaximumX(),
                                        boundingBox.getMaximumY(),
                                        spatialReferenceSystem.getIdentifier()));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 

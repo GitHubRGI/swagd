@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static com.rgi.test.geopackage.TestUtility.deleteFile;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -93,10 +92,6 @@ public class GeoPackageExtensionsAPITest
                                                 expectedExtension.getDefinition(),
                                                 Scope.ReadWrite));
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -134,10 +129,6 @@ public class GeoPackageExtensionsAPITest
                                                      extensionName,
                                                      expectedExtension.getDefinition(),
                                                      Scope.ReadWrite));
-        }
-        finally
-        {
-            deleteFile(testFile);
         }
     }
 
@@ -180,10 +171,6 @@ public class GeoPackageExtensionsAPITest
                                                 expectedExtension.getDefinition(),
                                                 Scope.ReadWrite));
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -220,10 +207,6 @@ public class GeoPackageExtensionsAPITest
                                                      expectedExtension.getDefinition(),
                                                      Scope.ReadWrite));
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -241,10 +224,6 @@ public class GeoPackageExtensionsAPITest
             gpkg.extensions().addExtension(null, "ColumnNameShouldBeNull", "extension_Name", "definition", Scope.ReadWrite);
             fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a null value for tableName and not columnName.");
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -260,10 +239,6 @@ public class GeoPackageExtensionsAPITest
         {
             gpkg.extensions().addExtension("", "columnName", "extension_Name", "definition", Scope.ReadWrite);
             fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a empty string for tableName.");
-        }
-        finally
-        {
-            deleteFile(testFile);
         }
     }
 
@@ -281,10 +256,6 @@ public class GeoPackageExtensionsAPITest
             gpkg.extensions().addExtension(null, "columnName", "extension_Name", "definition", Scope.ReadWrite);
             fail("Expected GeoPackageExtensions to throw an IllegalArgumentException when trying to add an extension with a empty string for tableName.");
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
     /**
      * Tests if GeoPackage Extensions will throw
@@ -300,10 +271,6 @@ public class GeoPackageExtensionsAPITest
         {
             gpkg.extensions().addExtension("", null, "extension_Name", "definition", Scope.WriteOnly);
             fail("Expected GeoPackageExtensions to throw an Illegal argument exception when column name is null and table name is an empty string.");
-        }
-        finally
-        {
-            deleteFile(testFile);
         }
     }
 
@@ -321,10 +288,6 @@ public class GeoPackageExtensionsAPITest
            gpkg.extensions().addExtension("TableName", "" , "extension_Name", "definition", Scope.ReadWrite);
            fail("Expected GeoPackageExtensions to throw an Illegal argument exception when column name and table name are empty strings.");
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -341,10 +304,6 @@ public class GeoPackageExtensionsAPITest
             gpkg.extensions().addExtension("tableName", "columnName", null, "definition", Scope.ReadWrite);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add an extension with a null value for extension name");
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -359,10 +318,6 @@ public class GeoPackageExtensionsAPITest
         {
             gpkg.extensions().addExtension(null, null, "", "Definition", Scope.ReadWrite);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add an extension with an emptry string for extension name.");
-        }
-        finally
-        {
-            deleteFile(testFile);
         }
     }
 
@@ -379,10 +334,6 @@ public class GeoPackageExtensionsAPITest
         {
             gpkg.extensions().addExtension("tablename", "columnName", "illegalExtensionName", "definition", Scope.WriteOnly);
             fail("Expected GeoPackage to throw an IllegalArgumentException when adding an extension that has an invalid extension name.");
-        }
-        finally
-        {
-            deleteFile(testFile);
         }
     }
     /**
@@ -411,10 +362,6 @@ public class GeoPackageExtensionsAPITest
                        extensionReturned.getDefinition()      .equals(definition)     &&
                                extensionReturned.getScope().equals(scope.toString()));
 
-        }
-        finally
-        {
-            deleteFile(testFile);
         }
     }
 
@@ -448,10 +395,6 @@ public class GeoPackageExtensionsAPITest
                                extensionReturned.getScope().equals(scope.toString()));
 
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -483,10 +426,6 @@ public class GeoPackageExtensionsAPITest
                                         Scope.fromText(secondTime.getScope())));
 
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -516,10 +455,6 @@ public class GeoPackageExtensionsAPITest
             fail("Expected GeoPackage Extensions to throw an IllegalArgumentException when trying to add two extensions "
                     + "with the same tableName columnName and extensionName but different definition and scope values.");
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -542,10 +477,6 @@ public class GeoPackageExtensionsAPITest
                                      hasExstensionShouldBeTrue,
                                      hasExtensionShouldBeFalse),
                        !hasExtensionShouldBeFalse && hasExstensionShouldBeTrue);
-        }
-        finally
-        {
-            deleteFile(testFile);
         }
     }
 
@@ -579,10 +510,6 @@ public class GeoPackageExtensionsAPITest
                       extensionsReturned.size() == 3);
 
         }
-        finally
-        {
-            deleteFile(testFile);
-        }
     }
 
     /**
@@ -600,10 +527,6 @@ public class GeoPackageExtensionsAPITest
            assertTrue("Expected GeoPackage Extensions to return an empty collection when there are no extensions "
                        + "or extensions table in this geopackage when using the method getExtensions.",
                       shouldBeNull.isEmpty());
-        }
-        finally
-        {
-            deleteFile(testFile);
         }
     }
 
@@ -632,10 +555,6 @@ public class GeoPackageExtensionsAPITest
                        !extension.equals(tableName, columnName2, extensionName, definition, scope));
 
        }
-       finally
-       {
-           deleteFile(testFile);
-       }
     }
 
     /**
@@ -663,10 +582,6 @@ public class GeoPackageExtensionsAPITest
                        !extension.equals(tableName, columnName, extensionName, definition, scope2));
 
        }
-       finally
-       {
-           deleteFile(testFile);
-       }
     }
 
     /**
@@ -693,10 +608,6 @@ public class GeoPackageExtensionsAPITest
             assertTrue("Expected equals method in Extension would return false when it returned true (when two extensions were not equal)",
                        !extension.equals(tableName, columnName, extensionName2, definition, scope));
 
-       }
-       finally
-       {
-           deleteFile(testFile);
        }
     }
 

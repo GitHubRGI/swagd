@@ -703,7 +703,6 @@ public class GeoPackageCore
         }
     }
 
-    @SuppressWarnings("static-method")
     protected static String getSpatialReferenceSystemCreationSql()
     {
         // http://www.geopackage.org/spec/#_gpkg_spatial_ref_sys
@@ -717,7 +716,6 @@ public class GeoPackageCore
                " description              TEXT);                        -- Human readable description of this SRS\n";
     }
 
-    @SuppressWarnings("static-method")
     protected static String getContentsCreationSql()
     {
        // http://www.geopackage.org/spec/#gpkg_contents_sql

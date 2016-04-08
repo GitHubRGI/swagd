@@ -87,10 +87,6 @@ public class GeoPackageMetadataAPITest
                        metadataReturned.getMimeType()   .equalsIgnoreCase(mimeType.toString())    &&
                        metadataReturned.getMetadata()   .equalsIgnoreCase(metadata));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -112,10 +108,6 @@ public class GeoPackageMetadataAPITest
 
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a null value for scope when using the method addMetadata");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
     /**
      * Tests if an illegal argument exception is thrown
@@ -134,10 +126,6 @@ public class GeoPackageMetadataAPITest
             gpkg.metadata().addMetadata(scope, null, mimeType, metadata);
 
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a null value for uri when using the method addMetadata");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
     /**
@@ -158,10 +146,6 @@ public class GeoPackageMetadataAPITest
 
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a null value for mimetype when using the method addMetadata");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -181,10 +165,6 @@ public class GeoPackageMetadataAPITest
             gpkg.metadata().addMetadata(scope, standardUri, mimeType, null);
 
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a null value for metadata when using the method addMetadata");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -224,10 +204,6 @@ public class GeoPackageMetadataAPITest
                        metadataReferenceReturned.getFileIdentifier()   == 1);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -255,10 +231,6 @@ public class GeoPackageMetadataAPITest
 
             gpkg.metadata().addMetadataReference(referenceScope, tableName, columnName, rowIdentifier, fileIdentifier, parentIdentifier);
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a null value for scope as a parameter in addMetadataReference()");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -291,10 +263,6 @@ public class GeoPackageMetadataAPITest
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a non-null value for tableName "
                     + "(When referenceScope is geopackage) as a parameter in addMetadataReference()");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -324,10 +292,6 @@ public class GeoPackageMetadataAPITest
             gpkg.metadata().addMetadataReference(referenceScope, tableName, columnName, rowIdentifier, fileIdentifier, parentIdentifier);
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a non-null value for columnName"
                     + " (when reference scope is Row) as a parameter in addMetadataReference()");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -359,10 +323,6 @@ public class GeoPackageMetadataAPITest
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a null value for rowIdentifier"
                     + " (when reference scope is Row) as a parameter in addMetadataReference()");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -392,10 +352,6 @@ public class GeoPackageMetadataAPITest
             gpkg.metadata().addMetadataReference(referenceScope, tableName, columnName, rowIdentifier, fileIdentifier, parentIdentifier);
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing an Empty string for tableName"
                     + "as a parameter in addMetadataReference()");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -427,10 +383,6 @@ public class GeoPackageMetadataAPITest
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing an empty string for columnName"
                     + " (when reference scope is Column) as a parameter in addMetadataReference()");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -456,10 +408,6 @@ public class GeoPackageMetadataAPITest
             gpkg.metadata().addMetadataReference(referenceScope, tableName, columnName, rowIdentifier, fileIdentifier, parentIdentifier);
             fail("Expected GeoPackage Metadata to throw an IllegalArgumentException when passing a null value for fileidentifier"
                     + " as a parameter in addMetadataReference()");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -504,10 +452,6 @@ public class GeoPackageMetadataAPITest
                        metadataReturned.stream().allMatch(returned -> metadataExpected.stream().anyMatch(expected -> GeoPackageMetadataAPITest.areMetadatasEqual(expected, returned))));
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -544,10 +488,6 @@ public class GeoPackageMetadataAPITest
                        shouldBeNull == null &&
                        GeoPackageMetadataAPITest.areMetadatasEqual(metadataExpected, metadataReturned));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -573,10 +513,6 @@ public class GeoPackageMetadataAPITest
 
             assertNull("The geoPackage returned a non null metadata object when trying to retrieve a metadata object that does not exist",
                        gpkg.metadata().getMetadata(999999));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
 
     }
@@ -630,10 +566,6 @@ public class GeoPackageMetadataAPITest
             assertTrue("GeoPackage did not return all or the expected entries in the metadataReference table",
                        returnedReferences.size() == 2 &&
                        returnedReferences.stream().allMatch(returned -> expectedReferences.stream().anyMatch(expected -> GeoPackageMetadataAPITest.areMetadataReferencesEqual(expected, returned))));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 

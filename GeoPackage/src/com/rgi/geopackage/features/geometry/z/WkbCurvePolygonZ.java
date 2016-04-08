@@ -63,6 +63,6 @@ public abstract class WkbCurvePolygonZ extends WkbSurfaceZ
 //    @Override
 //    public void writeWellKnownBinary(final ByteArrayOutputStream byteArrayOutputStream) throws IOException
 //    {
-//        throw new UnsupportedOperationException("pending implementaiton");
+//        throw new UnsupportedOperationException("pending implementation");
 //    }
 }

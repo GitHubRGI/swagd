@@ -63,22 +63,27 @@ public class Column
                      final String              checkExpression,
                      final String              defaultValue)
     {
-        if(name == null)
+        if(name == null || name.isEmpty())
         {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("Column name may not be null");
         }
 
-        if(type == null)
+        if(type == null || type.isEmpty())
         {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("The column type may not be null or empty");
         }
 
         this.flags = flags == null ? EnumSet.noneOf(ColumnFlag.class)
                                    : flags;
 
+        if(defaultValue == null)
+        {
+            throw new IllegalArgumentException("The default type may not be null. Use ColumnDefault.Null to specify a null value, or ColumnDefault.None to leave the default unspecified.");
+        }
+
         this.name            = name;
         this.type            = type;
-        this.checkExpression = checkExpression == null ? "" : checkExpression;
+        this.checkExpression = checkExpression;
         this.defaultValue    = defaultValue;
     }
 

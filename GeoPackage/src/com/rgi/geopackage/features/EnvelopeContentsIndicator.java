@@ -1,18 +1,44 @@
 package com.rgi.geopackage.features;
 
-import java.util.function.BiConsumer;
-
 /**
- * http://www.geopackage.org/spec/#gpb_spec
+ *
+ * Envelope contents indicator code (3-bit unsigned integer)
+ * 0: no envelope (space saving slower indexing option), 0 bytes
+ * 1: envelope is [minx, maxx, miny, maxy], 32 bytes
+ * 2: envelope is [minx, maxx, miny, maxy, minz, maxz], 48 bytes
+ * 3: envelope is [minx, maxx, miny, maxy, minm, maxm], 48 bytes
+ * 4: envelope is [minx, maxx, miny, maxy, minz, maxz, minm, maxm], 64 bytes
+ * 5-7: invalid
+ *
+ * @see <a href="http://www.geopackage.org/spec/#gpb_spec">http://www.geopackage.org/spec/#gpb_spec</a>
  *
  * @author Luke Lambert
  */
 public enum EnvelopeContentsIndicator
 {
+    /**
+     * 0: no envelope (space saving slower indexing option), 0 bytes
+     */
     NoEnvelope(0, 0),
+
+    /**
+     * 1: envelope is [minx, maxx, miny, maxy], 32 bytes
+     */
     Xy        (1, 4),
+
+    /**
+     * 2: envelope is [minx, maxx, miny, maxy, minz, maxz], 48 bytes
+     */
     Xyz       (2, 6),
+
+    /**
+     * 3: envelope is [minx, maxx, miny, maxy, minm, maxm], 48 bytes
+     */
     Xym       (3, 6),
+
+    /**
+     * 4: envelope is [minx, maxx, miny, maxy, minz, maxz, minm, maxm], 64 bytes
+     */
     Xyzm      (4, 8);
 
     EnvelopeContentsIndicator(final int code,
@@ -32,20 +58,28 @@ public enum EnvelopeContentsIndicator
         return this.arraySize;
     }
 
+    /**
+     * Converts a code to the appropriate indicator enum value
+     *
+     * @param code
+     *             Numeric code. The only valid values are 0, 1, 2, 3, 4
+     *
+     * @return The corresponding enum value
+     */
     public static EnvelopeContentsIndicator fromCode(final int code)
     {
-        //noinspection SwitchStatement
         switch(code)
         {
             case 0: return NoEnvelope;
             case 1: return Xy;
-            case 3: return Xyz;
+            case 2: return Xyz;
+            case 3: return Xym;
             case 4: return Xyzm;
 
             default: throw new IllegalArgumentException("Invalid envelope contents indicator code");
         }
     }
 
-    private final int                              code;
-    private final int                              arraySize;
+    private final int code;
+    private final int arraySize;
 }

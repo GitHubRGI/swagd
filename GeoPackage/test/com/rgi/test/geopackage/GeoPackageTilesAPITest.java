@@ -144,10 +144,6 @@ public class GeoPackageTilesAPITest
                 }
             }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -193,10 +189,6 @@ public class GeoPackageTilesAPITest
             final String tableName = tileName.getString("table_name");
             assertEquals("The GeoPackage did not insert the correct table name into the gpkg_tile_matrix_set when adding a new set of tiles.", "pyramid", tableName);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -223,10 +215,6 @@ public class GeoPackageTilesAPITest
 
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a null value for tileSetEntry.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -250,10 +238,6 @@ public class GeoPackageTilesAPITest
 
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a null value for BoundingBox.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -275,10 +259,6 @@ public class GeoPackageTilesAPITest
                             null);
 
             fail("GeoPackage should have thrown an IllegalArgumentException when TileEntrySet is null.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -312,10 +292,6 @@ public class GeoPackageTilesAPITest
         {
             assertTrue("The Spatial Reference System added to the GeoPackage by the user did not contain the same information given.", srsInfo.next());
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
      }
 
 
@@ -327,72 +303,65 @@ public class GeoPackageTilesAPITest
     {
         final File testFile = TestUtility.getRandomFile();
 
-        try
+        final int matrixHeight = 2;
+        final int matrixWidth  = 2;
+        final int tileHeight   = 256;
+        final int tileWidth    = 256;
+
+        // Create a GeoPackage with tiles inside
+        try(GeoPackage gpkg = new GeoPackage(testFile))
         {
-            final int matrixHeight = 2;
-            final int matrixWidth  = 2;
-            final int tileHeight   = 256;
-            final int tileWidth    = 256;
+            final TileSet tileSet = gpkg.tiles()
+                                        .addTileSet("tileSetONE",
+                                                    "title",
+                                                    "tiles",
+                                                    new BoundingBox(0.0, 0.0, 60.0, 60.0),
+                                                    gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
-            // Create a GeoPackage with tiles inside
-            try(GeoPackage gpkg = new GeoPackage(testFile))
-            {
-                final TileSet tileSet = gpkg.tiles()
-                                            .addTileSet("tileSetONE",
-                                                        "title",
-                                                        "tiles",
-                                                        new BoundingBox(0.0, 0.0, 60.0, 60.0),
-                                                        gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
-
-                gpkg.tiles().addTileMatrix(gpkg.tiles().getTileMatrixSet(tileSet),
-                                           0,
-                                           matrixWidth,
-                                           matrixHeight,
-                                           tileWidth,
-                                           tileHeight);
-            }
-
-            //open a file with tiles inside and add more tiles
-            try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Open))
-            {
-                final TileSet tileSet = gpkg.tiles()
-                                            .addTileSet("newTileSetTWO",
-                                                        "title2",
-                                                        "tiles",
-                                                        new BoundingBox(0.0, 0.0, 70.0, 50.0),
-                                                        gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
-
-                gpkg.tiles().addTileMatrix(gpkg.tiles().getTileMatrixSet(tileSet),
-                                           0,
-                                           matrixWidth,
-                                           matrixHeight,
-                                           tileWidth,
-                                           tileHeight);
-            }
-
-            //make sure the information was added to contents table and tile matrix set table
-            final String query = "SELECT cnts.table_name FROM gpkg_contents        AS cnts WHERE cnts.table_name"+
-                                 " IN(SELECT tms.table_name  FROM gpkg_tile_matrix_set AS tms  WHERE cnts.table_name = tms.table_name);";
-
-            try(final Connection con            = TestUtility.getConnection(testFile.getAbsolutePath());
-                final Statement  stmt           = con.createStatement();
-                final ResultSet  tileTableNames = stmt.executeQuery(query))
-            {
-                if(!tileTableNames.next())
-                {
-                    fail("The two tiles tables where not successfully added to both the gpkg_contents table and the gpkg_tile_matrix_set.");
-                }
-                while(tileTableNames.next())
-                {
-                    final String tilesTableName = tileTableNames.getString("table_name");
-                    assertTrue("The tiles table names did not match what was being added to the GeoPackage",
-                                tilesTableName.equals("newTileSetTWO") || tilesTableName.equals("tileSetONE"));
-                }
-            }
+            gpkg.tiles().addTileMatrix(gpkg.tiles().getTileMatrixSet(tileSet),
+                                       0,
+                                       matrixWidth,
+                                       matrixHeight,
+                                       tileWidth,
+                                       tileHeight);
         }
-        finally
+
+        //open a file with tiles inside and add more tiles
+        try(GeoPackage gpkg = new GeoPackage(testFile, GeoPackage.OpenMode.Open))
         {
-            TestUtility.deleteFile(testFile);
+            final TileSet tileSet = gpkg.tiles()
+                                        .addTileSet("newTileSetTWO",
+                                                    "title2",
+                                                    "tiles",
+                                                    new BoundingBox(0.0, 0.0, 70.0, 50.0),
+                                                    gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
+
+            gpkg.tiles().addTileMatrix(gpkg.tiles().getTileMatrixSet(tileSet),
+                                       0,
+                                       matrixWidth,
+                                       matrixHeight,
+                                       tileWidth,
+                                       tileHeight);
+        }
+
+        //make sure the information was added to contents table and tile matrix set table
+        final String query = "SELECT cnts.table_name FROM gpkg_contents        AS cnts WHERE cnts.table_name"+
+                             " IN(SELECT tms.table_name  FROM gpkg_tile_matrix_set AS tms  WHERE cnts.table_name = tms.table_name);";
+
+        try(final Connection con            = TestUtility.getConnection(testFile.getAbsolutePath());
+            final Statement  stmt           = con.createStatement();
+            final ResultSet  tileTableNames = stmt.executeQuery(query))
+        {
+            if(!tileTableNames.next())
+            {
+                fail("The two tiles tables where not successfully added to both the gpkg_contents table and the gpkg_tile_matrix_set.");
+            }
+            while(tileTableNames.next())
+            {
+                final String tilesTableName = tileTableNames.getString("table_name");
+                assertTrue("The tiles table names did not match what was being added to the GeoPackage",
+                            tilesTableName.equals("newTileSetTWO") || tilesTableName.equals("tileSetONE"));
+            }
         }
     }
 
@@ -422,10 +391,6 @@ public class GeoPackageTilesAPITest
                             gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
 
             fail("The GeoPackage should throw an IllegalArgumentException when a user gives a Tile Set Name that already exists.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -491,10 +456,6 @@ public class GeoPackageTilesAPITest
                                                                         tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
             }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -538,10 +499,6 @@ public class GeoPackageTilesAPITest
                                           tileSet.getMaximumY(),
                                           tileSet.getSpatialReferenceSystemIdentifier()));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -564,10 +521,6 @@ public class GeoPackageTilesAPITest
 
             fail("Expected an IllegalArgumentException when giving a null value for bounding box for addTileSet");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -588,10 +541,6 @@ public class GeoPackageTilesAPITest
                             new BoundingBox(0.0,0.0,0.0,0.0),
                             null);
             fail("Expected an IllegalArgumentException when giving a null value for bounding box for addTileSet");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -614,10 +563,6 @@ public class GeoPackageTilesAPITest
                             null);
             fail("Expected an IllegalArgumentException when giving a null value for bounding box for addTileSet");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -639,10 +584,6 @@ public class GeoPackageTilesAPITest
 
              fail("Expected the GeoPackage to throw an IllegalArgumentException when given a TileSet with an empty string for the table name.");
          }
-         finally
-         {
-             TestUtility.deleteFile(testFile);
-         }
      }
 
     /**
@@ -658,10 +599,6 @@ public class GeoPackageTilesAPITest
          {
              gpkg.tiles().addTileSet("badTableName^", "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
              fail("Expected to get an IllegalArgumentException for giving an illegal tablename (with symbols not allowed by GeoPackage)");
-         }
-         finally
-         {
-             TestUtility.deleteFile(testFile);
          }
      }
 
@@ -679,10 +616,6 @@ public class GeoPackageTilesAPITest
              gpkg.tiles().addTileSet("gpkg_bad_tablename", "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
              fail("Expected to get an IllegalArgumentException for giving an illegal tablename (starting with gpkg_ which is not allowed by GeoPackage)");
          }
-         finally
-         {
-             TestUtility.deleteFile(testFile);
-         }
      }
 
     /**
@@ -698,10 +631,6 @@ public class GeoPackageTilesAPITest
          {
              gpkg.tiles().addTileSet(null, "identifier", "description", new BoundingBox(0.0,0.0,2.0,2.0), gpkg.core().getSpatialReferenceSystem(0));
              fail("Expected to get an IllegalArgumentException for giving an illegal tablename (a null value)");
-         }
-         finally
-         {
-             TestUtility.deleteFile(testFile);
          }
      }
 
@@ -779,10 +708,6 @@ public class GeoPackageTilesAPITest
                                                                         tileEntry.getSpatialReferenceSystemIdentifier().equals(gpkgEntry.getSpatialReferenceSystemIdentifier())));
             }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -799,10 +724,6 @@ public class GeoPackageTilesAPITest
                                         + "GeoPackage that matched the SpatialReferenceSystem given.", 0, gpkgTileSets.size());
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -818,10 +739,6 @@ public class GeoPackageTilesAPITest
             final TileSet tileSet = gpkg.tiles().getTileSet("table_not_here");
 
             Assert.assertNull("GeoPackage expected to return null when the tile set does not exist in GeoPackage", tileSet);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -849,10 +766,6 @@ public class GeoPackageTilesAPITest
                               tileSet.getLastChange() .equals(returnedTileSet.getLastChange())  &&
                               tileSet.getTableName()  .equals(returnedTileSet.getTableName())   &&
                               tileSet.getSpatialReferenceSystemIdentifier().equals(returnedTileSet.getSpatialReferenceSystemIdentifier()));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -886,10 +799,6 @@ public class GeoPackageTilesAPITest
                + "does not contain a record for the zoom level of a tile in the Pyramid User Data Table.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -919,10 +828,6 @@ public class GeoPackageTilesAPITest
 
             fail("GeoPackage should throw a IllegalArgumentException when tile_row is larger than matrix_height - 1 when zoom levels are equal.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -951,10 +856,6 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().addTile(tileSet, tileMatrix, 0, -1, new byte[] {(byte) 1, (byte) 2, (byte) 3, (byte) 4});
 
             fail("GeoPackage should throw a IllegalArgumentException when tile_row is less than 0.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -986,10 +887,6 @@ public class GeoPackageTilesAPITest
                + "is larger than matrix_width -1.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1018,10 +915,6 @@ public class GeoPackageTilesAPITest
 
             fail("GeoPackage should throw a IllegalArgumentException when tile_column "
                + "is less than 0.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1058,10 +951,6 @@ public class GeoPackageTilesAPITest
             {
                 Assert.assertNull("The data should not be in the contents table since it throws an SQLException", tileTableName.getString("table_name"));
             }
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1112,10 +1001,6 @@ public class GeoPackageTilesAPITest
                        tileAdded.getZoomLevel()  == tileFound.getZoomLevel()  &&
                        Arrays.equals(tileAdded.getImageData(), tileFound.getImageData()));
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1169,10 +1054,6 @@ public class GeoPackageTilesAPITest
             // compare images
             assertTrue("The GeoPackage tile_data does not match the tile_data of the one given", Arrays.equals(bytes, new byte[] {(byte) 1, (byte) 2, (byte) 3, (byte) 4}));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1216,10 +1097,6 @@ public class GeoPackageTilesAPITest
             fail("Expected GeoPackage to throw an SQLException due to a unique constraint violation (zoom level, tile column, and tile row)."
                + " Was able to add a duplicate tile.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1250,10 +1127,6 @@ public class GeoPackageTilesAPITest
 
             fail("Expected the GeoPackage to throw an IllegalArgumentException when adding a null parameter to a Tile object (image data)");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1282,10 +1155,6 @@ public class GeoPackageTilesAPITest
 
             fail("Expected the GeoPackage to throw an IllegalArgumentException when adding an empty parameter to Tile (image data)");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1311,10 +1180,6 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().addTile(tileSet, null, 4, 0, new byte[]{(byte) 1, (byte) 2, (byte) 3, (byte) 4});
 
             fail("Expected the GeoPackage to throw an IllegalArgumentException when adding a null parameter to a addTile method (tileMatrix)");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1387,10 +1252,6 @@ public class GeoPackageTilesAPITest
             assertTrue("GeoPackage did not return the image expected when using getTile method.",
                        Arrays.equals(gpkgTile2.getImageData(), originalTile2));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1414,10 +1275,6 @@ public class GeoPackageTilesAPITest
             final Tile gpkgTile1 = gpkg.tiles().getTile(tileSet, 4, 0, 4);
 
             Assert.assertNull("GeoPackage did not null when the tile doesn't exist in the getTile method.", gpkgTile1);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1470,10 +1327,6 @@ public class GeoPackageTilesAPITest
                        gpkgTileAdded.getZoomLevel()            ==  gpkgTileRecieved.getZoomLevel()   &&
                        Arrays.equals(gpkgTileAdded.getImageData(), gpkgTileRecieved.getImageData()));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1509,10 +1362,6 @@ public class GeoPackageTilesAPITest
 
             Assert.assertNull("GeoPackage should have returned null for a missing tile.", gpkg.tiles().getTile(tileSet, 0, 0, 0));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1527,10 +1376,6 @@ public class GeoPackageTilesAPITest
         {
             gpkg.tiles().getTile(null, 2, 2, 0);
             fail("GeoPackage did not throw an IllegalArgumentException when giving a null value to table name (using getTile method)");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1556,10 +1401,6 @@ public class GeoPackageTilesAPITest
             final CrsCoordinate crsCoordinate = new CrsCoordinate(0.0, -60.0, coordinateReferenceSystem);
 
             gpkg.tiles().getTile(tileSet, crsCoordinate, CrsProfileFactory.create(coordinateReferenceSystem).getPrecision(), zoomLevel);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1616,10 +1457,6 @@ public class GeoPackageTilesAPITest
                                        .anyMatch(currentZoom -> currentZoom.equals(zoom)));
            }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1636,10 +1473,6 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().getTileZoomLevels(null);
             fail("Expected the GeoPackage to throw an IllegalArgumentException when givinga null parameter to getTileZoomLevels");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
      /**
@@ -1655,10 +1488,6 @@ public class GeoPackageTilesAPITest
         {
             gpkg.core().getRowCount(null);
             fail("GeoPackage should have thrown an IllegalArgumentException.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1712,10 +1541,6 @@ public class GeoPackageTilesAPITest
 
             assertEquals(String.format("Expected a different value from GeoPackage on getRowCount. expected: 2 actual: %d", count), 2, count);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1732,10 +1557,6 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().getTileMatrixSet(null);
 
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a null parameter for TileSet");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1798,10 +1619,6 @@ public class GeoPackageTilesAPITest
                                                                      expectedTM.getZoomLevel()    ==      gpkgTileMatrix.getZoomLevel()));
             }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1823,10 +1640,6 @@ public class GeoPackageTilesAPITest
 
             assertEquals("Expected the GeoPackage to return null when no tile Matrices are found", 0, gpkg.tiles().getTileMatrices(tileSet).size());
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1844,10 +1657,6 @@ public class GeoPackageTilesAPITest
 
             gpkg.tiles().addTileMatrix(tileMatrixSet, 0, 0, 5, 6, 7);
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a Tile Matrix a matrix width that is <= 0");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1873,10 +1682,6 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().addTileMatrix(tileMatrixSet, 0, 4, 0, 6, 7);
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a Tile Matrix a matrix height that is <= 0");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1896,10 +1701,6 @@ public class GeoPackageTilesAPITest
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a Tile Matrix a tile width that is <= 0");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1917,10 +1718,6 @@ public class GeoPackageTilesAPITest
 
             gpkg.tiles().addTileMatrix(tileMatrixSet, 0, 4, 5, 6, 0);
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a Tile Matrix a tile height that is <= 0");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1941,10 +1738,6 @@ public class GeoPackageTilesAPITest
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a Tile Matrix a pixelXsize that is <= 0");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1962,10 +1755,6 @@ public class GeoPackageTilesAPITest
 
             gpkg.tiles().addTileMatrix(tileMatrixSet, 0, 4, 5, 6, 7);
             fail("Expected GeoPackage to throw an IllegalArgumentException when giving a Tile Matrix a pixelYSize that is <= 0");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1988,10 +1777,6 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().addTileMatrix(tileMatrixSet, 0, 3, 2, 5, 4);
 
             fail("Expected GeoPackage Tiles to throw an IllegalArgumentException when addint a Tile Matrix with the same tile set and zoom level information but differing other fields");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2039,10 +1824,6 @@ public class GeoPackageTilesAPITest
                                           tileMatrix2.getPixelXSize(),
                                           tileMatrix2.getPixelYSize()));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2057,10 +1838,6 @@ public class GeoPackageTilesAPITest
         {
             gpkg.tiles().addTileMatrix(null, 0, 2, 3, 4, 5);
             fail("Expected the GeoPackage to throw an IllegalArgumentException when giving a null parameter TileSet to addTileMatrix");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2083,10 +1860,6 @@ public class GeoPackageTilesAPITest
             final TileMatrixSet tileMatrixSet = gpkg.tiles().getTileMatrixSet(tileSet);
 
             gpkg.tiles().addTileMatrix(tileMatrixSet, -1, 2, 4, 6, 8);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2147,10 +1920,6 @@ public class GeoPackageTilesAPITest
         {
             assertEquals("The GeoPackage did not enter the correct record into the gpkg_tile_matrix table", "tileSetName", tableName.getString("table_name"));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
      }
 
     /**
@@ -2166,10 +1935,6 @@ public class GeoPackageTilesAPITest
         {
             gpkg.tiles().getTileMatrices(null);
             fail("Expected the GeoPackage to throw an IllegalArgumentException when giving getTileMatrices a TileSet that is null.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2230,10 +1995,6 @@ public class GeoPackageTilesAPITest
                        tileMatrix.getTileWidth()    ==      returnedTileMatrix.getTileWidth()    &&
                        tileMatrix.getZoomLevel()    ==      returnedTileMatrix.getZoomLevel());
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2257,10 +2018,6 @@ public class GeoPackageTilesAPITest
 
             Assert.assertNull("GeoPackage was supposed to return null when there is a nonexistant TileMatrix entry at that zoom level and TileSet", gpkg.tiles().getTileMatrix(tileMatrixSet, 0));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2275,10 +2032,6 @@ public class GeoPackageTilesAPITest
         {
             gpkg.tiles().getTileMatrix(null, 8);
             fail("GeoPackage should have thrown an IllegalArgumentException when giving a null parameter for TileSet in the method getTileMatrix");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2308,10 +2061,6 @@ public class GeoPackageTilesAPITest
                                                tileMatrixSet.getSpatialReferenceSystem().equals(srs) &&
                                                tileMatrixSet.getTableName()             .equals(tableName));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2328,10 +2077,6 @@ public class GeoPackageTilesAPITest
         try(final GeoPackage ignored = new GeoPackage(testFile, GeoPackage.OpenMode.Open))
         {
             fail("GeoPackage did not throw a geoPackageConformanceException as expected.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2377,10 +2122,6 @@ public class GeoPackageTilesAPITest
                        relativeCoord.getY() == 0 && relativeCoord.getX() == 1);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2424,10 +2165,6 @@ public class GeoPackageTilesAPITest
                                        + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
                        relativeCoord.getY() == 0 && relativeCoord.getX() == 0);
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2473,10 +2210,6 @@ public class GeoPackageTilesAPITest
                        relativeCoord.getY() == 1 && relativeCoord.getX() == 1);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2519,10 +2252,6 @@ public class GeoPackageTilesAPITest
             assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 1, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
                        relativeCoord.getY() == 1 && relativeCoord.getX() == 1);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2581,10 +2310,6 @@ public class GeoPackageTilesAPITest
                         relativeCoord.getY() == 0 && relativeCoord.getX() == 0);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
 
     }
 
@@ -2642,10 +2367,6 @@ public class GeoPackageTilesAPITest
                         relativeCoord.getY() == 0 && relativeCoord.getX() == 1);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2702,10 +2423,6 @@ public class GeoPackageTilesAPITest
                         relativeCoord.getY() == 1 && relativeCoord.getX() == 0);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2761,10 +2478,6 @@ public class GeoPackageTilesAPITest
                                     relativeCoord.getX()),
                         relativeCoord.getY() == 1 && relativeCoord.getX() == 1);
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2836,10 +2549,6 @@ public class GeoPackageTilesAPITest
                        relativeCoord.getY() == 12 && relativeCoord.getX() == 5);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2882,10 +2591,6 @@ public class GeoPackageTilesAPITest
             assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 4, Expected Column: 18. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
                        relativeCoord.getY() == 4 && relativeCoord.getX() == 18);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2930,10 +2635,6 @@ public class GeoPackageTilesAPITest
             assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 0, Expected Column: 0. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
                        relativeCoord.getY() == 1 && relativeCoord.getX() == 0);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2980,10 +2681,6 @@ public class GeoPackageTilesAPITest
                                             relativeCoord.getX()),
                              relativeCoord.getY() == 0 && relativeCoord.getX() == 0);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3026,10 +2723,6 @@ public class GeoPackageTilesAPITest
             assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 0, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
                        relativeCoord.getY() == 0 && relativeCoord.getX() == 1);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -3074,10 +2767,6 @@ public class GeoPackageTilesAPITest
                                        + "\nExpected Row: 0, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
                        relativeCoord.getY() == 0 && relativeCoord.getX() == 1);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3120,10 +2809,6 @@ public class GeoPackageTilesAPITest
             assertTrue(String.format("The crsToRelativeTileCoordinate did not return the expected values. "
                                        + "\nExpected Row: 1, Expected Column: 1. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
                        relativeCoord.getY() == 1 && relativeCoord.getX() == 1);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -3168,10 +2853,6 @@ public class GeoPackageTilesAPITest
                                        + "\nExpected Row: 6, Expected Column: 2. \nActual Row: %d, Actual Column: %d", relativeCoord.getY(), relativeCoord.getX()),
                        relativeCoord.getY() == 6 && relativeCoord.getX() == 2);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3195,10 +2876,6 @@ public class GeoPackageTilesAPITest
 
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to input a crs tile coordinate that was null to the method crsToRelativeTileCoordinate.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3219,10 +2896,6 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().crsToTileCoordinate(null, crsCoord, 2, zoomLevel);
 
             fail("Expected the GeoPackage to throw an IllegalArgumentException when trying to input a tileSet that was null to the method crsToRelativeTileCoordinate.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -3265,10 +2938,6 @@ public class GeoPackageTilesAPITest
 
             fail("Expected the GoePackage to throw an exception when the crs coordinate and the tiles are from two different projections.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3309,10 +2978,6 @@ public class GeoPackageTilesAPITest
             final int zoomLevel = 15;
             gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3351,10 +3016,6 @@ public class GeoPackageTilesAPITest
             );
 
             gpkg.tiles().crsToTileCoordinate(tileSet, crsCoord, CrsProfileFactory.create(geodeticRefSys).getPrecision(), zoomLevel);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -3397,10 +3058,6 @@ public class GeoPackageTilesAPITest
 
             fail("Expected the GoePackage to throw an exception when the crs coordinate and the tiles are from two different projections.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3428,10 +3085,6 @@ public class GeoPackageTilesAPITest
                                                                      new GlobalGeodeticCrsProfile().getCoordinateReferenceSystem());
 
             GeoPackageTilesAPITest.assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -3475,10 +3128,6 @@ public class GeoPackageTilesAPITest
 
             GeoPackageTilesAPITest.assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3507,10 +3156,6 @@ public class GeoPackageTilesAPITest
 
             GeoPackageTilesAPITest.assertCoordinatesEqual(crsCoordReturned, crsCoordExpected);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3524,10 +3169,6 @@ public class GeoPackageTilesAPITest
         {
             gpkg.tiles().tileToCrsCoordinate(null, 0, 0, 0);
             fail("Expected an IllegalArgumentException when giving a null value for tileSet");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -3548,10 +3189,6 @@ public class GeoPackageTilesAPITest
             gpkg.tiles().tileToCrsCoordinate(tileSet, -1, 0, 0);
             fail("Expected an IllegalArgumentException when giving a negative value for column");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -3570,10 +3207,6 @@ public class GeoPackageTilesAPITest
                                                      gpkg.core().getSpatialReferenceSystem("EPSG", 4326));
             gpkg.tiles().tileToCrsCoordinate(tileSet, 0, -1, 0);
             fail("Expected an IllegalArgumentException when giving a negative value for row");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -3594,10 +3227,6 @@ public class GeoPackageTilesAPITest
 
             gpkg.tiles().tileToCrsCoordinate(tileSet, 0, 0, 0);
             fail("Expected an IllegalArgumentException when giving a zoom that does not have a Tile Matrix associated with it.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 

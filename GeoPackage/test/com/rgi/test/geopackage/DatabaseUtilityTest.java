@@ -67,10 +67,6 @@ public class DatabaseUtilityTest
             final int appId = DatabaseUtility.getApplicationId(con);
             assertEquals("DatabaseUtility did not return the expected application Id.", 0, appId);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -86,10 +82,6 @@ public class DatabaseUtilityTest
         {
             DatabaseUtility.setApplicationId(con, 12345);
             assertEquals("DatabaseUtility did not return the expected application Id.", 12345, DatabaseUtility.getApplicationId(con));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -116,10 +108,6 @@ public class DatabaseUtilityTest
                 assertEquals("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to off when given the parameter false.", 0, off);
             }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -145,10 +133,6 @@ public class DatabaseUtilityTest
                 assertEquals("Database BoundsUtility set pragma foreign keys didn't set the foreign_keys to on when given the parameter true.", 1, on);
             }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     @Test
@@ -169,10 +153,6 @@ public class DatabaseUtilityTest
                 }
             }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -189,10 +169,6 @@ public class DatabaseUtilityTest
         {
             final boolean tableNotFound = !DatabaseUtility.tableOrViewExists(con, "non_existant_table");
             assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", tableNotFound);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -212,10 +188,6 @@ public class DatabaseUtilityTest
             DatabaseUtilityTest.addTable(con, tableName);
             assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tableOrViewExists(con, tableName));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -232,10 +204,6 @@ public class DatabaseUtilityTest
         {
             DatabaseUtility.tableOrViewExists(con, null);
             fail("DatabaseUtility should have thrown an IllegalArgumentException when tablename was null or empty");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -266,10 +234,6 @@ public class DatabaseUtilityTest
             DatabaseUtility.tableOrViewExists(con, null);
             fail("Database BoundsUtility should have thrown an IllegalArgumentException when given a closed connection.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -290,10 +254,6 @@ public class DatabaseUtilityTest
 
             assertTrue("The Database BoundsUtility method table or view exists method returned true when it should have returned false.", !DatabaseUtility.tablesOrViewsExists(con, tables));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -312,10 +272,6 @@ public class DatabaseUtilityTest
             DatabaseUtilityTest.addTable(con, tableName);
             final String[] tables = {tableName, tableName};
             assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tablesOrViewsExists(con, tables));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -340,10 +296,6 @@ public class DatabaseUtilityTest
 
             assertTrue("The Database BoundsUtility method table or view exists method returned false when it should have returned true.", DatabaseUtility.tablesOrViewsExists(con, tables));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -361,14 +313,10 @@ public class DatabaseUtilityTest
             DatabaseUtility.getSqliteVersion(testFile);
             fail("Expected an IllegalArgumentException from DatabaseUtility when gave an empty file to getSqliteVersion");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
-     * Checks to see if the Database BoundsUtility gets correct sqlite version of a
+     * Checks to see if the Database BoundsUtility gets correct SQLite version of a
      * file.
      */
     @Test
@@ -386,10 +334,6 @@ public class DatabaseUtilityTest
                                        foundSqliteVersion),
                          sqliteMajorVersion,
                          foundSqliteVersion.getMajor());
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 

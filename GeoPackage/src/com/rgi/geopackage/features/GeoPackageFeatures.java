@@ -1038,6 +1038,7 @@ public class GeoPackageFeatures
                                          "Autoincrement primary key"));
         columns.add(1, geometryColumn);
 
+        // TODO Move the table-building functionality to the table definition class?
         final StringBuilder createTableSql = new StringBuilder();
         createTableSql.append("CREATE TABLE ");
         createTableSql.append(featureTableName);
@@ -1049,7 +1050,7 @@ public class GeoPackageFeatures
 
             final String comment = column.getComment();
 
-            createTableSql.append("\n\t");
+            createTableSql.append(System.lineSeparator());
 
             createTableSql.append(column.getName());  // Verified by AbstractColumnDefinition to not contain SQL injection
             createTableSql.append(' ');

@@ -72,7 +72,7 @@ public abstract class AbstractColumnDefinition
      *             violation has occurred. If the CHECK expression evaluates
      *             to NULL, or any other non-zero value, it is not a constraint
      *             violation. The expression of a CHECK constraint may not
-     *             contain a sub-query.
+     *             contain a subquery.
      * @param flags
      *             Column constraint flags
      * @param defaultValue
@@ -88,11 +88,6 @@ public abstract class AbstractColumnDefinition
                                        final ColumnDefault       defaultValue,
                                        final String              comment)
     {
-        if(name == null || name.isEmpty())
-        {
-            throw new IllegalArgumentException("Column name may not be null");
-        }
-
         AbstractColumnDefinition.validateColumnName(name);
 
         if(type == null || type.isEmpty())

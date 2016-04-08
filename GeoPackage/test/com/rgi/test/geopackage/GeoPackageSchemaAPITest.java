@@ -102,10 +102,6 @@ public class GeoPackageSchemaAPITest
 
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -130,10 +126,6 @@ public class GeoPackageSchemaAPITest
 
             gpkg.schema().addDataColumn(null, columnName, name, title, description, mimeType, constraintName);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add a datacolumn and tableName is null.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -163,10 +155,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().addDataColumn(table, null, name, title, description, mimeType, constraintName);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add a datacolumn and columnName is null.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
 
@@ -195,10 +183,6 @@ public class GeoPackageSchemaAPITest
 
             gpkg.schema().addDataColumn(table, "", name, title, description, mimeType, constraintName);
             fail("Expected GeoPackage to throw an IllegalArgumentException when trying to add a datacolumn and columnName is null.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -237,10 +221,6 @@ public class GeoPackageSchemaAPITest
                        shouldBeNull == null);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -258,10 +238,6 @@ public class GeoPackageSchemaAPITest
         {
            gpkg.schema().getDataColumn(null,"columnName");
            fail("Expected GeoPackage Schema to throw an IllegalArgumentException when trying to get a data column and table is null.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -285,10 +261,6 @@ public class GeoPackageSchemaAPITest
 
             gpkg.schema().getDataColumn(table, null);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -310,10 +282,6 @@ public class GeoPackageSchemaAPITest
                                                            gpkg.core().getSpatialReferenceSystem(4326));
 
             gpkg.schema().getDataColumn(table, "");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -368,10 +336,6 @@ public class GeoPackageSchemaAPITest
                        columnsReturned.size() == 2 &&
                        columnsReturned.stream().allMatch(returned-> columnsExpected.stream().anyMatch(expected -> areDataColumnsEqual(expected, returned))));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -422,10 +386,6 @@ public class GeoPackageSchemaAPITest
                        constraint.getMaximum().equals(maximum)                          &&
                        constraint.getMaximumIsInclusive().equals(maximumIsInclusive));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -456,10 +416,6 @@ public class GeoPackageSchemaAPITest
                         Objects.equals(constraint.getMaximum(),            maximum) &&
                         Objects.equals(constraint.getMaximumIsInclusive(), maximumIsInclusive));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
 
@@ -489,10 +445,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for constraint name");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -520,10 +472,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with an empty string for constraint name");
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -553,10 +501,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for constraint type");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -584,10 +528,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non-null value for value when the constraint type is range.");
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -617,10 +557,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for minimum when the constraintType is Range.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -648,10 +584,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for maximum when the constraintType is Range.");
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -681,10 +613,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a minimum that is < maximum.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -712,10 +640,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a a null value for minimumIsInclusive when constraint type is range.");
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -745,10 +669,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a a null value for maximumIsInclusive when constraint type is range.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -777,10 +697,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for minimum when constraint type is enum or glob.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -807,10 +723,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for minimum when constraint type is enum or glob.");
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -840,10 +752,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for minimumIsInclusive when constraint type is enum or glob.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -870,10 +778,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for maximum when constraint type is enum or glob.");
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -903,10 +807,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a non null value for maximumIsInclusive when constraint type is enum or glob.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -934,10 +834,6 @@ public class GeoPackageSchemaAPITest
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for value when constraint type is enum or glob.");
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -964,10 +860,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().addDataColumnConstraint(constraintName, constraintType, value, minimum, minimumIsInclusive, maximum, maximumIsInclusive, description);
             fail("GeoPackage Schema did not throw an IllegalArgumentException when trying to add a datacolumn constraint with a null value for value when constraint type is enum or glob.");
 
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1007,10 +899,6 @@ public class GeoPackageSchemaAPITest
                        areDataColumnConstraintsEqual(constraintExpected, constraintReturned));
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1048,10 +936,6 @@ public class GeoPackageSchemaAPITest
             assertNull("The data Column Constraint returned a non null value when the data column constraint searched for did not exist in the geopackage.", constraintReturned);
 
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1074,10 +958,6 @@ public class GeoPackageSchemaAPITest
             gpkg.schema().getDataColumnConstraint(constraintName, constraintType, value);
 
             fail("Expected GeoPackageSchema to throw an IllegalArgumentException when passing in a null paramter for constraintName.");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1102,10 +982,6 @@ public class GeoPackageSchemaAPITest
 
             fail("Expected GeoPackageSchema to throw an IllegalArgumentException when passing in an empty string for constraintName.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1129,10 +1005,6 @@ public class GeoPackageSchemaAPITest
 
             fail("Expected GeoPackageSchema to throw an IllegalArgumentException when passing in an empty string for constraintName.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1148,10 +1020,6 @@ public class GeoPackageSchemaAPITest
         {
            final Collection<DataColumnConstraint> shouldBeEmptyList = gpkg.schema().getDataColumnConstraints();
             assertEquals("Expected GeoPackageSchema to return an empty list when there are no data column constraints in the GeoPackage.", 0, shouldBeEmptyList.size());
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1205,10 +1073,6 @@ public class GeoPackageSchemaAPITest
                       returnedCollection.stream()
                                         .allMatch(returned -> expectedCollection.stream()
                                                                                 .anyMatch(expected -> areDataColumnConstraintsEqual(expected, returned))));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
