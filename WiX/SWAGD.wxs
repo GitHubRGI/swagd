@@ -20,8 +20,8 @@
       
       <!-- List components that go in or reference in the installdir, eg C:\Program Files\swagd, which is the default defined above.
             these include path shortcuts-->
-      <Property Id="INSTALLDIR"  />
-      <Property Id="withDeps"/>
+      <Property Id="INSTALLDIR" Secure="yes" />
+      <Property Id="WITHDEPS" Secure="yes" />
       
       <!-- swagd components -->
       <DirectoryRef Id="INSTALLDIR">
@@ -42,12 +42,12 @@
         
         <!-- set path variables-->
         <Component Id="gdalDataPath" Guid="EF67942F-D3D9-492B-824D-CCE63B10B805" Win64="yes">
-          <Condition><![CDATA[withDeps <> "0"]]></Condition>
+          <Condition><![CDATA[WITHDEPS <> "0"]]></Condition>
           <CreateFolder />
           <Environment Id="gdaldatapath" Name="GDAL_DATA" Value="[INSTALLDIR]GDAL\gdal-data" Permanent="no" Part="all" Action="set" System="yes" />
         </Component>
         <Component Id="gdalPath" Guid="E69183C0-F599-45EB-925F-F9D09432577F" Win64="yes">
-          <Condition><![CDATA[withDeps <> "0"]]></Condition>
+          <Condition><![CDATA[WITHDEPS <> "0"]]></Condition>
           <CreateFolder />
           <Environment Id="gdalpath" Name="Path" Value="[INSTALLDIR]GDAL" Permanent="no" Part="last" Action="set" System="yes" />
         </Component>
