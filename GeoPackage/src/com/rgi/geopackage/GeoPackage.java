@@ -22,18 +22,6 @@
  */
 package com.rgi.geopackage;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.file.FileAlreadyExistsException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.extensions.GeoPackageExtensions;
 import com.rgi.geopackage.features.GeoPackageFeatures;
@@ -46,6 +34,17 @@ import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.FileAlreadyExistsException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Implementation of the <a href="http://www.geopackage.org/spec/">OGC GeoPackage specification</a>
