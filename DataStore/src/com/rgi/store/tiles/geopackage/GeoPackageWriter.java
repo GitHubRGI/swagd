@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -50,7 +51,6 @@ import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.common.util.MimeTypeUtility;
 import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
 import com.rgi.geopackage.tiles.TileMatrix;
@@ -122,7 +122,7 @@ public class GeoPackageWriter implements TileStoreWriter
                                                              imageOutputFormat.toString(),
                                                              GeoPackageWriter.SupportedImageFormats
                                                                              .stream()
-                                                                             .map(mimeType -> mimeType.toString())
+                                                                             .map(MimeType::toString)
                                                                              .collect(Collectors.joining(", ", "'", "'"))));
         }
 
@@ -138,14 +138,14 @@ public class GeoPackageWriter implements TileStoreWriter
         {
             this.imageWriter = ImageIO.getImageWritersByMIMEType(imageOutputFormat.toString()).next();
         }
-        catch(final NoSuchElementException ex)
+        catch(final NoSuchElementException ignored)
         {
             throw new IllegalArgumentException(String.format("Mime type '%s' is not a supported for image writing by your Java environment", imageOutputFormat.toString()));
         }
 
         try
         {
-            this.geoPackage = new GeoPackage(geoPackageFile, OpenMode.OpenOrCreate);
+            this.geoPackage = new GeoPackage(geoPackageFile, GeoPackage.OpenMode.OpenOrCreate);
         }
         catch(final ClassNotFoundException | ConformanceException | IOException | SQLException ex)
         {
@@ -315,7 +315,7 @@ public class GeoPackageWriter implements TileStoreWriter
     @Override
     public Set<MimeType> getSupportedImageFormats()
     {
-        return GeoPackageWriter.SupportedImageFormats;
+        return Collections.unmodifiableSet(GeoPackageWriter.SupportedImageFormats);
     }
 
     @Override
@@ -338,17 +338,13 @@ public class GeoPackageWriter implements TileStoreWriter
 
     private TileMatrix getTileMatrix(final int zoomLevel, final int imageWidth, final int imageHeight) throws SQLException
     {
-        TileMatrix tileMatrix = null;
+        if(this.tileMatrices.containsKey(zoomLevel))
+        {
+            return this.tileMatrices.get(zoomLevel);
+        }
 
-        if(!this.tileMatrices.containsKey(zoomLevel))
-        {
-            tileMatrix = this.addTileMatrix(zoomLevel, imageHeight, imageWidth);
-            this.tileMatrices.put(zoomLevel, tileMatrix);
-        }
-        else
-        {
-            tileMatrix = this.tileMatrices.get(zoomLevel);
-        }
+        final TileMatrix tileMatrix = this.addTileMatrix(zoomLevel, imageHeight, imageWidth);
+        this.tileMatrices.put(zoomLevel, tileMatrix);
 
         return tileMatrix;
     }
@@ -357,17 +353,16 @@ public class GeoPackageWriter implements TileStoreWriter
     {
         final TileMatrixDimensions tileMatrixDimensions = this.tileScheme.dimensions(zoomLevel);
 
-        final BoundingBox tileSetBounds = this.tileSet.getBoundingBox();
-
         return this.geoPackage.tiles()
-                              .addTileMatrix(this.tileSet,
+                              .addTileMatrix(this.geoPackage
+                                                 .tiles()
+                                                 .getTileMatrixSet(this.tileSet),
                                              zoomLevel,
                                              tileMatrixDimensions.getWidth(),
                                              tileMatrixDimensions.getHeight(),
                                              tilePixelWidth,
-                                             tilePixelHeight,
-                                             tileSetBounds.getWidth()  / tileMatrixDimensions.getWidth()  / tilePixelWidth,
-                                             tileSetBounds.getHeight() / tileMatrixDimensions.getHeight() / tilePixelHeight);
+                                             tilePixelHeight
+                              );
     }
 
     private final GeoPackage      geoPackage;

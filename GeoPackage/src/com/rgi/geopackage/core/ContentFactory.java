@@ -29,23 +29,44 @@ import com.rgi.common.BoundingBox;
  *
  * @param <T> Extends {@link Content}
  */
+@FunctionalInterface
 public interface ContentFactory<T extends Content>
 {
     /**
-     * @param tableName the table name
-     * @param dataType the data type
-     * @param identifier the identifier
-     * @param description the description
-     * @param lastChange  the time of the last change
-     * @param boundingBox the bounding box
-     * @param spatialReferenceSystemIdentifier the spatial reference system version number (otherwise known as identifier)
+     * @param tableName
+     *            The name of the content table. The table name must begin with
+     *            a letter (A..Z, a..z) or an underscore (_) and may only be
+     *            followed by letters, underscores, or numbers, and may not
+     *            begin with the prefix "gpkg_"
+     * @param identifier
+     *            A human-readable identifier (e.g. short name) for the
+     *            tableName content
+     * @param description
+     *            A human-readable description for the tableName content
+     * @param lastChange
+     *            Timestamp value in ISO 8601 format as defined by the
+     *            strftime function %Y-%m-%dT%H:%M:%fZ format string applied
+     *            to the current time
+     * @param minimumX
+     *             Bounding box minimum easting or longitude for all content
+     * @param minimumY
+     *             Bounding box maximum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
+     * @param maximumY
+     *             Bounding box maximum northing or latitude for all content
+     * @param spatialReferenceSystemIdentifier
+     *             The spatial reference system version number (otherwise known as identifier)
      * @return a Content object with the following parameters
      */
-    public T create(final String      tableName,
-                    final String      dataType,
-                    final String      identifier,
-                    final String      description,
-                    final String      lastChange,
-                    final BoundingBox boundingBox,
-                    final Integer     spatialReferenceSystemIdentifier);
+    public T create(final String  tableName,
+                    final String  dataType,
+                    final String  identifier,
+                    final String  description,
+                    final String  lastChange,
+                    final Double  minimumX,
+                    final Double  minimumY,
+                    final Double  maximumX,
+                    final Double  maximumY,
+                    final Integer spatialReferenceSystemIdentifier);
 }

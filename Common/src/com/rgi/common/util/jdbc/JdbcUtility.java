@@ -49,6 +49,7 @@ public final class JdbcUtility
 
     }
 
+    // TODO have a version that uses a Statement rather than PreparedStatement, that takes no PreparedStatementConsumer argument
     /**
      * Selects and returns one result.  Null is returned if the query returns
      * no result.
@@ -107,6 +108,7 @@ public final class JdbcUtility
         }
     }
 
+    // TODO have a version that uses a Statement rather than PreparedStatement, that takes no PreparedStatementConsumer argument
     /**
      * Returns an instance of T per result of the query. If the query produces
      * no results, an empty collection is returned.
@@ -160,6 +162,146 @@ public final class JdbcUtility
                 while(resultSet.next())
                 {
                     results.add(resultMapper.apply(resultSet));
+                }
+
+                return results;
+            }
+        }
+    }
+
+    // TODO have a version that uses a Statement rather than PreparedStatement, that takes no PreparedStatementConsumer argument
+    /**
+     * Returns an instance of T per result of the query that meets the criteria
+     * of the predicate. If the query produces no results, or no result meets
+     * the criteria, an empty collection is returned.
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of a {@link
+     *             PreparedStatement}. Ignored if null.
+     * @param resultMapper
+     *             Callback that accepts a {@link ResultSet} to create another
+     *             object
+     * @param predicate
+     *             Filter mechanism for the mapped data
+     * @return Instance of T per result of the query. If the query produces
+     *             no results, an empty collection is returned.
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public static <T> List<T> selectFilter(final Connection                databaseConnection,
+                                           final String                    sql,
+                                           final PreparedStatementConsumer parameterSetter,
+                                           final ResultSetFunction<T>      resultMapper,
+                                           final JdbcPredicate<T>          predicate) throws SQLException
+    {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(resultMapper == null)
+        {
+            throw new IllegalArgumentException("Mapping callback for the result set may not be null");
+        }
+
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                final List<T> results = new ArrayList<>();
+
+                while(resultSet.next())
+                {
+                    final T value = resultMapper.apply(resultSet);
+
+                    if(predicate.test(value))
+                    {
+                        results.add(value);
+                    }
+                }
+
+                return results;
+            }
+        }
+    }
+
+    // TODO have a version that uses a Statement rather than PreparedStatement, that takes no PreparedStatementConsumer argument
+    /**
+     * Returns an instance of T per result of the query that meets the criteria
+     * of the predicate. If the query produces no results, or no result meets
+     * the criteria, an empty collection is returned. Unlike {@link
+     * #selectFilter} this method's predicate operates on the raw result, and
+     * only maps it to the desire object if it satisfies the condition
+     *
+     * @param databaseConnection
+     *             Connection to the database
+     * @param sql
+     *             SQL query
+     * @param parameterSetter
+     *             Callback that sets parameters of a {@link
+     *             PreparedStatement}. Ignored if null.
+     * @param predicate
+     *             Filter mechanism for the mapped data
+     * @param resultMapper
+     *             Callback that accepts a {@link ResultSet} to create another
+     *             object
+     * @return Instance of T per result of the query. If the query produces
+     *             no results, an empty collection is returned.
+     * @throws SQLException
+     *             if there is a database error
+     */
+    public static <T> List<T> filterSelect(final Connection                databaseConnection,
+                                           final String                    sql,
+                                           final PreparedStatementConsumer parameterSetter,
+                                           final ResultSetPredicate        predicate,
+                                           final ResultSetFunction<T>      resultMapper) throws SQLException
+    {
+        if(databaseConnection == null)
+        {
+            throw new IllegalArgumentException("Database connection may not be null");
+        }
+
+        if(sql == null || sql.isEmpty())
+        {
+            throw new IllegalArgumentException("Query statement may not be null or empty");
+        }
+
+        if(resultMapper == null)
+        {
+            throw new IllegalArgumentException("Mapping callback for the result set may not be null");
+        }
+
+        try(final PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql))
+        {
+            if(parameterSetter != null)
+            {
+                parameterSetter.accept(preparedStatement);
+            }
+
+            try(final ResultSet resultSet = preparedStatement.executeQuery())
+            {
+                final List<T> results = new ArrayList<>();
+
+                while(resultSet.next())
+                {
+                    if(predicate.apply(resultSet))
+                    {
+                        results.add(resultMapper.apply(resultSet));
+                    }
                 }
 
                 return results;

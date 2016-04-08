@@ -226,9 +226,9 @@ public class GlobalGeodeticCrsProfileTest {
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX(), // expect upper left
-                                                            // tile
-                globalCrs.getBounds().getMaxY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX(), // expect upper left
+                // tile
+                globalCrs.getBounds().getMaximumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.LowerLeft;
@@ -247,9 +247,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileLowerLeftCrsToTileCoordinateEdgeCaseUpperRightCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX(), // expect upper right
-                                                            // corner
-                GlobalGeodeticCrsProfile.Bounds.getMaxY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX(), // expect upper right
+                // corner
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY(), "epsg", 4326);
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.LowerLeft;
 
@@ -268,9 +268,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test
     public void globalGeodeticCrsProfileLowerLeftCrsToTileCoordinateEdgeCaseLowerLeftCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX(), // expect lower left
-                                                            // corner
-                GlobalGeodeticCrsProfile.Bounds.getMinY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX(), // expect lower left
+                // corner
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.LowerLeft;
@@ -295,9 +295,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileLowerLeftCrsToTileCoordinateEdgeCaseLowerRightCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX(), // expect lower right
-                                                            // corner
-                GlobalGeodeticCrsProfile.Bounds.getMinY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX(), // expect lower right
+                // corner
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.LowerLeft;
@@ -319,10 +319,10 @@ public class GlobalGeodeticCrsProfileTest {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX()
                         + (4 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMinY()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY()
                         + (5 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -349,10 +349,10 @@ public class GlobalGeodeticCrsProfileTest {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX()
                         + (2 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMinY()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY()
                         + (3.5 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -378,10 +378,10 @@ public class GlobalGeodeticCrsProfileTest {
     public void globalGeodeticCrsProfileLowerLeftOriginCrsToTileCoordinateEdgeCaseBetweenTilesUpAndDown() {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX()
                         + (7.5 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMinY()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY()
                         + (5 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -431,9 +431,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileUpperLeftCrsToTileCoordinateEdgeCaseUpperRightCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX(), // expect upper right
-                                                            // corner
-                GlobalGeodeticCrsProfile.Bounds.getMaxY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX(), // expect upper right
+                // corner
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY(), "epsg", 4326);
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.UpperLeft;
 
@@ -452,9 +452,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test
     public void globalGeodeticCrsProfileUpperLeftCrsToTileCoordinateEdgeCaseUpperLeftCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX(), // expect upper left
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMaxY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX(), // expect upper left
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.UpperLeft;
@@ -479,9 +479,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileUpperLeftCrsToTileCoordinateEdgeCaseLowerLeftCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX(), // expect lower left
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMinY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX(), // expect lower left
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.UpperLeft;
@@ -502,9 +502,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileUpperLeftCrsToTileCoordinateEdgeCaseLowerRightCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX(), // expect lower right
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMinY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX(), // expect lower right
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.UpperLeft;
@@ -526,10 +526,10 @@ public class GlobalGeodeticCrsProfileTest {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX()
                         + (7 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMaxY()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY()
                         - (5 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -556,10 +556,10 @@ public class GlobalGeodeticCrsProfileTest {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX()
                         + (7 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMaxY()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY()
                         - (5.5 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -585,10 +585,10 @@ public class GlobalGeodeticCrsProfileTest {
     public void globalGeodeticCrsProfileUpperLeftOriginCrsToTileCoordinateEdgeCaseBetweenTilesUpAndDown() {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX()
                         + (7.5 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMaxY()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY()
                         - (5 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -637,9 +637,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test
     public void globalGeodeticCrsProfileUpperRightCrsToTileCoordinateEdgeCaseUpperRightCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX(), // expect upper right
-                                                            // corner
-                GlobalGeodeticCrsProfile.Bounds.getMaxY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX(), // expect upper right
+                // corner
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY(), "epsg", 4326);
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.UpperRight;
 
@@ -663,9 +663,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileUpperRightCrsToTileCoordinateEdgeCaseUpperLeftCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX(), // expect upper left
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMaxY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX(), // expect upper left
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.UpperRight;
@@ -686,9 +686,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileUpperRightCrsToTileCoordinateEdgeCaseLowerLeftCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX(), // expect lower left
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMinY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX(), // expect lower left
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.UpperRight;
@@ -709,9 +709,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileUpperRightCrsToTileCoordinateEdgeCaseLowerRightCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX(), // expect lower right
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMinY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX(), // expect lower right
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.UpperRight;
@@ -733,10 +733,10 @@ public class GlobalGeodeticCrsProfileTest {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX()
                         - (8 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMaxY()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY()
                         - (2 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -763,10 +763,10 @@ public class GlobalGeodeticCrsProfileTest {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX()
                         - (1 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMaxY()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY()
                         - (5.5 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -792,10 +792,10 @@ public class GlobalGeodeticCrsProfileTest {
     public void globalGeodeticCrsProfileUpperRightOriginCrsToTileCoordinateEdgeCaseBetweenTilesUpAndDown() {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX()
                         - (7.5 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMaxY()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY()
                         - (5 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -845,9 +845,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileLowerRightCrsToTileCoordinateEdgeCaseUpperRightCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX(), // expect upper right
-                                                            // corner
-                GlobalGeodeticCrsProfile.Bounds.getMaxY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX(), // expect upper right
+                // corner
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY(), "epsg", 4326);
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.LowerRight;
 
@@ -867,9 +867,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileLowerRightCrsToTileCoordinateEdgeCaseUpperLeftCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX(), // expect upper left
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMaxY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX(), // expect upper left
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMaximumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.LowerRight;
@@ -889,9 +889,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test(expected = IllegalArgumentException.class)
     public void globalGeodeticCrsProfileLowerRightCrsToTileCoordinateEdgeCaseLowerLeftCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMinX(), // expect lower left
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMinY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMinimumX(), // expect lower left
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.LowerRight;
@@ -912,9 +912,9 @@ public class GlobalGeodeticCrsProfileTest {
     @Test
     public void globalGeodeticCrsProfileLowerRightCrsToTileCoordinateEdgeCaseLowerRightCorner() {
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX(), // expect lower right
-                                                            // tile
-                GlobalGeodeticCrsProfile.Bounds.getMinY(), "epsg", 4326);
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX(), // expect lower right
+                // tile
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY(), "epsg", 4326);
 
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final TileOrigin tileOrigin = TileOrigin.LowerRight;
@@ -940,10 +940,10 @@ public class GlobalGeodeticCrsProfileTest {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX()
                         - (1 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMinY()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY()
                         + (2 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -970,10 +970,10 @@ public class GlobalGeodeticCrsProfileTest {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
 
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX()
                         - (3 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMinY()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY()
                         + (4.75 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -999,10 +999,10 @@ public class GlobalGeodeticCrsProfileTest {
     public void globalGeodeticCrsProfileLowerRightOriginCrsToTileCoordinateEdgeCaseBetweenTilesUpAndDown() {
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(9, 7);
         final CrsCoordinate coordinate = new CrsCoordinate(
-                GlobalGeodeticCrsProfile.Bounds.getMaxX()
+                GlobalGeodeticCrsProfile.Bounds.getMaximumX()
                         - (0.5 * (GlobalGeodeticCrsProfile.Bounds.getWidth() / dimensions
                                 .getWidth())),
-                GlobalGeodeticCrsProfile.Bounds.getMinY()
+                GlobalGeodeticCrsProfile.Bounds.getMinimumY()
                         + (4 * (GlobalGeodeticCrsProfile.Bounds.getHeight() / dimensions
                                 .getHeight())), "epsg", 4326);
 
@@ -1430,10 +1430,10 @@ public class GlobalGeodeticCrsProfileTest {
         final int row = 5;
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(15, 19);
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
-        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/3,
-                                                        globalCrs.getBounds().getMinY()/4,
-                                                        globalCrs.getBounds().getMaxX()/2,
-                                                        globalCrs.getBounds().getMaxY());
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinimumX()/3,
+                                                        globalCrs.getBounds().getMinimumY()/4,
+                                                        globalCrs.getBounds().getMaximumX()/2,
+                                                        globalCrs.getBounds().getMaximumY());
 
         final TileOrigin origin = TileOrigin.LowerLeft;
 
@@ -1457,10 +1457,10 @@ public class GlobalGeodeticCrsProfileTest {
         final int row = 5;
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(15, 19);
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
-        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/3,
-                                                        globalCrs.getBounds().getMinY()/4,
-                                                        globalCrs.getBounds().getMaxX()/2,
-                                                        globalCrs.getBounds().getMaxY());
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinimumX()/3,
+                                                        globalCrs.getBounds().getMinimumY()/4,
+                                                        globalCrs.getBounds().getMaximumX()/2,
+                                                        globalCrs.getBounds().getMaximumY());
 
         final TileOrigin origin = TileOrigin.UpperRight;
 
@@ -1484,10 +1484,10 @@ public class GlobalGeodeticCrsProfileTest {
         final int row = 5;
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(17, 5);
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
-        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/6,
-                                                        globalCrs.getBounds().getMinY()/4,
-                                                        globalCrs.getBounds().getMaxX()/5,
-                                                        globalCrs.getBounds().getMaxY());
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinimumX()/6,
+                                                        globalCrs.getBounds().getMinimumY()/4,
+                                                        globalCrs.getBounds().getMaximumX()/5,
+                                                        globalCrs.getBounds().getMaximumY());
 
         final TileOrigin origin = TileOrigin.LowerRight;
 
@@ -1512,10 +1512,10 @@ public class GlobalGeodeticCrsProfileTest {
         final int row = 5;
         final TileMatrixDimensions dimensions = new TileMatrixDimensions(16, 8);
         final GlobalGeodeticCrsProfile globalCrs = new GlobalGeodeticCrsProfile();
-        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinX()/2,
-                                                        globalCrs.getBounds().getMinY()/4,
-                                                        globalCrs.getBounds().getMaxX()/6,
-                                                        globalCrs.getBounds().getMaxY());
+        final BoundingBox boundingBox = new BoundingBox(globalCrs.getBounds().getMinimumX()/2,
+                                                        globalCrs.getBounds().getMinimumY()/4,
+                                                        globalCrs.getBounds().getMaximumX()/6,
+                                                        globalCrs.getBounds().getMaximumY());
 
         final TileOrigin origin = TileOrigin.UpperLeft;
 

@@ -65,19 +65,19 @@ public class BoundsUtilityTest
     public void verifyContainsFalse()
     {
         final Map<Coordinate<Double>, TileOrigin> farEdgeCoordinates = new HashMap<>();
-        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMaxX(), 0.0),                   TileOrigin.LowerLeft);//on right edge
-        farEdgeCoordinates.put(new Coordinate<>(0.0,                   this.bounds.getMaxY()), TileOrigin.LowerLeft);//on top edge
+        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMaximumX(), 0.0), TileOrigin.LowerLeft);//on right edge
+        farEdgeCoordinates.put(new Coordinate<>(0.0,                   this.bounds.getMaximumY()), TileOrigin.LowerLeft);//on top edge
 
-        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMaxX(), 1.0),                   TileOrigin.UpperLeft);//on right edge
-        farEdgeCoordinates.put(new Coordinate<>(1.0,                   this.bounds.getMinY()), TileOrigin.UpperLeft); //on bottom edge
+        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMaximumX(), 1.0), TileOrigin.UpperLeft);//on right edge
+        farEdgeCoordinates.put(new Coordinate<>(1.0,                   this.bounds.getMinimumY()), TileOrigin.UpperLeft); //on bottom edge
 
-        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMinX(), 2.0),                   TileOrigin.LowerRight);//on left edge
-        farEdgeCoordinates.put(new Coordinate<>(2.0,                   this.bounds.getMaxY()), TileOrigin.LowerRight);//on top edge
+        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMinimumX(), 2.0), TileOrigin.LowerRight);//on left edge
+        farEdgeCoordinates.put(new Coordinate<>(2.0,                   this.bounds.getMaximumY()), TileOrigin.LowerRight);//on top edge
 
-        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMinX(), 3.0),                   TileOrigin.UpperRight);//on left edge
-        farEdgeCoordinates.put(new Coordinate<>(3.0,                   this.bounds.getMinY()), TileOrigin.UpperRight);//on bottom edge
+        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMinimumX(), 3.0), TileOrigin.UpperRight);//on left edge
+        farEdgeCoordinates.put(new Coordinate<>(3.0,                   this.bounds.getMinimumY()), TileOrigin.UpperRight);//on bottom edge
 
-        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMaxX() + 1, this.bounds.getMaxY() + 1), TileOrigin.LowerLeft);//just completely outside the bounds
+        farEdgeCoordinates.put(new Coordinate<>(this.bounds.getMaximumX() + 1, this.bounds.getMaximumY() + 1), TileOrigin.LowerLeft);//just completely outside the bounds
 
         for(final Coordinate<Double> expectedCoordinate: farEdgeCoordinates.keySet())
         {

@@ -436,7 +436,9 @@ public class GeoPackageNetworkExtensionTest
                                                 Network.NetworkContentType,
                                                 identifier,
                                                 description,
-                                                box,
+                                                box.getMinimumX(),
+                                                box.getMinimumY(), box.getMaximumX(),
+                                                box.getMaximumY(),
                                                 srs.getIdentifier()));
         }
         finally
@@ -642,7 +644,14 @@ public class GeoPackageNetworkExtensionTest
                                         srs);
             assertTrue("GeoPackageNetworkExtension method addNetwork did not add/return the correct Network",
                        networkExtension.addNetwork("my_second_table", "test, too", "empty", box, srs)
-                                       .equals("my_second_table", Network.NetworkContentType, "test, too", "empty", box, srs.getIdentifier()));
+                                       .equals("my_second_table",
+                                               Network.NetworkContentType,
+                                               "test, too",
+                                               "empty",
+                                               box.getMinimumX(),
+                                               box.getMinimumY(), box.getMaximumX(),
+                                               box.getMaximumY(),
+                                               srs.getIdentifier()));
         }
         finally
         {

@@ -23,18 +23,20 @@
 
 package com.rgi.geopackage.core;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
+
+import java.io.File;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 'Core' subsystem of the {@link GeoPackage} implementation
@@ -47,17 +49,17 @@ public class GeoPackageCore
     /**
      * The Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      */
-    public final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    public static final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     /**
      * The name of the GeoPackage Spatial Reference System Table "gpkg_spatial_ref_sys"
      */
-    public final static String SpatialRefSysTableName = "gpkg_spatial_ref_sys";
+    public static final String SpatialRefSysTableName = "gpkg_spatial_ref_sys";
 
     /**
      * The name of the GeoPackage Contents Table "gpkg_contents"
      */
-    public final static String ContentsTableName = "gpkg_contents";
+    public static final String ContentsTableName = "gpkg_contents";
 
     /**
      * Constructor
@@ -115,17 +117,17 @@ public class GeoPackageCore
     {
         if(tableName == null || tableName.isEmpty())
         {
-            throw new IllegalArgumentException("Tile set name may not be null");
+            throw new IllegalArgumentException("Table name may not be null or empty");
         }
 
         if(!tableName.matches("^[_a-zA-Z]\\w*"))
         {
-            throw new IllegalArgumentException("The tile set's name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
+            throw new IllegalArgumentException("The table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
         }
 
         if(tableName.startsWith("gpkg_"))
         {
-            throw new IllegalArgumentException("The tile set's name may not start with the reserved prefix 'gpkg_'");
+            throw new IllegalArgumentException("The table name may not start with the reserved prefix 'gpkg_'");
         }
     }
 
@@ -344,7 +346,15 @@ public class GeoPackageCore
 
         if(existingContent != null)
         {
-            if(!existingContent.equals(tableName, dataType, identifier, description, boundingBox, spatialReferenceSystem.getIdentifier()))
+            if(!existingContent.equals(tableName,
+                                       dataType,
+                                       identifier,
+                                       description,
+                                       boundingBox.getMinimumX(),
+                                       boundingBox.getMinimumY(),
+                                       boundingBox.getMaximumX(),
+                                       boundingBox.getMaximumY(),
+                                       spatialReferenceSystem.getIdentifier()))
             {
                 throw new IllegalArgumentException("A content entry with this table name or identifier already exists but with different properties");
             }
@@ -373,10 +383,10 @@ public class GeoPackageCore
                                                   preparedStatement.setString(2, dataType);
                                                   preparedStatement.setString(3, identifier);
                                                   preparedStatement.setString(4, description);
-                                                  preparedStatement.setObject(5, boundingBox.getMinX()); // Using setObject because spec allows the bounding box values to be null
-                                                  preparedStatement.setObject(6, boundingBox.getMinY());
-                                                  preparedStatement.setObject(7, boundingBox.getMaxX());
-                                                  preparedStatement.setObject(8, boundingBox.getMaxY());
+                                                  preparedStatement.setObject(5, boundingBox.getMinimumX()); // Using setObject because spec allows the bounding box values to be null
+                                                  preparedStatement.setObject(6, boundingBox.getMinimumY());
+                                                  preparedStatement.setObject(7, boundingBox.getMaximumX());
+                                                  preparedStatement.setObject(8, boundingBox.getMaximumY());
                                                   preparedStatement.setObject(9, srsId);                // Using setObject because the spec allows the srs id be null
                                                 });
 
@@ -425,7 +435,7 @@ public class GeoPackageCore
                                            "srs_id",
                                            GeoPackageCore.ContentsTableName,
                                            spatialReferenceSystem != null ? " AND srs_id = ?"
-                                                                                  : "");
+                                                                          : "");
 
         return JdbcUtility.select(this.databaseConnection,
                                   query,
@@ -436,16 +446,62 @@ public class GeoPackageCore
                                                              preparedStatement.setInt(2, spatialReferenceSystem.getIdentifier());
                                                          }
                                                        },
-                                  resultSet -> contentFactory.create(resultSet.getString(1),                          // table name
-                                                                     resultSet.getString(2),                          // data type
-                                                                     resultSet.getString(3),                          // identifier
-                                                                     resultSet.getString(4),                          // description
-                                                                     resultSet.getString(5),                          // last change
-                                                                     new BoundingBox((Double)resultSet.getObject(6),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                                     (Double)resultSet.getObject(7),  // min y
-                                                                                     (Double)resultSet.getObject(8),  // max x
-                                                                                     (Double)resultSet.getObject(9)), // max y
-                                                                     (Integer)resultSet.getObject(10)));              // srs id
+                                  resultSet -> contentFactory.create(resultSet.getString(1),             // table name
+                                                                     resultSet.getString(2),             // data type
+                                                                     resultSet.getString(3),             // identifier
+                                                                     resultSet.getString(4),             // description
+                                                                     resultSet.getString(5),             // last change
+                                                                     (Double)resultSet.getObject(6),     // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                                                     (Double)resultSet.getObject(7),     // min y
+                                                                     (Double)resultSet.getObject(8),     // max x
+                                                                     (Double)resultSet.getObject(9),     // max y
+                                                                     (Integer)resultSet.getObject(10))); // srs id
+    }
+
+    public List<String> getContentTableNames(final String                 dataType,
+                                             final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
+    {
+        final Collection<String> whereClauses = new LinkedList<>();
+
+        if(dataType != null)
+        {
+            whereClauses.add("data_type = ?");
+        }
+
+        if(spatialReferenceSystem != null)
+        {
+            whereClauses.add("srs_id = ?");
+        }
+
+        final StringBuilder whereClause = new StringBuilder();
+
+        if(!whereClauses.isEmpty())
+        {
+            whereClause.append(" WHERE ");
+            whereClause.append(String.join(" AND ",
+                                           whereClauses));
+        }
+
+        final String query = String.format("SELECT %s FROM %s%s;",
+                                           "table_name",
+                                           GeoPackageCore.ContentsTableName,
+                                           whereClause.toString());
+
+        return JdbcUtility.select(this.databaseConnection,
+                                  query,
+                                  preparedStatement -> { int index = 1;
+
+                                                         if(dataType != null)
+                                                         {
+                                                             preparedStatement.setString(index++, dataType);
+                                                         }
+
+                                                         if(spatialReferenceSystem != null)
+                                                         {
+                                                             preparedStatement.setInt(index++, spatialReferenceSystem.getIdentifier());
+                                                         }
+                                                       },
+                                  resultSet -> resultSet.getString(1)); // table name
     }
 
     /**
@@ -485,16 +541,16 @@ public class GeoPackageCore
         return JdbcUtility.selectOne(this.databaseConnection,
                                      contentQuerySql,
                                      preparedStatement -> preparedStatement.setString(1, tableName),
-                                     resultSet -> contentFactory.create(tableName,                                       // table name
-                                                                        resultSet.getString(1),                          // data type
-                                                                        resultSet.getString(2),                          // identifier
-                                                                        resultSet.getString(3),                          // description
-                                                                        resultSet.getString(4),                          // last change
-                                                                        new BoundingBox((Double)resultSet.getObject(5),  // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
-                                                                                        (Double)resultSet.getObject(6),  // min y
-                                                                                        (Double)resultSet.getObject(7),  // max x
-                                                                                        (Double)resultSet.getObject(8)), // max y
-                                                                        (Integer)resultSet.getObject(9)));               // srs id
+                                     resultSet -> contentFactory.create(tableName,                         // table name
+                                                                        resultSet.getString(1),            // data type
+                                                                        resultSet.getString(2),            // identifier
+                                                                        resultSet.getString(3),            // description
+                                                                        resultSet.getString(4),            // last change
+                                                                        (Double)resultSet.getObject(5),    // min x        // Unfortunately as of Xerial's SQLite JDBC implementation 3.8.7 getObject(int columnIndex, Class<T> type) is unimplemented, so a cast is required
+                                                                        (Double)resultSet.getObject(6),    // min y
+                                                                        (Double)resultSet.getObject(7),    // max x
+                                                                        (Double)resultSet.getObject(8),    // max y
+                                                                        (Integer)resultSet.getObject(9))); // srs id
     }
 
     /**
@@ -604,7 +660,7 @@ public class GeoPackageCore
             // Create the spatial reference system table
             if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageCore.SpatialRefSysTableName))
             {
-                JdbcUtility.update(this.databaseConnection, this.getSpatialReferenceSystemCreationSql());
+                JdbcUtility.update(this.databaseConnection, GeoPackageCore.getSpatialReferenceSystemCreationSql());
             }
 
             // Add the default entries to the spatial reference system table
@@ -635,7 +691,7 @@ public class GeoPackageCore
             {
                 // http://www.geopackage.org/spec/#gpkg_contents_sql
                 // http://www.geopackage.org/spec/#_contents
-                JdbcUtility.update(this.databaseConnection, this.getContentsCreationSql());
+                JdbcUtility.update(this.databaseConnection, GeoPackageCore.getContentsCreationSql());
             }
 
             this.databaseConnection.commit();
@@ -647,12 +703,11 @@ public class GeoPackageCore
         }
     }
 
-    @SuppressWarnings("static-method")
-    protected String getSpatialReferenceSystemCreationSql()
+    protected static String getSpatialReferenceSystemCreationSql()
     {
         // http://www.geopackage.org/spec/#_gpkg_spatial_ref_sys
         // http://www.geopackage.org/spec/#spatial_ref_sys
-        return "CREATE TABLE " + GeoPackageCore.SpatialRefSysTableName + "\n" +
+        return "CREATE TABLE " + GeoPackageCore.SpatialRefSysTableName + '\n' +
                "(srs_name                 TEXT    NOT NULL,             -- Human readable name of this SRS (Spatial Reference System)\n"              +
                " srs_id                   INTEGER NOT NULL PRIMARY KEY, -- Unique identifier for each Spatial Reference System within a GeoPackage\n" +
                " organization             TEXT    NOT NULL,             -- Case-insensitive name of the defining organization e.g. EPSG or epsg\n"    +
@@ -661,12 +716,11 @@ public class GeoPackageCore
                " description              TEXT);                        -- Human readable description of this SRS\n";
     }
 
-    @SuppressWarnings("static-method")
-    protected String getContentsCreationSql()
+    protected static String getContentsCreationSql()
     {
        // http://www.geopackage.org/spec/#gpkg_contents_sql
        // http://www.geopackage.org/spec/#_contents
-       return "CREATE TABLE " + GeoPackageCore.ContentsTableName + "\n" +
+       return "CREATE TABLE " + GeoPackageCore.ContentsTableName + '\n' +
               "(table_name  TEXT     NOT NULL PRIMARY KEY,                                    -- The name of the tiles, or feature table\n"                                  +
               " data_type   TEXT     NOT NULL,                                                -- Type of data stored in the table: \"features\" per clause Features (http://www.geopackage.org/spec/#features), \"tiles\" per clause Tiles (http://www.geopackage.org/spec/#tiles), or an implementer-defined value for other data tables per clause in an Extended GeoPackage\n" +
               " identifier  TEXT     UNIQUE,                                                  -- A human-readable identifier (e.g. short name) for the table_name content\n" +
@@ -690,8 +744,7 @@ public class GeoPackageCore
      */
     private Content getContent(final String tableName) throws SQLException
     {
-        return this.getContent(tableName,
-                               (inTableName, inDataType, inIdentifier, inDescription, inLastChange, inBoundingBox, inSpatialReferenceSystem) -> new Content(inTableName, inDataType, inIdentifier, inDescription, inLastChange, inBoundingBox, inSpatialReferenceSystem));
+        return this.getContent(tableName, Content::new);
     }
 
     private final Connection databaseConnection;

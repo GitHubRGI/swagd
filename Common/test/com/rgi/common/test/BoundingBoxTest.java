@@ -355,10 +355,10 @@ public class BoundingBoxTest
 
     private static boolean isEqual(final BoundingBox bBox1, final double minX, final double minY, final double maxX, final double maxY)
     {
-        return bBox1.getMinX() == minX &&
-               bBox1.getMinY() == minY &&
-               bBox1.getMaxX() == maxX &&
-               bBox1.getMaxY() == maxY;
+        return bBox1.getMinimumX() == minX &&
+               bBox1.getMinimumY() == minY &&
+               bBox1.getMaximumX() == maxX &&
+               bBox1.getMaximumY() == maxY;
     }
 
     private String printErrorMessage(final String methodName, final String expectedValue, final Coordinate<Double> coordinate, final BoundingBox bBox)

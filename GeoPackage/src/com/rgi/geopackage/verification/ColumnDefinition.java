@@ -27,6 +27,7 @@ package com.rgi.geopackage.verification;
  * @author Luke Lambert
  *
  */
+@SuppressWarnings("NegativelyNamedBooleanVariable")
 public class ColumnDefinition
 {
     /**
@@ -41,6 +42,7 @@ public class ColumnDefinition
      * @param defaultValue
      *             String representation for the default value of this column
      */
+    @SuppressWarnings("BooleanParameter")
     public ColumnDefinition(final String sqlType, final boolean notNull, final boolean primaryKey, final boolean unique, final String defaultValue)
     {
         if(sqlType == null)
@@ -58,11 +60,12 @@ public class ColumnDefinition
     @Override
     public boolean equals(final Object object)
     {
-        if(object == null || !(object instanceof ColumnDefinition))
+        if(!(object instanceof ColumnDefinition))
         {
             return false;
         }
-        else if(this == object)
+
+        if(this == object)
         {
             return true;
         }
@@ -95,6 +98,11 @@ public class ColumnDefinition
                              this.defaultValue,
                              this.primaryKey,
                              this.unique);
+    }
+
+    public String getDefaultValue()
+    {
+        return this.defaultValue;
     }
 
     private final String  sqlType;

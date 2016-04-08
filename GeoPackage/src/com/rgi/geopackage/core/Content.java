@@ -23,8 +23,6 @@
 
 package com.rgi.geopackage.core;
 
-import com.rgi.common.BoundingBox;
-
 /**
  * @author Luke Lambert
  *
@@ -33,8 +31,7 @@ public class Content
 {
     /**
      * Constructor
-     *
-     * @param tableName
+     *  @param tableName
      *             The name of the tiles, feature, or extension specific content table
      * @param dataType
      *             Type of data stored in the table: "features" per clause Features, "tiles" per clause Tiles, or an implementer-defined value for other data tables per clause in an Extended GeoPackage.
@@ -43,26 +40,38 @@ public class Content
      * @param description
      *             A human-readable description for the tableName content
      * @param lastChange
-     *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
-     * @param boundingBox
-     *             Bounding box for all content in tableName
+     *             Date value in ISO 8601 format as defined by the {@code strftime} function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
+     * @param minimumX
+     *             Bounding box minimum easting or longitude for all content
+     * @param minimumY
+     *             Bounding box maximum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
+     * @param maximumY
+     *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS)
      */
-    protected Content(final String      tableName,
-                      final String      dataType,
-                      final String      identifier,
-                      final String      description,
-                      final String      lastChange,
-                      final BoundingBox boundingBox,
-                      final Integer     spatialReferenceSystemIdentifier)
+    protected Content(final String tableName,
+                      final String dataType,
+                      final String identifier,
+                      final String description,
+                      final String lastChange,
+                      final Double minimumX,
+                      final Double minimumY,
+                      final Double maximumX,
+                      final Double maximumY,
+                      final Integer spatialReferenceSystemIdentifier)
     {
         this.tableName                        = tableName;
         this.dataType                         = dataType;
         this.identifier                       = identifier;
         this.description                      = description;
         this.lastChange                       = lastChange;
-        this.boundingBox                      = boundingBox;
+        this.minimumX                         = minimumX;
+        this.minimumY                         = minimumY;
+        this.maximumX                         = maximumX;
+        this.maximumY                         = maximumY;
         this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
     }
 
@@ -106,12 +115,24 @@ public class Content
         return this.lastChange;
     }
 
-    /**
-     * @return Bounding box for all content in tableName
-     */
-    public BoundingBox getBoundingBox()
+    public Double getMinimumX()
     {
-        return this.boundingBox;
+        return this.minimumX;
+    }
+
+    public Double getMinimumY()
+    {
+        return this.minimumY;
+    }
+
+    public Double getMaximumX()
+    {
+        return this.maximumX;
+    }
+
+    public Double getMaximumY()
+    {
+        return this.maximumY;
     }
 
     /**
@@ -123,26 +144,44 @@ public class Content
     }
 
     /**
-     * @param inTableName table name
-     * @param inDataType data type
-     * @param inIdentifier the identifier
-     * @param inDescription the description
-     * @param inBoundingBox the bounding box
-     * @param inSpatialReferenceSystemIdentifier the spatial reference system identifier
+     * @param inTableName
+     *             The name of the tiles, feature, or extension specific content table
+     * @param inDataType
+     *             Type of data stored in the table: "features" per clause Features, "tiles" per clause Tiles, or an implementer-defined value for other data tables per clause in an Extended GeoPackage.
+     * @param inIdentifier
+     *             A human-readable identifier (e.g. short name) for the tableName content
+     * @param inDescription
+     *             A human-readable description for the tableName content
+     * @param inMinimumX
+     *             Bounding box minimum easting or longitude for all content
+     * @param inMinimumY
+     *             Bounding box maximum easting or longitude for all content
+     * @param inMaximumX
+     *             Bounding box minimum northing or latitude for all content
+     * @param inMaximumY
+     *             Bounding box maximum northing or latitude for all content
+     * @param inSpatialReferenceSystemIdentifier
+     *             Spatial Reference System (SRS)
      * @return returns true if the Content fields match the table name, data type, identifier, description, bounding box, and the spatial reference system identifier; otherwise returns false;
      */
-    public boolean equals(final String      inTableName,
-                          final String      inDataType,
-                          final String      inIdentifier,
-                          final String      inDescription,
-                          final BoundingBox inBoundingBox,
-                          final Integer     inSpatialReferenceSystemIdentifier)
+    public boolean equals(final String inTableName,
+                          final String inDataType,
+                          final String inIdentifier,
+                          final String inDescription,
+                          final Double inMinimumX,
+                          final Double inMinimumY,
+                          final Double inMaximumX,
+                          final Double inMaximumY,
+                          final Integer inSpatialReferenceSystemIdentifier)
     {
-        return        this.tableName  .equals(inTableName)   &&
-                      this.dataType   .equals(inDataType)    &&
-                      this.boundingBox.equals(inBoundingBox) &&
-               equals(this.identifier, inIdentifier)         &&
-               equals(this.description,inDescription)        &&
+        return this.tableName  .equals(inTableName)    &&
+               this.dataType   .equals(inDataType)     &&
+               equals(this.minimumX,    inMinimumX)    &&
+               equals(this.minimumY,    inMinimumY)    &&
+               equals(this.maximumX,    inMaximumX)    &&
+               equals(this.maximumY,    inMaximumY)    &&
+               equals(this.identifier,  inIdentifier)  &&
+               equals(this.description, inDescription) &&
                equals(this.spatialReferenceSystemIdentifier, inSpatialReferenceSystemIdentifier);
     }
 
@@ -152,11 +191,14 @@ public class Content
                              : first.equals(second);
     }
 
-    private final String      tableName;
-    private final String      dataType;
-    private final String      identifier;
-    private final String      description;
-    private final String      lastChange;
-    private final BoundingBox boundingBox;
-    private final Integer     spatialReferenceSystemIdentifier;
+    private final String  tableName;
+    private final String  dataType;
+    private final String  identifier;
+    private final String  description;
+    private final String  lastChange;
+    private final Double  minimumX;
+    private final Double  minimumY;
+    private final Double  maximumX;
+    private final Double  maximumY;
+    private final Integer spatialReferenceSystemIdentifier;
 }

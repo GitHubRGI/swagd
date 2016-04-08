@@ -1840,8 +1840,8 @@ public class GdalUtilityTest
                                                                                                 dimensions,
                                                                                                 imageData.dataset);
             /* Created Expected GdalRasterParameters */
-            final int readX = (int)((boundingBox.getMinX() - geoTransform[0]) / geoTransform[1] + 0.001);
-            final int readY = (int)((boundingBox.getMaxY() - geoTransform[3]) / geoTransform[5] + 0.001);
+            final int readX = (int)((boundingBox.getMinimumX() - geoTransform[0]) / geoTransform[1] + 0.001);
+            final int readY = (int)((boundingBox.getMaximumY() - geoTransform[3]) / geoTransform[5] + 0.001);
 
             final int readXSize = (int)(boundingBox.getWidth()  /  geoTransform[1] + 0.5);
             final int readYSize = (int)(boundingBox.getHeight() / -geoTransform[5] + 0.5);
@@ -2425,10 +2425,10 @@ public class GdalUtilityTest
     private boolean areBoxesEqual(final BoundingBox b1, final BoundingBox b2)
     {
         final double epsilon = 0.001;
-        return (b1.getMaxX() == b2.getMaxX() || StrictMath.abs(b1.getMaxX() - b2.getMaxX()) < epsilon) &&
-               (b1.getMaxY() == b2.getMaxY() || StrictMath.abs(b1.getMaxY() - b2.getMaxY()) < epsilon) &&
-               (b1.getMinX() == b2.getMinX() || StrictMath.abs(b1.getMinX() - b2.getMinX()) < epsilon) &&
-               (b1.getMinY() == b2.getMinY() || StrictMath.abs(b1.getMinY() - b2.getMinY()) < epsilon);
+        return (b1.getMaximumX() == b2.getMaximumX() || StrictMath.abs(b1.getMaximumX() - b2.getMaximumX()) < epsilon) &&
+               (b1.getMaximumY() == b2.getMaximumY() || StrictMath.abs(b1.getMaximumY() - b2.getMaximumY()) < epsilon) &&
+               (b1.getMinimumX() == b2.getMinimumX() || StrictMath.abs(b1.getMinimumX() - b2.getMinimumX()) < epsilon) &&
+               (b1.getMinimumY() == b2.getMinimumY() || StrictMath.abs(b1.getMinimumY() - b2.getMinimumY()) < epsilon);
     }
 
 }

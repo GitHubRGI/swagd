@@ -146,8 +146,8 @@ public class TmsWriterTest
 
             final BufferedImage img = createImage();
 
-            final CrsCoordinate crsCoordinate = new CrsCoordinate(mercator.getBounds().getMinX(),
-                                                                  mercator.getBounds().getMinY(),
+            final CrsCoordinate crsCoordinate = new CrsCoordinate(mercator.getBounds().getMinimumX(),
+                                                                  mercator.getBounds().getMinimumY(),
                                                                   mercator.getCoordinateReferenceSystem());
 
             tmsWriter.addTile(crsCoordinate,
@@ -512,8 +512,8 @@ public class TmsWriterTest
         final double      crsTileWidth   = bounds.getWidth() /Math.pow(2, zoom);
         final double      crsTileHeight  = bounds.getHeight()/Math.pow(2, zoom);
 
-        final double  xCoord = bounds.getMinX() + (column * crsTileWidth);
-        final double  yCoord = bounds.getMinY() + (row    * crsTileHeight);
+        final double  xCoord = bounds.getMinimumX() + (column * crsTileWidth);
+        final double  yCoord = bounds.getMinimumY() + (row    * crsTileHeight);
 
         return new CrsCoordinate(xCoord, yCoord, crsProfile.getCoordinateReferenceSystem());
     }
@@ -533,14 +533,14 @@ public class TmsWriterTest
     private static void assertBoundingBoxesEqual(final BoundingBox bBoxExpected, final BoundingBox bBoxReturned)
     {
         assertTrue(String.format("The BoundingBox returned is not the boundingBox expected.\nActual min/max x/y: (%f, %f, %f, %f)\nReturned min/max x/y: (%f, %f, %f, %f).",
-                                  bBoxExpected.getMinX(),
-                                  bBoxExpected.getMinY(),
-                                  bBoxExpected.getMaxX(),
-                                  bBoxExpected.getMaxY(),
-                                  bBoxReturned.getMinX(),
-                                  bBoxReturned.getMinY(),
-                                  bBoxReturned.getMaxX(),
-                                  bBoxReturned.getMaxY()),
+                                  bBoxExpected.getMinimumX(),
+                                  bBoxExpected.getMinimumY(),
+                                  bBoxExpected.getMaximumX(),
+                                  bBoxExpected.getMaximumY(),
+                                  bBoxReturned.getMinimumX(),
+                                  bBoxReturned.getMinimumY(),
+                                  bBoxReturned.getMaximumX(),
+                                  bBoxReturned.getMaximumY()),
                  boundingBoxesEqual(bBoxExpected, bBoxReturned));
     }
 

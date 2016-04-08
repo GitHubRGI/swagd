@@ -25,6 +25,7 @@ package com.rgi.geopackage.verification;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -57,9 +58,9 @@ public class UniqueDefinition
      * @return the columnNames the names of the columns that have the SQLite
      *         property of Unique
      */
-    public Set<String> getColumnNames()
+    Set<String> getColumnNames()
     {
-        return this.columnNames;
+        return Collections.unmodifiableSet(this.columnNames);
     }
 
     /**
@@ -75,11 +76,12 @@ public class UniqueDefinition
     @Override
     public boolean equals(final Object object)
     {
-        if(object == null || !(object instanceof UniqueDefinition))
+        if(!(object instanceof UniqueDefinition))
         {
             return false;
         }
-        else if(this == object)
+
+        if(this == object)
         {
             return true;
         }
