@@ -1,0 +1,23 @@
+group = 'GeoPackage'
+description = 'GeoPackage Library'
+
+dependencies
+{
+    compile project(':Common')
+
+    compile 'org.xerial:sqlite-jdbc:3.8.7'
+    compile 'args4j:args4j:2.32'
+}
+
+cobertura
+{
+    coverageExcludes =
+    [ '.*com.rgi.geopackage.extensions.implementation.BadImplementationException*'
+    , '.*com.rgi.geopackage.extensions.implementation.ExtensionImplementation*'
+    , '.*com.rgi.geopackage.extensions.implementation.ImplementsExtension*'
+    , '.*com.rgi.geopackage.extensions.ExtensionsVerifier*'
+    , '.*com.rgi.geopackage.metadata.MetadataVerifier*'
+    , '.*com.rgi.geopackage.schema.SchemaVerifier*'
+    , '.*com.rgi.geopackage.tiles.TilesVerifier*'
+    ]
+}

@@ -30,6 +30,20 @@
         <option value="$PROJECT_DIR$/pom.xml" />
       </list>
     </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/Common/pom.xml" />
+        <option value="$PROJECT_DIR$/DataStore/pom.xml" />
+        <option value="$PROJECT_DIR$/Gdal2Tiles/pom.xml" />
+        <option value="$PROJECT_DIR$/GeoPackage/pom.xml" />
+        <option value="$PROJECT_DIR$/GeoViewer/pom.xml" />
+        <option value="$PROJECT_DIR$/NetworkExtension/pom.xml" />
+        <option value="$PROJECT_DIR$/Packager/pom.xml" />
+        <option value="$PROJECT_DIR$/RGISuite/pom.xml" />
+        <option value="$PROJECT_DIR$/VerifierTool/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+      </set>
+    </option>
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />

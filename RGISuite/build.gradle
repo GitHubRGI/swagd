@@ -1,0 +1,21 @@
+group = 'RGISuite'
+description = 'RGI Main Application'
+
+dependencies
+{
+    compile project(':Gdal2Tiles')
+    compile project(':GeoViewer')
+    compile project(':GeoPackage')
+    compile project(':Common')
+    compile project(':DataStore')
+    compile project(':Packager')
+}
+
+cobertura
+{
+    coverageExcludes =
+    [ '.*com.rgi.suite.*'
+    , '.*utility.PropertiesAction*'
+    , '.*utility.SimpleGridBagConstraints*'
+    ]
+}

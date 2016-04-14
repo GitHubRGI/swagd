@@ -1,0 +1,63 @@
+buildscript
+{
+    repositories
+    {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies
+    {
+        classpath 'net.saliman:gradle-cobertura-plugin:2.3.1'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.3'
+    }
+}
+
+// Coveralls automatic report submission
+apply plugin: "com.github.kt3k.coveralls"
+
+allprojects
+{
+    group = 'com.rgi.TilingApp'
+    version = '0.0.1-SNAPSHOT'
+
+    // Give all projects access to cobertura code coverage plugin
+    apply plugin: 'cobertura'
+    apply plugin: 'java'
+
+    repositories
+    {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    dependencies
+    {
+        // All projects test with JUnit
+        testCompile 'junit:junit:4.+'
+
+        // Cobertura reports will not run without the following
+        testRuntime "org.slf4j:slf4j-log4j12:1.7.5"
+        testRuntime "log4j:log4j:1.2.7"
+    }
+
+    cobertura
+    {
+        coverageIgnoreTrivial = true
+    }
+}
+
+subprojects
+{
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
+
+def files = subprojects.collect{new File(it.projectDir, '/build/cobertura/cobertura.ser')}
+cobertura
+{
+    coverageFormats = ['xml', 'html']
+    coverageSourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
+    coverageMergeDatafiles = files
+}
+test.dependsOn(subprojects.test)
