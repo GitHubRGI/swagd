@@ -39,7 +39,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
 import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
@@ -86,7 +85,7 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
         final private TileSet tileSet;
     }
 
-    private final JList<TileSetAdapter> tileSets;
+    private final JList<GeoPackageTileStoreReaderAdapter.TileSetAdapter> tileSets;
     private final JScrollPane           scrollPane;
     private final JLabel selectCount = new JLabel();
 
@@ -105,13 +104,13 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
     {
         super(file, allowMultipleReaders);
 
-        try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.Fast, OpenMode.Open))
+        try(final GeoPackage gpkg = new GeoPackage(file, VerificationLevel.Fast, GeoPackage.OpenMode.Open))
         {
             this.tileSets = new JList<>(gpkg.tiles()
                                             .getTileSets()
                                             .stream()
-                                            .map(tileSet -> new TileSetAdapter(tileSet))
-                                            .toArray(TileSetAdapter[]::new));
+                                            .map(GeoPackageTileStoreReaderAdapter.TileSetAdapter::new)
+                                            .toArray(GeoPackageTileStoreReaderAdapter.TileSetAdapter[]::new));
 
             this.tileSets.addListSelectionListener(e -> this.selectCount.setText(String.format("%d/%d selected",
                                                                                                this.tileSets.getSelectedValuesList().size(),
@@ -160,7 +159,7 @@ public class GeoPackageTileStoreReaderAdapter extends TileStoreReaderAdapter
     @Override
     public TileStoreReader getTileStoreReader() throws TileStoreException
     {
-        final TileSetAdapter selected = this.tileSets.getSelectedValue();
+        final GeoPackageTileStoreReaderAdapter.TileSetAdapter selected = this.tileSets.getSelectedValue();
 
         if(selected == null)
         {

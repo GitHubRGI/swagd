@@ -23,6 +23,11 @@
 
 package com.rgi.geopackage.verification;
 
+import com.rgi.common.Pair;
+import com.rgi.common.util.jdbc.JdbcUtility;
+import com.rgi.common.util.jdbc.ResultSetStream;
+import org.sqlite.JDBC;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -30,22 +35,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.rgi.common.util.jdbc.JdbcUtility;
-import com.rgi.common.util.jdbc.ResultSetStream;
+import static com.rgi.geopackage.verification.Assert.assertTrue;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * @author Luke Lambert
@@ -73,7 +78,7 @@ public class Verifier
     }
 
     /**
-     * Checks a GeoPackage (via it's {@link java.sql.Connection}) for violations of the requirements outlined in the <a href="http://www.geopackage.org/spec/">standard</a>.
+     * Checks a GeoPackage (via it's {@link Connection}) for violations of the requirements outlined in the <a href="http://www.geopackage.org/spec/">standard</a>.
      *
      * @return Returns the definition for all failed requirements
      */
@@ -93,6 +98,7 @@ public class Verifier
 
                                                        if(cause instanceof AssertionError)
                                                        {
+                                                           @SuppressWarnings("CastToConcreteClass")
                                                            final AssertionError assertionError = (AssertionError)cause;
 
                                                            return assertionError.getSeverity() == Severity.Skipped ? null
@@ -145,32 +151,39 @@ public class Verifier
 
     /**
      * @param table
-     *             Table definition to
+     *             Table definition to verify
      * @throws AssertionError
      * @throws SQLException
      */
     protected void verifyTable(final TableDefinition table) throws AssertionError, SQLException
     {
-        this.verifyTableDefinition(table.getName());
-
-        final Set<UniqueDefinition> uniques = this.getUniques(table.getName());
-
-        this.verifyColumns(table.getName(),
-                           table.getColumns(),
-                           uniques);
-
-        this.verifyForeignKeys(table.getName(), table.getForeignKeys());
-
-        Verifier.verifyGroupUniques(table.getName(),
-                                    table.getGroupUniques(),
-                                    uniques);
+        this.verifyTable(table.getName(),
+                         table.getColumns(),
+                         table.getForeignKeys(),
+                         table.getGroupUniques());
     }
 
-    /**
-     * @param table
-     * @throws SQLException
-     * @throws AssertionError
-     */
+    protected void verifyTable(final String                        tableName,
+                               final Map<String, ColumnDefinition> expectedColumns,
+                               final Set<ForeignKeyDefinition>     expectedForeinKeys,
+                               final Iterable<UniqueDefinition>    expectedGroupUniques) throws AssertionError, SQLException
+    {
+        this.verifyTableDefinition(tableName);
+
+        final Set<UniqueDefinition> uniques = this.getUniques(tableName);
+
+        this.verifyColumns(tableName,
+                           expectedColumns,
+                           uniques);
+
+        this.verifyForeignKeys(tableName,
+                               expectedForeinKeys);
+
+        verifyGroupUniques(tableName,
+                           expectedGroupUniques,
+                           uniques);
+    }
+
     protected void verifyTableDefinition(final String tableName) throws SQLException, AssertionError
     {
         try(final PreparedStatement statement = this.sqliteConnection.prepareStatement("SELECT sql FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND tbl_name = ?;"))
@@ -179,65 +192,55 @@ public class Verifier
             try(ResultSet gpkgContents = statement.executeQuery())
             {
                 final String sql = gpkgContents.getString("sql");
-                Assert.assertTrue(String.format("The `sql` field must include the %s table SQL Definition.",
-                                                tableName),
-                                  sql != null,
-                                  Severity.Error);
+                assertTrue(String.format("The `sql` field must include the %s table SQL Definition.",
+                                         tableName),
+                           sql != null,
+                           Severity.Error);
             }
         }
     }
 
-    /**
-     * @param table
-     * @throws SQLException
-     * @throws AssertionError
-     */
-    protected void verifyColumns(final String tableName, final Map<String, ColumnDefinition> requiredColumns, final Set<UniqueDefinition> uniques) throws SQLException, AssertionError
+    protected void verifyColumns(final String tableName, final Map<String, ColumnDefinition> requiredColumns, final Collection<UniqueDefinition> uniques) throws SQLException, AssertionError
     {
-        try(final Statement statement = this.sqliteConnection.createStatement();
-            final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName)))
+        final Map<String, ColumnDefinition> foundColumns = this.getColumnDefinitions(tableName, uniques);
+
+        final Collection<String> errors = new LinkedList<>();
+
+        // Make sure the required fields exist in the table
+        for(final Map.Entry<String, ColumnDefinition> column : requiredColumns.entrySet())
         {
-            final TreeMap<String, ColumnDefinition> columns = ResultSetStream.getStream(tableInfo)
-                                                                             .map(resultSet -> { try
-                                                                                                 {
-                                                                                                     final String columnName = resultSet.getString("name");
-                                                                                                     return new AbstractMap.SimpleImmutableEntry<>(columnName,
-                                                                                                                                                   new ColumnDefinition(tableInfo.getString ("type"),
-                                                                                                                                                                        tableInfo.getBoolean("notnull"),
-                                                                                                                                                                        tableInfo.getBoolean("pk"),
-                                                                                                                                                                        uniques.stream().anyMatch(unique -> unique.equals(columnName)),
-                                                                                                                                                                        tableInfo.getString ("dflt_value")));   // TODO manipulate values so that they're "normalized" sql expressions, e.g. "" -> '', strftime ( '%Y-%m-%dT%H:%M:%fZ' , 'now' ) -> strftime('%Y-%m-%dT%H:%M:%fZ','now')
-                                                                                                 }
-                                                                                                 catch(final SQLException ex)
-                                                                                                 {
-                                                                                                     ex.printStackTrace();
-                                                                                                     return null;
-                                                                                                 }
-                                                                                               })
-                                                                             .collect(Collectors.toMap(entry  -> entry.getKey(),
-                                                                                                       entry  -> entry.getValue(),
-                                                                                                       (a, b) -> a,
-                                                                                                       ()     -> new TreeMap<>(String.CASE_INSENSITIVE_ORDER)));
-            // Make sure the required fields exist in the table
-            for(final Entry<String, ColumnDefinition> column : requiredColumns.entrySet())
+            if(!foundColumns.containsKey(column.getKey()))
             {
-                Assert.assertTrue(String.format("Required column: %s.%s is missing", tableName, column.getKey()),
-                                  columns.containsKey(column.getKey()),
-                                  Severity.Error);
+                errors.add(String.format("required column: %s.%s is missing", tableName, column.getKey()));
+                continue;
+            }
 
-                final ColumnDefinition columnDefinition = columns.get(column.getKey());
+            final ColumnDefinition columnDefinition = foundColumns.get(column.getKey());
 
-                if(columnDefinition != null)
+            if(columnDefinition != null)
+            {
+                // .equals() for ColumnDefinition skips comparing default
+                // values. It's better to check for functional equivalence
+                // rather than exact string equality. This avoids issues with
+                // difference in white space as well as other trivial
+                // annoyances
+                if(!columnDefinition.equals(column.getValue()) ||
+                   !this.checkExpressionEquivalence(columnDefinition.getDefaultValue(),
+                                                    column.getValue().getDefaultValue()))
                 {
-                    Assert.assertTrue(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
-                                                    column.getKey(),
-                                                    columnDefinition.toString(),
-                                                    column.getValue().toString()),
-                                      columnDefinition.equals(column.getValue()),
-                                      Severity.Error);
+                    errors.add(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
+                                             column.getKey(),
+                                             columnDefinition.toString(),
+                                             column.getValue().toString()));
                 }
             }
         }
+
+        assertTrue(String.format("Table %s doesn't match the expected table definition in the following ways:\n%s",
+                                 tableName,
+                                 String.join("\n", errors)),
+                   errors.isEmpty(),
+                   Severity.Error);
     }
 
     protected void verifyForeignKeys(final String tableName, final Set<ForeignKeyDefinition> requiredForeignKeys) throws AssertionError, SQLException
@@ -285,11 +288,11 @@ public class Verifier
                     }
                 }
 
-                Assert.assertTrue(error.toString(),
+                assertTrue(error.toString(),
                                   error.length() == 0,
                                   Severity.Error);
             }
-            catch(final SQLException ex)
+            catch(final SQLException ignored)
             {
                 // If a table has no foreign keys, executing the query
                 // PRAGMA foreign_key_list(<table_name>) will throw an
@@ -304,13 +307,15 @@ public class Verifier
         }
     }
 
-    protected static void verifyGroupUniques(final String tableName, final Set<UniqueDefinition> requiredGroupUniques, final Set<UniqueDefinition> uniques) throws AssertionError
+    protected static void verifyGroupUniques(final String                       tableName,
+                                             final Iterable<UniqueDefinition>   requiredGroupUniques,
+                                             final Collection<UniqueDefinition> uniques) throws AssertionError
     {
         for(final UniqueDefinition groupUnique : requiredGroupUniques)
         {
-            Assert.assertTrue(String.format("The table %s is missing the column group unique constraint: (%s)",
-                                            tableName,
-                                            String.join(", ", groupUnique.getColumnNames())),
+            assertTrue(String.format("The table %s is missing the column group unique constraint: (%s)",
+                                     tableName,
+                                     String.join(", ", groupUnique.getColumnNames())),
                               uniques.contains(groupUnique),
                               Severity.Error);
         }
@@ -318,41 +323,22 @@ public class Verifier
 
     protected Set<UniqueDefinition> getUniques(final String tableName) throws SQLException
     {
-        try(final Statement statement = this.sqliteConnection.createStatement();
-            final ResultSet indices   = statement.executeQuery(String.format("PRAGMA index_list(%s);", tableName)))
-        {
-            return ResultSetStream.getStream(indices)
-                                  .map(resultSet -> { try
-                                                      {
-                                                          final String indexName = resultSet.getString("name");
-                                                          try(Statement nameStatement = this.sqliteConnection.createStatement();
-                                                              ResultSet namesSet      = nameStatement.executeQuery(String.format("PRAGMA index_info(%s);", indexName));)
-                                                          {
-                                                              return new UniqueDefinition(ResultSetStream.getStream(namesSet)
-                                                                                                         .map(names -> { try
-                                                                                                                         {
-                                                                                                                             return names.getString("name");
-                                                                                                                         }
-                                                                                                                         catch(final Exception ex)
-                                                                                                                         {
-                                                                                                                             ex.printStackTrace();
-                                                                                                                             return null;
-                                                                                                                         }
-                                                                                                                        })
-                                                                                                         .filter(Objects::nonNull)
-                                                                                                         .collect(Collectors.toList()));
-                                                          }
-                                                      }
-                                                      catch(final Exception ex)
-                                                      {
-                                                          ex.printStackTrace();
-                                                          return null;
-                                                      }
-                                                     })
-                                  .filter(Objects::nonNull)
-                                  .collect(Collectors.toSet());
+        final Set<UniqueDefinition> uniqueDefinitions = new HashSet<>();
 
+        final Collection<String> indexNames = JdbcUtility.select(this.sqliteConnection,
+                                                                 String.format("PRAGMA index_list(%s);", tableName),
+                                                                 null,
+                                                                 resultSet -> resultSet.getString("name")); // TODO this will collect primary keys (automatically unique) and group uniques - I don't think we want that
+
+        for(final String indexName : indexNames)
+        {
+            uniqueDefinitions.add(new UniqueDefinition(JdbcUtility.select(this.sqliteConnection,
+                                                                          String.format("PRAGMA index_info(%s);", indexName),
+                                                                          null,
+                                                                          resultSet -> resultSet.getString("name"))));
         }
+
+        return uniqueDefinitions;
     }
 
     /**
@@ -368,7 +354,47 @@ public class Verifier
      */
     protected static List<String> getAllowedSqlTypes()
     {
-        return Verifier.AllowedSqlTypes;
+        return Collections.unmodifiableList(Verifier.AllowedSqlTypes);
+    }
+
+
+    private Map<String, ColumnDefinition> getColumnDefinitions(final String tableName, final Collection<UniqueDefinition> uniques) throws SQLException
+    {
+        return JdbcUtility.select(this.sqliteConnection,
+                                  String.format("PRAGMA table_info(%s);", tableName),
+                                  null,
+                                  resultSet -> { final String columnName = resultSet.getString("name");
+                                                 return Pair.of(columnName,
+                                                                new ColumnDefinition(resultSet.getString ("type"),
+                                                                                     resultSet.getBoolean("notnull"),
+                                                                                     resultSet.getBoolean("pk"),
+                                                                                     uniques.stream().anyMatch(unique -> unique.equals(columnName)),
+                                                                                     resultSet.getString ("dflt_value")));
+                                               })
+                          .stream()
+                          .collect(toMap(Pair::getLeft,
+                                         Pair::getRight));
+    }
+
+    private boolean checkExpressionEquivalence(final String expression1,
+                                               final String expression2) throws SQLException
+    {
+        if((expression1 == null) || (expression2 == null))
+        {
+            return (expression1 == null) && (expression2 == null);
+        }
+
+        try(final Statement statement = this.sqliteConnection.createStatement())
+        {
+            final String query = String.format("SELECT (%s) = (%s);",
+                                               expression1,
+                                               expression2);
+
+            try(final ResultSet results = statement.executeQuery(query))
+            {
+                return results.next() && results.getBoolean(1);
+            }
+        }
     }
 
     private final Connection sqliteConnection;

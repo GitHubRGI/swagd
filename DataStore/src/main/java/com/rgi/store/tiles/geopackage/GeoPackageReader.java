@@ -23,22 +23,6 @@
 
 package com.rgi.store.tiles.geopackage;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
 import com.rgi.common.Range;
@@ -52,11 +36,10 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.util.ImageUtility;
 import com.rgi.geopackage.GeoPackage;
-import com.rgi.geopackage.GeoPackage.OpenMode;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.GeoPackageTiles;
-import com.rgi.geopackage.tiles.GeoPackageTiles.TileCoordinate;
 import com.rgi.geopackage.tiles.Tile;
+import com.rgi.geopackage.tiles.TileCoordinate;
 import com.rgi.geopackage.tiles.TileMatrix;
 import com.rgi.geopackage.tiles.TileMatrixSet;
 import com.rgi.geopackage.tiles.TileSet;
@@ -64,6 +47,22 @@ import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.store.tiles.TileHandle;
 import com.rgi.store.tiles.TileStoreException;
 import com.rgi.store.tiles.TileStoreReader;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Luke Lambert
@@ -114,7 +113,7 @@ public class GeoPackageReader implements TileStoreReader
 
         try
         {
-            this.geoPackage = new GeoPackage(geoPackageFile, verificationLevel, OpenMode.Open);
+            this.geoPackage = new GeoPackage(geoPackageFile, verificationLevel, GeoPackage.OpenMode.Open);
         }
         catch(final Exception ex)
         {
@@ -146,7 +145,7 @@ public class GeoPackageReader implements TileStoreReader
             this.tileMatrices = this.geoPackage.tiles()
                                                 .getTileMatrices(this.tileSet)
                                                 .stream()
-                                                .collect(Collectors.toMap(tileMatrix -> tileMatrix.getZoomLevel(),
+                                                .collect(Collectors.toMap(TileMatrix::getZoomLevel,
                                                                           tileMatrix -> tileMatrix));
 
             this.tileScheme = new TileScheme()
@@ -182,11 +181,11 @@ public class GeoPackageReader implements TileStoreReader
         {
             try
             {
-                this.close();
+                this.geoPackage.close();
             }
             catch(final SQLException ex1)
             {
-                ex1.printStackTrace();
+                throw new TileStoreException(ex1);
             }
             throw new TileStoreException(ex);
         }
@@ -265,11 +264,9 @@ public class GeoPackageReader implements TileStoreReader
                                          this.crsProfile.getPrecision(),
                                          zoomLevel));
         }
-        catch(final IllegalArgumentException ex)
+        catch(final IllegalArgumentException ignored) // This is to catch an IAE if the crsCoordinate requested is outside the bounds of the GeoPackage tiles BoundingBox
         {
-            return null;//this is to catch an IAE if the crsCoordinate
-                        //Requested is outside the bounds of the GeoPackage
-                        //Tiles BoundingBox
+            return null;
         }
         catch(final SQLException ex)
         {
@@ -286,7 +283,7 @@ public class GeoPackageReader implements TileStoreReader
     @Override
     public Set<Integer> getZoomLevels() throws TileStoreException
     {
-        return this.zoomLevels;
+        return Collections.unmodifiableSet(this.zoomLevels);
     }
 
     @Override
@@ -456,7 +453,7 @@ public class GeoPackageReader implements TileStoreReader
                         }
 
                         @Override
-                        public TileMatrixDimensions getMatrix() throws TileStoreException
+                        public TileMatrixDimensions getMatrix()
                         {
                             return matrix;
                         }

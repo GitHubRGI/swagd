@@ -73,7 +73,7 @@ public class GeoPackage implements AutoCloseable
      */
     public GeoPackage(final File file) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        this(file, VerificationLevel.Fast, OpenMode.OpenOrCreate);
+        this(file, VerificationLevel.Fast, GeoPackage.OpenMode.OpenOrCreate);
     }
 
     /**
@@ -102,7 +102,7 @@ public class GeoPackage implements AutoCloseable
      */
     public GeoPackage(final File file, final VerificationLevel verificationLevel) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
-        this(file, verificationLevel, OpenMode.OpenOrCreate);
+        this(file, verificationLevel, GeoPackage.OpenMode.OpenOrCreate);
     }
 
     /**
@@ -123,7 +123,7 @@ public class GeoPackage implements AutoCloseable
      * @throws SQLException
      *          in various cases where interaction with the JDBC connection fails
      */
-    public GeoPackage(final File file, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public GeoPackage(final File file, final GeoPackage.OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         this(file, VerificationLevel.Fast, openMode);
     }
@@ -162,7 +162,7 @@ public class GeoPackage implements AutoCloseable
      *             in various cases where interaction with the JDBC connection
      *             fails
      */
-    public GeoPackage(final File file, final VerificationLevel verificationLevel, final OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
+    public GeoPackage(final File file, final VerificationLevel verificationLevel, final GeoPackage.OpenMode openMode) throws ClassNotFoundException, ConformanceException, IOException, SQLException
     {
         if(file == null)
         {
@@ -181,12 +181,12 @@ public class GeoPackage implements AutoCloseable
 
         final boolean isNewFile = !file.exists();
 
-        if(openMode == OpenMode.Create && !isNewFile)
+        if(openMode == GeoPackage.OpenMode.Create && !isNewFile)
         {
             throw new FileAlreadyExistsException(file.getAbsolutePath());
         }
 
-        if(openMode == OpenMode.Open && isNewFile)
+        if(openMode == GeoPackage.OpenMode.Open && isNewFile)
         {
            throw new FileNotFoundException(String.format("%s does not exist", file.getAbsolutePath()));
         }
@@ -291,8 +291,8 @@ public class GeoPackage implements AutoCloseable
     @Override
     public void close() throws SQLException
     {
-        if(this.databaseConnection            != null &&
-           this.databaseConnection.isClosed() == false)
+        if(this.databaseConnection != null &&
+           !this.databaseConnection.isClosed())
         {
             this.databaseConnection.rollback(); // When Connection.close() is called, pending transactions are either automatically committed or rolled back depending on implementation defined behavior.  Make the call explicitly to avoid relying on implementation defined behavior.
             this.databaseConnection.close();
@@ -326,7 +326,7 @@ public class GeoPackage implements AutoCloseable
      */
     public Collection<VerificationIssue> getVerificationIssues(final boolean continueAfterCoreErrors) throws SQLException
     {
-        final List<VerificationIssue> verificationIssues = new ArrayList<>();
+        final Collection<VerificationIssue> verificationIssues = new ArrayList<>();
 
         verificationIssues.addAll(this.core.getVerificationIssues(this.file, this.verificationLevel));
 
@@ -357,11 +357,12 @@ public class GeoPackage implements AutoCloseable
 
         //System.out.println(String.format("GeoPackage took %.2f seconds to verify.", (System.nanoTime() - startTime)/1.0e9));
 
-        if(verificationIssues.size() > 0)
+        if(!verificationIssues.isEmpty())
         {
             final ConformanceException conformanceException = new ConformanceException(verificationIssues);
 
-            System.out.println(conformanceException.toString());
+            //noinspection ThrowablePrintedToSystemOut
+            System.out.println(conformanceException);
 
             if(verificationIssues.stream().anyMatch(verificationIssue -> verificationIssue.getSeverity() == Severity.Error))
             {
@@ -413,7 +414,7 @@ public class GeoPackage implements AutoCloseable
     /**
      * Access to GeoPackage's "extensions" functionality
      *
-     * @return returns a handle to a GeoPackageExetensions object
+     * @return returns a handle to a GeoPackageExtensions object
      */
     public GeoPackageExtensions extensions()
     {
@@ -465,5 +466,5 @@ public class GeoPackage implements AutoCloseable
     private final GeoPackageMetadata   metadata;
     private final GeoPackageExtensions extensions;
 
-    private final static byte[] GeoPackageSqliteApplicationId = new byte[] {'G', 'P', '1', '0' };
+    private static final byte[] GeoPackageSqliteApplicationId = {(byte) 'G', (byte) 'P', (byte) '1', (byte) '0'};
 }

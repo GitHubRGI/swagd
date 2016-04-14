@@ -108,7 +108,7 @@ public class EllipsoidalMercatorCrsProfileTest
     public void tileToCrsCoordinateBackToTileCoordinate3()
     {
         final TileMatrixDimensions matrixDimensions = new TileMatrixDimensions(19, 76);
-        final BoundingBox bounds = new BoundingBox(this.ellipsoidalCrs.getBounds().getMinX()/2, this.ellipsoidalCrs.getBounds().getMinY()/3, this.ellipsoidalCrs.getBounds().getMaxX()/4, this.ellipsoidalCrs.getBounds().getMaxY()/5);
+        final BoundingBox bounds = new BoundingBox(this.ellipsoidalCrs.getBounds().getMinimumX()/2, this.ellipsoidalCrs.getBounds().getMinimumY()/3, this.ellipsoidalCrs.getBounds().getMaximumX()/4, this.ellipsoidalCrs.getBounds().getMaximumY()/5);
 
         final List<TileOrigin> originList = Arrays.asList(TileOrigin.LowerLeft, TileOrigin.LowerRight,TileOrigin.UpperLeft, TileOrigin.UpperRight);
 

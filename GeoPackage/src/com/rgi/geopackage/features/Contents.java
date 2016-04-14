@@ -21,17 +21,23 @@
  * SOFTWARE.
  */
 
-package tilecluster;
+package com.rgi.geopackage.features;
 
-@SuppressWarnings("javadoc")
-public class TileClusterTest
+/**
+ * It's considered bad practice to have boolean parameters. This enumeration
+ * will act as a flag to indicate whether or not a GeoPackageGeometry is empty.
+ *
+ * @author Luke Lambert
+ */
+public enum Contents
 {
-    // TODO fix these tests
-//    @Test
-//    public void testClusterCreation() throws TileStoreException {
-//        CrsProfile profile = new SphericalMercatorCrsProfile(256, 256);
-//        Path homeFolder = FileSystems.getDefault().getPath("/data/clusters/");
-//        TileCluster tc = new TileCluster(profile, TileOrigin.LowerLeft, TileMimeType.PNG, homeFolder);
-//        System.out.println("foo");
-//    }
+    /**
+     * This indicates a non-empty GeoPackage geometry
+     */
+    NotEmpty,
+
+    /**
+     * This indicates an empty GeoPackage geometry
+     */
+    Empty
 }

@@ -23,8 +23,11 @@
 
 package com.rgi.geopackage.features;
 
-import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.core.Content;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Luke Lambert
@@ -44,29 +47,68 @@ public class FeatureSet extends Content
      *             A human-readable description for the tableName content
      * @param lastChange
      *             Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
-     * @param boundingBox
-     *             Bounding box for all content in tableName
+     * @param minimumX
+     *             Bounding box minimum easting or longitude for all content
+     * @param minimumY
+     *             Bounding box maximum easting or longitude for all content
+     * @param maximumX
+     *             Bounding box minimum northing or latitude for all content
+     * @param maximumY
+     *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS)
      */
-    protected FeatureSet(final String      tableName,
-                         final String      identifier,
-                         final String      description,
-                         final String      lastChange,
-                         final BoundingBox boundingBox,
-                         final int         spatialReferenceSystemIdentifier)
+    protected FeatureSet(final String             tableName,
+                         final String             identifier,
+                         final String             description,
+                         final String             lastChange,
+                         final Double             minimumX,
+                         final Double             minimumY,
+                         final Double             maximumX,
+                         final Double             maximumY,
+                         final int                spatialReferenceSystemIdentifier,
+                         final String             primaryKeyColumnName,
+                         final String             geometryColumnName,
+                         final Collection<String> attributeColumnNames)
     {
         super(tableName,
               FeatureSet.FeatureContentType,
               identifier,
               description,
               lastChange,
-              boundingBox,
+              minimumX,
+              minimumY,
+              maximumX,
+              maximumY,
               spatialReferenceSystemIdentifier);
+
+        this.primaryKeyColumnName = primaryKeyColumnName;
+        this.geometryColumnName   = geometryColumnName;
+        this.attributeColumnNames = new ArrayList<>(attributeColumnNames);
+    }
+
+    public String getPrimaryKeyColumnName()
+    {
+        return this.primaryKeyColumnName;
+    }
+
+    public String getGeometryColumnName()
+    {
+        return this.geometryColumnName;
+    }
+
+    public Collection<String> getAttributeColumnNames()
+    {
+        return Collections.unmodifiableCollection(this.attributeColumnNames);
     }
 
     /**
      * The data type "features"
      */
-    public final static String FeatureContentType = "features";
+    public static final String FeatureContentType = "features";
+
+    private final String             primaryKeyColumnName;
+    private final String             geometryColumnName;
+    private final Collection<String> attributeColumnNames;
+
 }

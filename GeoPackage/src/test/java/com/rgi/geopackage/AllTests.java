@@ -22,21 +22,21 @@
  */
 
 package com.rgi.geopackage;
+
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * @author Jenifer Cochran
  *
  */
 @RunWith(Suite.class)
-@SuiteClasses({GeoPackageTilesAPITest.class,
-               GeoPackageCoreAPITest.class,
-               DatabaseUtilityTest.class,
-               GeoPackageExtensionsAPITest.class,
-               GeoPackageMetadataAPITest.class,
-               GeoPackageSchemaAPITest.class})
+@Suite.SuiteClasses({GeoPackageTilesAPITest.class,
+                     GeoPackageCoreAPITest.class,
+                     DatabaseUtilityTest.class,
+                     GeoPackageExtensionsAPITest.class,
+                     GeoPackageMetadataAPITest.class,
+                     GeoPackageSchemaAPITest.class})
 public class AllTests
 {
     // This will run all the tests created

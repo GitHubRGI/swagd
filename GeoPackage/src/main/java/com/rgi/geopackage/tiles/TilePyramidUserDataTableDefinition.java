@@ -23,6 +23,11 @@
 
 package com.rgi.geopackage.tiles;
 
+import com.rgi.geopackage.verification.ColumnDefinition;
+import com.rgi.geopackage.verification.ForeignKeyDefinition;
+import com.rgi.geopackage.verification.TableDefinition;
+import com.rgi.geopackage.verification.UniqueDefinition;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,30 +35,25 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.rgi.geopackage.verification.ColumnDefinition;
-import com.rgi.geopackage.verification.ForeignKeyDefinition;
-import com.rgi.geopackage.verification.TableDefinition;
-import com.rgi.geopackage.verification.UniqueDefinition;
-
 /**
  * @author Jenifer Cochran
  *
  */
 public class TilePyramidUserDataTableDefinition extends TableDefinition
 {
-    private final static Map<String, ColumnDefinition> Columns;
-    private final static Set<ForeignKeyDefinition>     ForeignKeys;
-    private final static Set<UniqueDefinition>         UniqueColumnGroups;
+    private static final Map<String, ColumnDefinition> Columns;
+    private static final Set<ForeignKeyDefinition>     ForeignKeys;
+    private static final Set<UniqueDefinition>         UniqueColumnGroups;
 
     static
     {
         Columns = new HashMap<>();
 
-        Columns.put("id",           new ColumnDefinition("INTEGER", false, true,  true, null));
-        Columns.put("zoom_level",   new ColumnDefinition("INTEGER", true, false, false, null));
-        Columns.put("tile_column",  new ColumnDefinition("INTEGER", true, false, false, null));
-        Columns.put("tile_row",     new ColumnDefinition("INTEGER", true, false, false, null));
-        Columns.put("tile_data",    new ColumnDefinition("BLOB",    true, false, false, null));
+        Columns.put("id",          new ColumnDefinition("INTEGER", false, true,  true,  null));
+        Columns.put("zoom_level",  new ColumnDefinition("INTEGER", true,  false, false, null));
+        Columns.put("tile_column", new ColumnDefinition("INTEGER", true,  false, false, null));
+        Columns.put("tile_row",    new ColumnDefinition("INTEGER", true,  false, false, null));
+        Columns.put("tile_data",   new ColumnDefinition("BLOB",    true,  false, false, null));
 
         ForeignKeys = Collections.emptySet();
         UniqueColumnGroups =  new HashSet<>(Arrays.asList(new UniqueDefinition("zoom_level", "tile_column", "tile_row")));
