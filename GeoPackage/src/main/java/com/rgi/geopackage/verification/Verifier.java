@@ -25,7 +25,6 @@ package com.rgi.geopackage.verification;
 
 import com.rgi.common.Pair;
 import com.rgi.common.util.jdbc.JdbcUtility;
-import com.rgi.common.util.jdbc.ResultSetStream;
 import org.sqlite.JDBC;
 
 import java.lang.reflect.InvocationTargetException;
@@ -40,7 +39,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

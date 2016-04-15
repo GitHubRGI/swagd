@@ -111,7 +111,7 @@ public final class GeoSuite
         final JPanel     navPanel     = new JPanel(new CardLayout());
         final JFrame     suiteWindow  = new JFrame();
         final Properties props        = new Properties();
-        try(InputStream inputStream = this.getClass().getResourceAsStream("geosuite.properties"))
+        try(InputStream inputStream = ClassLoader.getSystemResourceAsStream("geosuite.properties"))
         {
             props.load(inputStream);
         }

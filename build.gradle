@@ -1,27 +1,16 @@
-buildscript
+plugins
 {
-    repositories
-    {
-        mavenLocal()
-        mavenCentral()
-    }
-
-    dependencies
-    {
-        classpath 'net.saliman:gradle-cobertura-plugin:2.3.1'
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.6.3'
-    }
+    // Code coverage reports plugin
+    id 'net.saliman.cobertura' version '2.3.1'
+    // Code coverage report submission to Coveralls service
+    id 'com.github.kt3k.coveralls' version '2.6.3'
 }
-
-// Coveralls automatic report submission
-apply plugin: "com.github.kt3k.coveralls"
 
 allprojects
 {
     group = 'com.rgi.TilingApp'
     version = '0.0.1-SNAPSHOT'
 
-    // Give all projects access to cobertura code coverage plugin
     apply plugin: 'cobertura'
     apply plugin: 'java'
 
