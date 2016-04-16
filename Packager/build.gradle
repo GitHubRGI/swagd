@@ -1,0 +1,14 @@
+group = 'Packager'
+description = 'Packager Workflow Project'
+
+dependencies
+{
+    compile project(':Common')
+    compile project(':DataStore')
+    compile project(':GeoPackage')
+}
+
+cobertura
+{
+    coverageExcludes = ['.*com.rgi.packager.Packager*']
+}

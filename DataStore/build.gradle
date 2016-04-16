@@ -1,0 +1,15 @@
+group = 'DataStore'
+description = 'Data Store Library'
+
+dependencies
+{
+    compile project(':Common')
+    compile project(':GeoPackage')
+
+    testCompile 'com.mockrunner:mockrunner-jdbc:1.0.5'
+}
+
+cobertura
+{
+    coverageExcludes = ['.*com.rgi.store.tiles.TileStoreException*']
+}

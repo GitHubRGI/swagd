@@ -17,17 +17,17 @@
           </Directory>
         </Directory>
       </Directory>
-      
+
       <!-- List components that go in or reference in the installdir, eg C:\Program Files\swagd, which is the default defined above.
             these include path shortcuts-->
       <Property Id="INSTALLDIR" Secure="yes" />
       <Property Id="WITHDEPS" Secure="yes" />
-      
+
       <!-- swagd components -->
       <DirectoryRef Id="INSTALLDIR">
-        <Component Id="swagd.exe" DiskId="1" Guid="eed0a7a6-d443-4835-8d4f-42d57875b07a" Win64='yes'>
-          <File Id="SWAGDEXE" Name="swagd.exe" Source="..\RGISuite\target\swagd.exe" KeyPath="yes" ProcessorArchitecture ="x64">
-            <Shortcut Id="ApplicationStartMenuShortcut" Name="SWAGD" Description="SoftWare that Aggregates Geospatial Data" WorkingDirectory="INSTALLDIR" Icon="swagd.exe" Directory="ProgramMenuDir" IconIndex="0" Advertise="yes" />
+        <Component Id="SWAGD.exe" DiskId="1" Guid="eed0a7a6-d443-4835-8d4f-42d57875b07a" Win64='yes'>
+            <File Id="SWAGDEXE" Name="SWAGD.exe" Source="..\RGISuite\build/launch4j\SWAGD.exe" KeyPath="yes" ProcessorArchitecture ="x64">
+            <Shortcut Id="ApplicationStartMenuShortcut" Name="SWAGD" Description="SoftWare that Aggregates Geospatial Data" WorkingDirectory="INSTALLDIR" Icon="SWAGD.exe" Directory="ProgramMenuDir" IconIndex="0" Advertise="yes" />
           </File>
         </Component>
         <Component Id="license" DiskId="1" KeyPath="yes" Guid="fee5774b-08a4-41b9-9e86-8b4fcb372dd5" Win64='yes'>
@@ -39,7 +39,7 @@
         <Component Id="settings" DiskId="1" KeyPath="yes" Guid="E7C4DB1B-E7AC-4006-9733-81C677D2D521" Win64='yes'>
           <File Id="settings" Name="settings.txt" Source=".\Resources\settings.txt" ProcessorArchitecture ="x64"/>
         </Component>
-        
+
         <!-- set path variables-->
         <Component Id="gdalDataPath" Guid="EF67942F-D3D9-492B-824D-CCE63B10B805" Win64="yes">
           <Condition><![CDATA[WITHDEPS <> "0"]]></Condition>
@@ -84,7 +84,7 @@
           <File Id="OSRJNI.DLL" Name="osrjni.dll" Source="..\RGISuite\lib\osrjni.dll" ProcessorArchitecture ="x64"/>
         </Component>
       </DirectoryRef>
-      
+
       <!-- start menu shortcut component   -->
       <DirectoryRef Id="ProgramMenuDir">
         <Component Id="ProgramMenuDir" Guid="E476217A-888D-48BC-ADEC-D32EA0F108D3" Win64='yes'>
@@ -92,7 +92,7 @@
           <RegistryValue Root="HKCU" Key="Software\RGI\Swagd" Type="integer" Value="1" Name="Installed" KeyPath="yes" />
         </Component>
       </DirectoryRef>
-      
+
       <!-- Feature Info: lists what components will be installed. -->
       <Feature Id="DefaultFeature" Title="Main Feature" Level="1">
         <ComponentRef Id="gdal.jar" />
@@ -101,7 +101,7 @@
         <ComponentRef Id="gdaljni.dll" />
         <ComponentRef Id="ogrjni.dll" />
         <ComponentRef Id="osrjni.dll" />
-        <ComponentRef Id="swagd.exe" />
+        <ComponentRef Id="SWAGD.exe" />
         <ComponentRef Id="license" />
         <ComponentRef Id="swagdShared.jar" />
         <ComponentRef Id="ProgramMenuDir" />
@@ -111,7 +111,7 @@
         <ComponentRef Id="settings" />
         <ComponentRef Id="gdalDataPath"/>
       </Feature>
-      <Icon Id="swagd.exe" SourceFile="..\RGISuite\target\swagd.exe" />
+      <Icon Id="SWAGD.exe" SourceFile="..\RGISuite\build\launch4j\SWAGD.exe" />
     </Product>
 
 </Wix>

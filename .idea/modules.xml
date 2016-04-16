@@ -2,17 +2,36 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Common/Common.iml" filepath="$PROJECT_DIR$/Common/Common.iml" />
-      <module fileurl="file://$PROJECT_DIR$/DataStore/DataStore.iml" filepath="$PROJECT_DIR$/DataStore/DataStore.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Gdal2Tiles/Gdal2Tiles.iml" filepath="$PROJECT_DIR$/Gdal2Tiles/Gdal2Tiles.iml" />
-      <module fileurl="file://$PROJECT_DIR$/GeoPackage/GeoPackage.iml" filepath="$PROJECT_DIR$/GeoPackage/GeoPackage.iml" />
-      <module fileurl="file://$PROJECT_DIR$/GeoViewer/GeoViewer.iml" filepath="$PROJECT_DIR$/GeoViewer/GeoViewer.iml" />
-      <module fileurl="file://$PROJECT_DIR$/NetworkExtension/NetworkExtension.iml" filepath="$PROJECT_DIR$/NetworkExtension/NetworkExtension.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Packager/Packager.iml" filepath="$PROJECT_DIR$/Packager/Packager.iml" />
-      <module fileurl="file://$PROJECT_DIR$/RGISuite/RGISuite.iml" filepath="$PROJECT_DIR$/RGISuite/RGISuite.iml" />
-      <module fileurl="file://$PROJECT_DIR$/RoutingExtension/RoutingExtension.iml" filepath="$PROJECT_DIR$/RoutingExtension/RoutingExtension.iml" />
-      <module fileurl="file://$PROJECT_DIR$/SWAGD.iml" filepath="$PROJECT_DIR$/SWAGD.iml" />
-      <module fileurl="file://$PROJECT_DIR$/VerifierTool/VerifierTool.iml" filepath="$PROJECT_DIR$/VerifierTool/VerifierTool.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Common/Common.iml" filepath="$PROJECT_DIR$/.idea/modules/Common/Common.iml" group="Common" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Common/Common_main.iml" filepath="$PROJECT_DIR$/.idea/modules/Common/Common_main.iml" group="Common" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Common/Common_test.iml" filepath="$PROJECT_DIR$/.idea/modules/Common/Common_test.iml" group="Common" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DataStore/DataStore.iml" filepath="$PROJECT_DIR$/.idea/modules/DataStore/DataStore.iml" group="DataStore" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DataStore/DataStore_main.iml" filepath="$PROJECT_DIR$/.idea/modules/DataStore/DataStore_main.iml" group="DataStore" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DataStore/DataStore_test.iml" filepath="$PROJECT_DIR$/.idea/modules/DataStore/DataStore_test.iml" group="DataStore" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Gdal2Tiles/Gdal2Tiles.iml" filepath="$PROJECT_DIR$/.idea/modules/Gdal2Tiles/Gdal2Tiles.iml" group="Gdal2Tiles" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Gdal2Tiles/Gdal2Tiles_main.iml" filepath="$PROJECT_DIR$/.idea/modules/Gdal2Tiles/Gdal2Tiles_main.iml" group="Gdal2Tiles" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Gdal2Tiles/Gdal2Tiles_test.iml" filepath="$PROJECT_DIR$/.idea/modules/Gdal2Tiles/Gdal2Tiles_test.iml" group="Gdal2Tiles" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GeoPackage/GeoPackage.iml" filepath="$PROJECT_DIR$/.idea/modules/GeoPackage/GeoPackage.iml" group="GeoPackage" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GeoPackage/GeoPackage_main.iml" filepath="$PROJECT_DIR$/.idea/modules/GeoPackage/GeoPackage_main.iml" group="GeoPackage" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GeoPackage/GeoPackage_test.iml" filepath="$PROJECT_DIR$/.idea/modules/GeoPackage/GeoPackage_test.iml" group="GeoPackage" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GeoViewer/GeoViewer.iml" filepath="$PROJECT_DIR$/.idea/modules/GeoViewer/GeoViewer.iml" group="GeoViewer" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GeoViewer/GeoViewer_main.iml" filepath="$PROJECT_DIR$/.idea/modules/GeoViewer/GeoViewer_main.iml" group="GeoViewer" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GeoViewer/GeoViewer_test.iml" filepath="$PROJECT_DIR$/.idea/modules/GeoViewer/GeoViewer_test.iml" group="GeoViewer" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NetworkExtension/NetworkExtension.iml" filepath="$PROJECT_DIR$/.idea/modules/NetworkExtension/NetworkExtension.iml" group="NetworkExtension" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NetworkExtension/NetworkExtension_main.iml" filepath="$PROJECT_DIR$/.idea/modules/NetworkExtension/NetworkExtension_main.iml" group="NetworkExtension" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NetworkExtension/NetworkExtension_test.iml" filepath="$PROJECT_DIR$/.idea/modules/NetworkExtension/NetworkExtension_test.iml" group="NetworkExtension" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Packager/Packager.iml" filepath="$PROJECT_DIR$/.idea/modules/Packager/Packager.iml" group="Packager" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Packager/Packager_main.iml" filepath="$PROJECT_DIR$/.idea/modules/Packager/Packager_main.iml" group="Packager" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Packager/Packager_test.iml" filepath="$PROJECT_DIR$/.idea/modules/Packager/Packager_test.iml" group="Packager" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RGISuite/RGISuite.iml" filepath="$PROJECT_DIR$/.idea/modules/RGISuite/RGISuite.iml" group="RGISuite" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RGISuite/RGISuite_main.iml" filepath="$PROJECT_DIR$/.idea/modules/RGISuite/RGISuite_main.iml" group="RGISuite" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RGISuite/RGISuite_test.iml" filepath="$PROJECT_DIR$/.idea/modules/RGISuite/RGISuite_test.iml" group="RGISuite" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD_main.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD_main.iml" group="SWAGD" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD_test.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD_test.iml" group="SWAGD" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool.iml" filepath="$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool.iml" group="VerifierTool" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool_main.iml" filepath="$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool_main.iml" group="VerifierTool" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool_test.iml" filepath="$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool_test.iml" group="VerifierTool" />
     </modules>
   </component>
 </project>
