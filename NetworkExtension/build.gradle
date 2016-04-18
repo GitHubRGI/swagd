@@ -1,0 +1,12 @@
+group = 'NetworkExtension'
+description = 'Network Extension Library'
+
+dependencies
+{
+    compile project(':Common')
+    compile project(':GeoPackage')
+
+    compile 'org.xerial:sqlite-jdbc:3.8.7'
+
+    testCompile 'com.mockrunner:mockrunner-jdbc:1.0.5'
+}

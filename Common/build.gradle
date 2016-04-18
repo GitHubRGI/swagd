@@ -1,0 +1,15 @@
+group = 'Common'
+description = 'Common Library'
+
+dependencies
+{
+    compile 'org.xerial:sqlite-jdbc:3.8.7'
+
+    testCompile 'com.mockrunner:mockrunner-jdbc:1.0.5'
+}
+
+cobertura
+{
+    // Ignore functional interfaces
+    coverageExcludes = ['.*com.rgi.common.util.functional.*']
+}

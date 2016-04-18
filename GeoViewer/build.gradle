@@ -1,0 +1,17 @@
+group = 'GeoViewer'
+description = 'GeoViewer Library'
+
+dependencies
+{
+    compile project(':Common')
+    compile project(':DataStore')
+    compile project(':GeoPackage')
+
+    compile fileTree(dir: 'lib', include: ['*.jar'])
+}
+
+cobertura
+{
+    // Ignore JMapViewer jar
+    coverageExcludes = ['.*org.openstreetmap.*']
+}
