@@ -160,6 +160,18 @@ public abstract class AbstractColumnDefinition
         return this.comment;
     }
 
+    /**
+     * Validates that a string is a well formed SQLite column name. Column
+     * names must begin with an ASCII letter or underscore, and may only be
+     * followed by ASCII letters, underscores, or numbers. This method forbids
+     * using quoted names which are technically legal, but strongly
+     * discouraged.
+     *
+     * @param columnName
+     *             Name of column
+     * @throws IllegalArgumentException
+     *             If the column name does not conform to the requirements
+     */
     public static void validateColumnName(final String columnName)
     {
         if(columnName == null || columnName.isEmpty())
