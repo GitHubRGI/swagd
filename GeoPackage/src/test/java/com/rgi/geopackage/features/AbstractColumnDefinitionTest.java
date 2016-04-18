@@ -21,11 +21,8 @@
  * SOFTWARE.
  */
 
-package com.rgi.test.geopackage.features;
+package com.rgi.geopackage.features;
 
-import com.rgi.geopackage.features.AbstractColumnDefinition;
-import com.rgi.geopackage.features.ColumnDefault;
-import com.rgi.geopackage.features.ColumnFlag;
 import org.junit.Test;
 
 import java.util.EnumSet;
