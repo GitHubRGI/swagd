@@ -40,8 +40,10 @@ import java.nio.ByteOrder;
 public class BinaryHeader
 {
     /**
+     * Constructor
      *
      * @param bytes
+     *             Bytes that should comprise the GeoPackage Binary Header
      */
     protected BinaryHeader(final byte[] bytes)
     {
@@ -66,7 +68,7 @@ public class BinaryHeader
 
         // read flags
         this.binaryType = BinaryType.type(bytes[3]);
-        this.emptyGeometry = ((bytes[3] << 4) & 1) == 1;
+        this.contents = (bytes[3] & Contents.Empty.getBitMask()) > 0 ? Contents.Empty : Contents.NotEmpty;  // TODO add a 'from bitmask' method in Contents?
 
         this.byteOrder  = ((this.flags & 1) == 0) ? ByteOrder.BIG_ENDIAN
                                                   : ByteOrder.LITTLE_ENDIAN;
@@ -94,6 +96,27 @@ public class BinaryHeader
 
     }
 
+    /**
+     * Constructor
+     *
+     * @param version
+     *             8-bit unsigned integer, 0 = version 1
+     * @param binaryType
+     *             Standard or Extended
+     * @param contents
+     *             Whether or not the geometry is "empty"
+     * @param byteOrder
+     *             Order of the header's bytes
+     * @param spatialReferenceSystemIdentifier
+     *             Spatial reference system identifier for the geometry. Should
+     *             match the identifier in the contents table.
+     * @param envelopeContentsIndicator
+     *             Indicator of the envelop's contents (empty, not empty, and
+     *             dimensionality)
+     * @param envelope
+     *             Geometry envelope. Size depends on the envelope contents
+     *             indicator. Elements are listed min, max, and xyzm order.
+     */
     protected BinaryHeader(final byte                      version,
                            final BinaryType                binaryType,
                            final Contents                  contents,
@@ -134,20 +157,21 @@ public class BinaryHeader
 
         this.version                          = version;
         this.binaryType                       = binaryType;
-        this.emptyGeometry                    = contents == Contents.Empty;
+        this.contents                         = contents;
         this.byteOrder                        = byteOrder;
         this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
         this.envelopeContentsIndicator        = envelopeContentsIndicator;
-        this.envelope                         = envelope;
+        this.envelope                         = envelope.clone();
 
-        final int isEmptyMask          = this.emptyGeometry ? (1 << 4) : 0; // TODO make this part of the Contents enum like BinaryType?
+        @SuppressWarnings("NumericCastThatLosesPrecision")
         final int envelopeContentsMask = (byte)(this.envelopeContentsIndicator.getCode() << 1);
 
-        this.flags = // 0                         |
-                     this.binaryType.getBitMask() |
-                     isEmptyMask                  |
-                     envelopeContentsMask         |
-                     (byteOrder.equals(ByteOrder.BIG_ENDIAN) ? 0 : 1);
+        //noinspection NumericCastThatLosesPrecision
+        this.flags = (byte)(// 0                         |
+                            this.binaryType.getBitMask() |
+                            this.contents.getBitMask()   |
+                            envelopeContentsMask         |
+                            (byteOrder.equals(ByteOrder.BIG_ENDIAN) ? 0 : 1));
 
         this.byteSize = 2 +  // 2 bytes for the 'magic' header
                         1 +  // 1 byte for version
@@ -156,19 +180,9 @@ public class BinaryHeader
                         (8 * this.envelopeContentsIndicator.getArraySize());   // 8 bytes per double, array size number of doubles
     }
 
-    public int getSpatialReferenceSystemIdentifier()
+    public byte getVersion()
     {
-        return this.spatialReferenceSystemIdentifier;
-    }
-
-    public boolean isEmptyGeometry()
-    {
-        return this.emptyGeometry;
-    }
-
-    public int getByteSize()
-    {
-        return this.byteSize;
+        return this.version;
     }
 
     public BinaryType getBinaryType()
@@ -176,14 +190,64 @@ public class BinaryHeader
         return this.binaryType;
     }
 
+    public Contents getContents()
+    {
+        return this.contents;
+    }
+
+    public ByteOrder getByteOrder()
+    {
+        return this.byteOrder;
+    }
+
+    public int getSpatialReferenceSystemIdentifier()
+    {
+        return this.spatialReferenceSystemIdentifier;
+    }
+
+    public EnvelopeContentsIndicator getEnvelopeContentsIndicator()
+    {
+        return this.envelopeContentsIndicator;
+    }
+
+    public double[] getEnvelope()
+    {
+        return this.envelope.clone();
+    }
+
+    public byte getFlags()
+    {
+        return this.flags;
+    }
+
+    public int getByteSize()
+    {
+        return this.byteSize;
+    }
+
+    /**
+     * Writes the binary header to the supplied byte buffer
+     *
+     * @param byteBuffer
+     *             Destination for the bytes of the header. May not be null or
+     *             read only.
+     * @throws IOException
+     *             If any of the byte buffer 'put' operations fail
+     */
     public void writeBytes(final ByteBuffer byteBuffer) throws IOException
     {
+        if(byteBuffer == null || byteBuffer.isReadOnly())
+        {
+            throw new IllegalArgumentException("Byte buffer may not be null or read only");
+        }
+
         // http://www.geopackage.org/spec/#gpb_spec
 
         byteBuffer.order(this.byteOrder);
 
         byteBuffer.put   (BinaryHeader.magic);
         byteBuffer.put   (this.version);
+        //noinspection NumericCastThatLosesPrecision
         byteBuffer.put   ((byte)this.flags);
         byteBuffer.putInt(this.spatialReferenceSystemIdentifier);
 
@@ -193,10 +257,30 @@ public class BinaryHeader
         }
     }
 
+    /**
+     * Constructors a header from the supplied arguments, and writes it to a
+     * byte buffer. Currently there's no way to skip writing the envelope.
+     *
+     * @param byteBuffer
+     *             Destination for the bytes of the header. May not be null or
+     *             read only.
+     * @param geometry
+     *             Used to determine the envelope, contents (empty or not), and
+     *             the geometry's binary type
+     * @param spatialReferenceSystemIdentifier
+     *             Spatial reference system identifier for the geometry
+     * @throws IOException
+     *             If any of the byte buffer 'put' operations fail
+     */
     public static void writeBytes(final ByteBuffer byteBuffer,
                                   final Geometry   geometry,
                                   final int        spatialReferenceSystemIdentifier) throws IOException
     {
+        if(geometry == null)
+        {
+            throw new IllegalArgumentException("Geometry may not be null");
+        }
+
         final Envelope envelope = geometry.createEnvelope();
 
         new BinaryHeader(defaultVersion,
@@ -237,11 +321,11 @@ public class BinaryHeader
 
     private final byte                      version; // This is an *unsigned* value, regardless of Java's interpretation
     private final BinaryType                binaryType;
-    private final boolean                   emptyGeometry;
+    private final Contents                  contents;
     private final ByteOrder                 byteOrder;  // NOTE: this applies *only* to the bytes of the GeoPackage binary header. The byte order of the well known binary that follows the header is specified by the first byte of its contents: 0 - big endian, 1 - little endian
     private final int                       spatialReferenceSystemIdentifier;
     private final EnvelopeContentsIndicator envelopeContentsIndicator;
     private final double[]                  envelope;
-    private final int                       flags;
+    private final byte                      flags;
     private final int                       byteSize;
 }
