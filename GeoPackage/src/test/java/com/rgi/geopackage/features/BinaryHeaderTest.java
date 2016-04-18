@@ -172,4 +172,95 @@ public class BinaryHeaderTest
                      binaryHeader.getByteSize());
     }
 
+    /**
+     * Constructor should fail when binary type is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void binaryTypeIsNull()
+    {
+        new BinaryHeader((byte)1,
+                         null,
+                         Contents.NotEmpty,
+                         ByteOrder.BIG_ENDIAN,
+                         4326,
+                         EnvelopeContentsIndicator.NoEnvelope,
+                         emptyEnvelope);
+    }
+
+    /**
+     * Constructor should fail when contents is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void contentsIsNull()
+    {
+        new BinaryHeader((byte)1,
+                         BinaryType.Standard,
+                         null,
+                         ByteOrder.BIG_ENDIAN,
+                         4326,
+                         EnvelopeContentsIndicator.NoEnvelope,
+                         emptyEnvelope);
+    }
+
+    /**
+     * Constructor should fail when byte order is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void byteOrderIsNull()
+    {
+        new BinaryHeader((byte)1,
+                         BinaryType.Standard,
+                         Contents.NotEmpty,
+                         null,
+                         4326,
+                         EnvelopeContentsIndicator.NoEnvelope,
+                         emptyEnvelope);
+    }
+
+    /**
+     * Constructor should fail when envelope contents indicator is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void envelopeContentsIndicatorIsNull()
+    {
+        new BinaryHeader((byte)1,
+                         BinaryType.Standard,
+                         Contents.NotEmpty,
+                         ByteOrder.BIG_ENDIAN,
+                         4326,
+                         null,
+                         emptyEnvelope);
+    }
+
+    /**
+     * Constructor should fail when envelope is null
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void envelopeIsNull()
+    {
+        new BinaryHeader((byte)1,
+                         BinaryType.Standard,
+                         Contents.NotEmpty,
+                         ByteOrder.BIG_ENDIAN,
+                         4326,
+                         EnvelopeContentsIndicator.NoEnvelope,
+                         null);
+    }
+
+    /**
+     * Constructor should fail when the envelope size doesn't match the contents indicator
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void envelopeSizeDoesntMatchContentsIndicator()
+    {
+        new BinaryHeader((byte)1,
+                         BinaryType.Standard,
+                         Contents.NotEmpty,
+                         ByteOrder.BIG_ENDIAN,
+                         4326,
+                         EnvelopeContentsIndicator.Xyzm,
+                         emptyEnvelope);
+    }
+
+    private static final double[] emptyEnvelope = new double[]{};
 }
