@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.xy;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
 
 import java.nio.ByteBuffer;
@@ -83,10 +84,10 @@ public class Coordinate
                             this.y);
     }
 
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        byteBuffer.putDouble(this.x);
-        byteBuffer.putDouble(this.y);
+        byteOutputStream.write(this.x);
+        byteOutputStream.write(this.y);
     }
 
     private final double x;

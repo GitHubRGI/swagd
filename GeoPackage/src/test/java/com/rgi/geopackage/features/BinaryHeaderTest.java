@@ -25,17 +25,20 @@ package com.rgi.geopackage.features;
 
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertSame;
 
 /**
  * @author Luke Lambert
  */
+@SuppressWarnings("JavaDoc")
 public class BinaryHeaderTest
 {
     /**
@@ -262,5 +265,182 @@ public class BinaryHeaderTest
                          emptyEnvelope);
     }
 
-    private static final double[] emptyEnvelope = new double[]{};
+    /**
+     * Constructor should fail when the envelope size doesn't match the contents indicator
+     */
+    @Test
+    public void goodConstructorCall()
+    {
+        final byte                      version           = (byte)1;
+        final BinaryType                binaryType        = BinaryType.Standard;
+        final Contents                  contents          = Contents.NotEmpty;
+        final ByteOrder                 byteOrder         = ByteOrder.BIG_ENDIAN;
+        final int                       srsId             = 4326;
+        final EnvelopeContentsIndicator envelopeIndicator = EnvelopeContentsIndicator.NoEnvelope;
+
+        final BinaryHeader header = new BinaryHeader(version,
+                                                     binaryType,
+                                                     contents,
+                                                     byteOrder,
+                                                     srsId,
+                                                     envelopeIndicator,
+                                                     emptyEnvelope);
+
+        assertEquals("Version incorrectly set by the constructor",
+                     version,
+                     header.getVersion());
+
+        assertEquals("Binary type incorrectly set by the constructor",
+                     binaryType,
+                     header.getBinaryType());
+
+        assertEquals("Contents incorrectly set by the constructor",
+                     contents,
+                     header.getContents());
+
+        assertSame("Byte order incorrectly set by the constructor",
+                   byteOrder,
+                   header.getByteOrder());
+
+        assertEquals("Spatial reference system identifier incorrectly set by the constructor",
+                     srsId,
+                     header.getSpatialReferenceSystemIdentifier());
+
+        assertSame("Envelope contents indicator incorrectly set by the constructor",
+                   envelopeIndicator,
+                   header.getEnvelopeContentsIndicator());
+    }
+
+    /**
+     * writeBytes() should fail on null ByteBuffer
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void writeBytesFailsOnNullByteBuffer() throws IOException
+    {
+        new BinaryHeader((byte)1,
+                         BinaryType.Standard,
+                         Contents.NotEmpty,
+                         ByteOrder.BIG_ENDIAN,
+                         4326,
+                         EnvelopeContentsIndicator.NoEnvelope,
+                         emptyEnvelope).writeBytes(null);
+    }
+
+    /**
+     * writeBytes() should produce a byte buffer that can be re-read to produce an identical header
+     */
+    @Test
+    public void writeBytesRoundTrip() throws IOException
+    {
+        final double[] envelope = {0.0, 0.0, 0.0, 0.0};
+
+        final BinaryHeader expected = new BinaryHeader((byte)1,
+                                                       BinaryType.Standard,
+                                                       Contents.NotEmpty,
+                                                       ByteOrder.BIG_ENDIAN,
+                                                       4326,
+                                                       EnvelopeContentsIndicator.Xy,
+                                                       envelope);
+
+        final ByteOutputStream byteOutputStream = new ByteOutputStream(expected.getByteSize());
+
+        expected.writeBytes(byteOutputStream);
+
+        final BinaryHeader actual = new BinaryHeader(byteOutputStream.array());
+
+        assertEquals("writeBytes() did not produce a correct BinaryHeader",
+                     expected,
+                     actual);
+    }
+
+    /**
+     * Test that calling .equals on the same object returns true
+     */
+    @Test
+    public void equalSameObject()
+    {
+        final BinaryHeader header = new BinaryHeader((byte)1,
+                                                     BinaryType.Standard,
+                                                     Contents.NotEmpty,
+                                                     ByteOrder.BIG_ENDIAN,
+                                                     4326,
+                                                     EnvelopeContentsIndicator.NoEnvelope,
+                                                     emptyEnvelope);
+
+        assertEquals("Equals should have returned true for testing with the same object",
+                     header,
+                     header);
+    }
+
+    /**
+     * Test that calling .equals on an object of a different type, fails
+     */
+    @Test
+    public void equalDifferentType()
+    {
+        final BinaryHeader header = new BinaryHeader((byte)1,
+                                                     BinaryType.Standard,
+                                                     Contents.NotEmpty,
+                                                     ByteOrder.BIG_ENDIAN,
+                                                     4326,
+                                                     EnvelopeContentsIndicator.NoEnvelope,
+                                                     emptyEnvelope);
+
+        //noinspection MisorderedAssertEqualsArguments
+        assertNotEquals("Equals should have returned false for testing with a BinaryHeader with an object of a different type",
+                        header,
+                        new Object());
+    }
+
+    /**
+     * Test that hashCode() for different BinaryHeaders with the same parameters produce identical results
+     */
+    @Test
+    public void testHashCode()
+    {
+        final BinaryHeader header1 = new BinaryHeader((byte)1,
+                                                      BinaryType.Standard,
+                                                      Contents.NotEmpty,
+                                                      ByteOrder.BIG_ENDIAN,
+                                                      4326,
+                                                      EnvelopeContentsIndicator.NoEnvelope,
+                                                      emptyEnvelope);
+
+        final BinaryHeader header2 = new BinaryHeader((byte)1,
+                                                      BinaryType.Standard,
+                                                      Contents.NotEmpty,
+                                                      ByteOrder.BIG_ENDIAN,
+                                                      4326,
+                                                      EnvelopeContentsIndicator.NoEnvelope,
+                                                      emptyEnvelope);
+
+        assertEquals("Equals should have returned true for testing with the same object",
+                     header1.hashCode(),
+                     header2.hashCode());
+    }
+
+    /**
+     * Static writeBytes() should fail on a null geometry
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void staticWriteBytes() throws IOException
+    {
+        BinaryHeader.writeBytes(new ByteOutputStream(),
+                                null,
+                                4326);
+    }
+
+    /**
+     * Static writeBytes() produce a BinaryHeader (round trip) with BinaryType,
+     * Contents, and envelope that corresponds to the input geometry
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void staticWriteBytesRoundTrip() throws IOException
+    {
+        BinaryHeader.writeBytes(new ByteOutputStream(),
+                                null,
+                                4326);
+    }
+
+    private static final double[] emptyEnvelope = {};
 }

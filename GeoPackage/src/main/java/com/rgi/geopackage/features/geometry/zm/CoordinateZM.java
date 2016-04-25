@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.zm;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
 
 import java.nio.ByteBuffer;
@@ -106,12 +107,12 @@ public class CoordinateZM
                               this.m);
     }
 
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        byteBuffer.putDouble(this.x);
-        byteBuffer.putDouble(this.y);
-        byteBuffer.putDouble(this.z);
-        byteBuffer.putDouble(this.m);
+        byteOutputStream.write(this.x);
+        byteOutputStream.write(this.y);
+        byteOutputStream.write(this.z);
+        byteOutputStream.write(this.m);
     }
 
     private final double x;

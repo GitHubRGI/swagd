@@ -782,7 +782,7 @@
     <inspection_tool class="NoExplicitFinalizeCalls" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="NonAtomicOperationOnVolatileField" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="NonBooleanMethodNameMayNotStartWithQuestion" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="questionString" value="is,can,has,should,could,will,shall,check,contains,equals,startsWith,endsWith" />
+      <option name="questionString" value="is,can,has,should,could,will,shall,contains,equals,startsWith,endsWith" />
       <option name="ignoreBooleanMethods" value="false" />
       <option name="onlyWarnOnBaseMethods" value="true" />
     </inspection_tool>
@@ -880,7 +880,7 @@
     <inspection_tool class="PackageDotHtmlMayBePackageInfo" enabled="false" level="INFO" enabled_by_default="false" />
     <inspection_tool class="PackageInMultipleModules" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="PackageInfoWithoutPackage" enabled="false" level="INFO" enabled_by_default="false" />
-    <inspection_tool class="PackageNamingConvention" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+    <inspection_tool class="PackageNamingConvention" enabled="false" level="WEAK WARNING" enabled_by_default="false">
       <option name="m_regex" value="[a-z]*" />
       <option name="m_minLength" value="3" />
       <option name="m_maxLength" value="999" />
@@ -1088,7 +1088,6 @@
       <option name="processLiterals" value="false" />
       <option name="processComments" value="true" />
     </inspection_tool>
-    <inspection_tool class="StandardVariableNames" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="StaticCallOnSubclass" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="StaticCollection" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="m_ignoreWeakCollections" value="false" />

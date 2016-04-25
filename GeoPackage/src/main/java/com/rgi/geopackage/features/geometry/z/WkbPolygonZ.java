@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.z;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 import com.rgi.geopackage.features.GeometryType;
 
@@ -97,19 +98,19 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
 
         final int ringCount = this.interiorRings.size() + (this.exteriorRing.isEmpty() ? 0 : 1);
 
-        byteBuffer.putInt(ringCount);
+        byteOutputStream.write(ringCount);
 
         if(ringCount > 0)
         {
-            this.exteriorRing.writeWellKnownBinary(byteBuffer);
+            this.exteriorRing.writeWellKnownBinary(byteOutputStream);
 
-            this.interiorRings.forEach(linearRing -> linearRing.writeWellKnownBinary(byteBuffer));
+            this.interiorRings.forEach(linearRing -> linearRing.writeWellKnownBinary(byteOutputStream));
         }
     }
 

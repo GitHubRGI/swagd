@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.zm;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
@@ -85,10 +86,10 @@ public class WkbLineStringZM extends WkbCurveZM
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
-        this.linearString.writeWellKnownBinary(byteBuffer);
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
+        this.linearString.writeWellKnownBinary(byteOutputStream);
     }
 
     public static WkbLineStringZM readWellKnownBinary(final ByteBuffer byteBuffer)

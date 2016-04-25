@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.z;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.WellKnownBinaryFormatException;
 import com.rgi.geopackage.features.geometry.Geometry;
@@ -101,15 +102,15 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
 
         final List<T> geometries = this.getGeometries();
 
-        byteBuffer.putInt(geometries.size());
+        byteOutputStream.write(geometries.size());
 
-        geometries.forEach(wkbGeometry -> wkbGeometry.writeWellKnownBinary(byteBuffer));
+        geometries.forEach(wkbGeometry -> wkbGeometry.writeWellKnownBinary(byteOutputStream));
     }
 
     @Override

@@ -23,9 +23,8 @@
 
 package com.rgi.geopackage.features.geometry.m;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
-
-import java.nio.ByteBuffer;
 
 /**
  * Proxy for member coordinates in GeoPackage geometries
@@ -90,11 +89,11 @@ public class CoordinateM
                              this.m);
     }
 
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        byteBuffer.putDouble(this.x);
-        byteBuffer.putDouble(this.y);
-        byteBuffer.putDouble(this.m);
+        byteOutputStream.write(this.x);
+        byteOutputStream.write(this.y);
+        byteOutputStream.write(this.m);
     }
 
     private final double x;

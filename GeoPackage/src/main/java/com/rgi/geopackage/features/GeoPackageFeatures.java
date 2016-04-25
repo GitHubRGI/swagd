@@ -978,21 +978,21 @@ public class GeoPackageFeatures
 
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
     {
-        final ByteBuffer byteBuffer = ByteBuffer.allocate(100); // TODO can the allocation up-front
+        final ByteOutputStream byteOutputStream = new ByteOutputStream();
 
         // TODO HEADER USES OPTIONS:
         // FORCE ENVELOPE
         // FORCE ENDIANNESS
 
-        BinaryHeader.writeBytes(byteBuffer,
+        BinaryHeader.writeBytes(byteOutputStream,
                                 geometry,
                                 spatialReferenceSystemIdentifier);
 
-        byteBuffer.order(ByteOrder.BIG_ENDIAN); // TODO make this an option (?)
+        byteOutputStream.setByteOrder(ByteOrder.BIG_ENDIAN); // TODO make this an option (?)
 
-        geometry.writeWellKnownBinary(byteBuffer);
+        geometry.writeWellKnownBinary(byteOutputStream);
 
-        return byteBuffer.array();
+        return byteOutputStream.array();
     }
 
     private static void verifyValueRequirements(final GeometryColumn geometryColumn, final Geometry geometry)

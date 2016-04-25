@@ -29,6 +29,7 @@ import com.rgi.geopackage.features.geometry.xy.Envelope;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 /**
  * Java implementation of the <a
@@ -180,6 +181,48 @@ public class BinaryHeader
                         (8 * this.envelopeContentsIndicator.getArraySize());   // 8 bytes per double, array size number of doubles
     }
 
+    @Override
+    public boolean equals(final Object obj)
+    {
+        if(this == obj)
+        {
+            return true;
+        }
+
+        if(obj == null || this.getClass() != obj.getClass())
+        {
+            return false;
+        }
+
+        final BinaryHeader other = (BinaryHeader)obj;
+
+        return this.version                          == other.version                          &&
+               this.spatialReferenceSystemIdentifier == other.spatialReferenceSystemIdentifier &&
+               this.flags                            == other.flags                            &&
+               this.byteSize                         == other.byteSize                         &&
+               this.binaryType                       == other.binaryType                       &&
+               this.contents                         == other.contents                         &&
+               this.byteOrder                   .equals(other.byteOrder)                       &&
+               this.envelopeContentsIndicator        == other.envelopeContentsIndicator        &&
+               Arrays.equals(this.getEnvelope(), other.getEnvelope());
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = (int) this.version;
+        result = 31 * result + this.binaryType.hashCode();
+        result = 31 * result + this.contents.hashCode();
+        result = 31 * result + this.byteOrder.hashCode();
+        result = 31 * result + this.spatialReferenceSystemIdentifier;
+        result = 31 * result + this.envelopeContentsIndicator.hashCode();
+        result = 31 * result + Arrays.hashCode(this.getEnvelope());
+        result = 31 * result + (int)this.flags;
+        result = 31 * result + this.byteSize;
+        return result;
+    }
+
     public byte getVersion()
     {
         return this.version;
@@ -228,32 +271,30 @@ public class BinaryHeader
     /**
      * Writes the binary header to the supplied byte buffer
      *
-     * @param byteBuffer
-     *             Destination for the bytes of the header. May not be null or
-     *             read only.
+     * @param byteOutputStream
+     *             Destination for the bytes of the header
      * @throws IOException
      *             If any of the byte buffer 'put' operations fail
      */
-    public void writeBytes(final ByteBuffer byteBuffer) throws IOException
+    public void writeBytes(final ByteOutputStream byteOutputStream) throws IOException
     {
-        if(byteBuffer == null || byteBuffer.isReadOnly())
+        if(byteOutputStream == null)
         {
             throw new IllegalArgumentException("Byte buffer may not be null or read only");
         }
 
         // http://www.geopackage.org/spec/#gpb_spec
 
-        byteBuffer.order(this.byteOrder);
+        byteOutputStream.setByteOrder(this.byteOrder);
 
-        byteBuffer.put   (BinaryHeader.magic);
-        byteBuffer.put   (this.version);
-        //noinspection NumericCastThatLosesPrecision
-        byteBuffer.put   ((byte)this.flags);
-        byteBuffer.putInt(this.spatialReferenceSystemIdentifier);
+        byteOutputStream.write(BinaryHeader.magic);
+        byteOutputStream.write(this.version);
+        byteOutputStream.write(this.flags);
+        byteOutputStream.write(this.spatialReferenceSystemIdentifier);
 
         for(final double envelopeBound : this.envelope)
         {
-            byteBuffer.putDouble(envelopeBound);
+            byteOutputStream.write(envelopeBound);
         }
     }
 
@@ -261,9 +302,8 @@ public class BinaryHeader
      * Constructors a header from the supplied arguments, and writes it to a
      * byte buffer. Currently there's no way to skip writing the envelope.
      *
-     * @param byteBuffer
-     *             Destination for the bytes of the header. May not be null or
-     *             read only.
+     * @param byteOutputStream
+     *             Destination for the bytes of the header
      * @param geometry
      *             Used to determine the envelope, contents (empty or not), and
      *             the geometry's binary type
@@ -272,9 +312,9 @@ public class BinaryHeader
      * @throws IOException
      *             If any of the byte buffer 'put' operations fail
      */
-    public static void writeBytes(final ByteBuffer byteBuffer,
-                                  final Geometry   geometry,
-                                  final int        spatialReferenceSystemIdentifier) throws IOException
+    public static void writeBytes(final ByteOutputStream byteOutputStream,
+                                  final Geometry         geometry,
+                                  final int              spatialReferenceSystemIdentifier) throws IOException
     {
         if(geometry == null)
         {
@@ -289,7 +329,7 @@ public class BinaryHeader
                          defaultByteOrder,
                          spatialReferenceSystemIdentifier,
                          envelope.getContentsIndicator(),
-                         envelope.toArray()).writeBytes(byteBuffer);
+                         envelope.toArray()).writeBytes(byteOutputStream);
 
     }
 

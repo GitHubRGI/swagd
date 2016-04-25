@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.m;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
@@ -97,10 +98,10 @@ public class WkbPointM extends WkbGeometryM
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
-        this.coordinate.writeWellKnownBinary(byteBuffer);
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
+        this.coordinate.writeWellKnownBinary(byteOutputStream);
     }
 
     public double getX()

@@ -23,9 +23,8 @@
 
 package com.rgi.geopackage.features.geometry.zm;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
-import com.rgi.geopackage.features.geometry.m.CoordinateM;
-import com.rgi.geopackage.features.geometry.m.EnvelopeM;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 import java.nio.ByteBuffer;
@@ -92,10 +91,10 @@ public class WkbPointZM extends WkbGeometryZM
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
-        this.coordinate.writeWellKnownBinary(byteBuffer);
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
+        this.coordinate.writeWellKnownBinary(byteOutputStream);
     }
 
     public static WkbPointZM readWellKnownBinary(final ByteBuffer byteBuffer)
