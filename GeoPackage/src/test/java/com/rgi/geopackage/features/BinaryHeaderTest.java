@@ -23,6 +23,9 @@
 
 package com.rgi.geopackage.features;
 
+import com.rgi.geopackage.features.geometry.Geometry;
+import com.rgi.geopackage.features.geometry.xy.Envelope;
+import com.rgi.geopackage.features.geometry.xy.WkbPoint;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -309,6 +312,11 @@ public class BinaryHeaderTest
         assertSame("Envelope contents indicator incorrectly set by the constructor",
                    envelopeIndicator,
                    header.getEnvelopeContentsIndicator());
+
+        assertArrayEquals("Envelope incorrectly set by the constructor",
+                          emptyEnvelope,
+                          header.getEnvelope(),
+                          0.0);
     }
 
     /**
@@ -434,12 +442,42 @@ public class BinaryHeaderTest
      * Static writeBytes() produce a BinaryHeader (round trip) with BinaryType,
      * Contents, and envelope that corresponds to the input geometry
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void staticWriteBytesRoundTrip() throws IOException
     {
-        BinaryHeader.writeBytes(new ByteOutputStream(),
-                                null,
-                                4326);
+        try(final ByteOutputStream byteOutputStream = new ByteOutputStream())
+        {
+            final Geometry geometry = new WkbPoint(0.0, 0.0);
+            final Envelope envelope = geometry.createEnvelope();
+            final int      srsId    = 4326;
+
+            BinaryHeader.writeBytes(byteOutputStream,
+                                    geometry,
+                                    srsId);
+
+            final BinaryHeader header = new BinaryHeader(byteOutputStream.array());
+
+            assertEquals("Binary type incorrectly set by the constructor",
+                         BinaryType.fromGeometryTypeName(geometry.getGeometryTypeName()),
+                         header.getBinaryType());
+
+            assertEquals("Contents incorrectly set by the constructor",
+                         geometry.getContents(),
+                         header.getContents());
+
+            assertEquals("Spatial reference system identifier incorrectly set by the constructor",
+                         srsId,
+                         header.getSpatialReferenceSystemIdentifier());
+
+            assertSame("Envelope contents indicator incorrectly set by the constructor",
+                       envelope.getContentsIndicator(),
+                       header.getEnvelopeContentsIndicator());
+
+            assertArrayEquals("Envelope incorrectly set by the constructor",
+                              envelope.toArray(),
+                              header.getEnvelope(),
+                              0.0);
+        }
     }
 
     private static final double[] emptyEnvelope = {};
