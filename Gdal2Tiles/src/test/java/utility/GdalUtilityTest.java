@@ -102,7 +102,7 @@ public class GdalUtilityTest
     private static void initializeDataset(final GdalUtilityTest.ImageDataProperties datasetProperties,final String fileName, final boolean hasAlpha, final CrsProfile profile, final BoundingBox bounds, final Double[] noData)
     {
         datasetProperties.imageFile   = new File(ClassLoader.getSystemResource(fileName).getFile());
-        datasetProperties.dataset     = gdal.Open(datasetProperties.imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        datasetProperties.dataset     = gdal.Open(datasetProperties.imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
         datasetProperties.srs         = new SpatialReference(datasetProperties.dataset.GetProjection());
         datasetProperties.crsProfile  = profile;
         datasetProperties.boundingBox = bounds;
@@ -299,7 +299,7 @@ public class GdalUtilityTest
         testData[0] = new GCP(0, 0, 0, 0);
 
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_Update);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_Update);
         final String proj = dataset.GetProjection();
 
         try
@@ -885,7 +885,7 @@ public class GdalUtilityTest
     public void verifyGetMaximalZoomException2() throws TileStoreException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = null;
         final TileOrigin tileOrigin = TileOrigin.LowerLeft;
@@ -906,7 +906,7 @@ public class GdalUtilityTest
     public void verifyGetMaximalZoomException3() throws TileStoreException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
         final TileOrigin tileOrigin = TileOrigin.LowerLeft;
@@ -927,7 +927,7 @@ public class GdalUtilityTest
     public void verifyGetMaximalZoomException4() throws TileStoreException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
         final Coordinate<Integer> coordinate = new Coordinate<>(0,0);
@@ -951,7 +951,7 @@ public class GdalUtilityTest
     public void verifyGetMaximalZoomException5() throws TileStoreException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
         final Coordinate<Integer> coordinate = new Coordinate<>(0,0);
@@ -975,7 +975,7 @@ public class GdalUtilityTest
     public void verifyGetMaximalZoomException6() throws TileStoreException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
         final Coordinate<Integer> coordinate = new Coordinate<>(0,0);
@@ -1066,7 +1066,7 @@ public class GdalUtilityTest
     public void verifyGetZoomLevelsException2() throws TileStoreException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final TileOrigin tileOrigin = null;
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
@@ -1084,7 +1084,7 @@ public class GdalUtilityTest
     public void verifyGetZoomLevelsException3() throws TileStoreException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final TileOrigin tileOrigin = TileOrigin.LowerLeft;
         final Dimensions<Integer> tileSize = null;
@@ -1197,7 +1197,7 @@ public class GdalUtilityTest
         tileRanges.put(0,new Range<>(coordinate, coordinate));
 
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final CrsProfile crsProfile = null;
         final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
@@ -1220,7 +1220,7 @@ public class GdalUtilityTest
         tileRanges.put(0,new Range<>(coordinate, coordinate));
 
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final CrsProfile crsProfile = new EllipsoidalMercatorCrsProfile();
         final TileScheme tileScheme = null;
@@ -1243,7 +1243,7 @@ public class GdalUtilityTest
         tileRanges.put(0,new Range<>(coordinate, coordinate));
 
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final CrsProfile crsProfile = new EllipsoidalMercatorCrsProfile();
         final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
@@ -1266,7 +1266,7 @@ public class GdalUtilityTest
         tileRanges.put(0,new Range<>(coordinate, coordinate));
 
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final CrsProfile crsProfile = new EllipsoidalMercatorCrsProfile();
         final TileScheme tileScheme = new ZoomTimesTwo(0, 31, 1, 1);
@@ -1382,7 +1382,7 @@ public class GdalUtilityTest
     public void verifyWarpDatasetToSrsException2()
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final SpatialReference fromSrs = null;
         final SpatialReference toSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
@@ -1401,7 +1401,7 @@ public class GdalUtilityTest
     public void verifyWarpDatasetToSrsException3()
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final SpatialReference fromSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
         final SpatialReference toSrs = null;
@@ -1476,7 +1476,7 @@ public class GdalUtilityTest
     public void verifyReprojectDatasetToSrsException2() throws IOException, TilingException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final SpatialReference fromSrs = null;
         final SpatialReference toSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
@@ -1494,7 +1494,7 @@ public class GdalUtilityTest
     public void verifyReprojectDatasetToSrsException3() throws IOException, TilingException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final SpatialReference fromSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
         final SpatialReference toSrs = null;
@@ -1545,7 +1545,7 @@ public class GdalUtilityTest
     public void verifyScaleQueryToTileSizeException2() throws TilingException
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final Dimensions<Integer> dimensions = null;
 
@@ -2184,7 +2184,7 @@ public class GdalUtilityTest
     public void verifyGdalRasterParametersException1()
     {
         final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.toURI().toString(), gdalconstConstants.GA_ReadOnly);
+        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final Dimensions<Integer> dimensions = null;
 

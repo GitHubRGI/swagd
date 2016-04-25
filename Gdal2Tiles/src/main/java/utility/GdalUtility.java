@@ -120,7 +120,7 @@ public final class GdalUtility
      */
     public static Dataset open(final File rawImage, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
-        final Dataset dataset = gdal.Open(rawImage.toURI().toString()); // Opening is read-only by default
+        final Dataset dataset = gdal.Open(rawImage.getAbsolutePath()); // Opening is read-only by default
 
         if(dataset == null)
         {
