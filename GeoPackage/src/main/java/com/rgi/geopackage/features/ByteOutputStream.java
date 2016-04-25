@@ -46,7 +46,7 @@ public final class ByteOutputStream implements AutoCloseable
     {
         this.checkCapacity(SHORT_BYTE_SIZE);
 
-        this.bytePutter.write(this.buffer, this.position, s);
+        this.bytePutter.put(s);
 
         this.position += SHORT_BYTE_SIZE;
     }
@@ -55,7 +55,7 @@ public final class ByteOutputStream implements AutoCloseable
     {
         this.checkCapacity(INT_BYTE_SIZE);
 
-        this.bytePutter.write(this.buffer, this.position, i);
+        this.bytePutter.put(i);
 
         this.position += INT_BYTE_SIZE;
     }
@@ -69,7 +69,7 @@ public final class ByteOutputStream implements AutoCloseable
     {
         this.checkCapacity(LONG_BYTE_SIZE);
 
-        this.bytePutter.write(this.buffer, this.position, l);
+        this.bytePutter.put(l);
 
         this.position += LONG_BYTE_SIZE;
     }
@@ -105,8 +105,8 @@ public final class ByteOutputStream implements AutoCloseable
             throw new IllegalArgumentException("Byte order may not be null");
         }
 
-        this.bytePutter = Objects.equals(byteOrder, ByteOrder.BIG_ENDIAN) ? BigEndianBytePutter
-                                                                          : LittleEndianBytePutter;
+        this.bytePutter = Objects.equals(byteOrder, ByteOrder.BIG_ENDIAN) ? this.bigEndianBytePutter
+                                                                          : this.littleEndianBytePutter;
     }
 
     private void checkCapacity(final int requestedBytes)
@@ -148,42 +148,42 @@ public final class ByteOutputStream implements AutoCloseable
 
     private interface BytePutter
     {
-        void write(final byte[] buffer, final int position, final short s);
-        void write(final byte[] buffer, final int position, final int   i);
-        void write(final byte[] buffer, final int position, final long  l);
+        void put(final short s);
+        void put(final int   i);
+        void put(final long  l);
 
         ByteOrder getByteOrder();
     }
 
-    private static final BytePutter BigEndianBytePutter = new BytePutter()
+    private final BytePutter bigEndianBytePutter = new BytePutter()
     {
         @Override
-        public void write(final byte[] buffer, final int position, final short s)
+        public void put(final short s)
         {
-            buffer[position    ] = short1(s);
-            buffer[position + 1] = short0(s);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position    ] = short1(s);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 1] = short0(s);
         }
 
         @Override
-        public void write(final byte[] buffer, final int position, final int i)
+        public void put(final int i)
         {
-            buffer[position    ] = int3(i);
-            buffer[position + 1] = int2(i);
-            buffer[position + 2] = int1(i);
-            buffer[position + 3] = int0(i);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position    ] = int3(i);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 1] = int2(i);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 2] = int1(i);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 3] = int0(i);
         }
 
         @Override
-        public void write(final byte[] buffer, final int position, final long l)
+        public void put(final long l)
         {
-            buffer[position    ] = long7(l);
-            buffer[position + 1] = long6(l);
-            buffer[position + 2] = long5(l);
-            buffer[position + 3] = long4(l);
-            buffer[position + 4] = long3(l);
-            buffer[position + 5] = long2(l);
-            buffer[position + 6] = long1(l);
-            buffer[position + 7] = long0(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position    ] = long7(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 1] = long6(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 2] = long5(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 3] = long4(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 4] = long3(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 5] = long2(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 6] = long1(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 7] = long0(l);
         }
 
         @Override
@@ -193,35 +193,35 @@ public final class ByteOutputStream implements AutoCloseable
         }
     };
 
-    private static final BytePutter LittleEndianBytePutter = new BytePutter()
+    private final BytePutter littleEndianBytePutter = new BytePutter()
     {
         @Override
-        public void write(final byte[] buffer, final int position, final short s)
+        public void put(final short s)
         {
-            buffer[position    ] = short0(s);
-            buffer[position + 1] = short1(s);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position    ] = short0(s);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 1] = short1(s);
         }
 
         @Override
-        public void write(final byte[] buffer, final int position, final int i)
+        public void put(final int i)
         {
-            buffer[position    ] = int0(i);
-            buffer[position + 1] = int1(i);
-            buffer[position + 2] = int2(i);
-            buffer[position + 3] = int3(i);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position    ] = int0(i);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 1] = int1(i);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 2] = int2(i);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 3] = int3(i);
         }
 
         @Override
-        public void write(final byte[] buffer, final int position, final long l)
+        public void put(final long l)
         {
-            buffer[position    ] = long0(l);
-            buffer[position + 1] = long1(l);
-            buffer[position + 2] = long2(l);
-            buffer[position + 3] = long3(l);
-            buffer[position + 4] = long4(l);
-            buffer[position + 5] = long5(l);
-            buffer[position + 6] = long6(l);
-            buffer[position + 7] = long7(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position    ] = long0(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 1] = long1(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 2] = long2(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 3] = long3(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 4] = long4(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 5] = long5(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 6] = long6(l);
+            ByteOutputStream.this.buffer[ByteOutputStream.this.position + 7] = long7(l);
         }
 
         @Override
