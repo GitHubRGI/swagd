@@ -44,8 +44,8 @@ public final class TestUtility
         return testFile;
     }
 
-    public static Connection getConnection(final String filePath) throws SQLException
+    public static Connection getConnection(final File testFile) throws SQLException
     {
-        return DriverManager.getConnection("jdbc:sqlite:" + filePath);
+        return DriverManager.getConnection("jdbc:sqlite:" + testFile.toURI());
     }
 }

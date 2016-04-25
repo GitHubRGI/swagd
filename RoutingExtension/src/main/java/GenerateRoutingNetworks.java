@@ -114,7 +114,7 @@ public final class GenerateRoutingNetworks
 
         final File databaseFile = new File("data/" + name + ".sqlite");
 
-        try(final Connection db = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.getPath()))
+        try(final Connection db = DriverManager.getConnection("jdbc:sqlite:" + databaseFile.toURI()))
         {
             final File nodesFile = new File("data/" + name + "_node_geometries.txt");
 

@@ -197,7 +197,7 @@ public class GeoPackage implements AutoCloseable
 
         Class.forName("org.sqlite.JDBC");   // Register the driver
 
-        this.databaseConnection = DriverManager.getConnection("jdbc:sqlite:" + file.getPath()); // Initialize the database connection
+        this.databaseConnection = DriverManager.getConnection("jdbc:sqlite:" + file.toURI()); // Initialize the database connection
 
         try
         {

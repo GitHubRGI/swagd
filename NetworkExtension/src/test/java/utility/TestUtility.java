@@ -35,7 +35,7 @@ public class TestUtility
 
         Class.forName("org.sqlite.JDBC");   // Register the driver
 
-        return DriverManager.getConnection("jdbc:sqlite:" + testFile.getPath()); // Initialize the database connection
+        return DriverManager.getConnection("jdbc:sqlite:" + testFile.toURI()); // Initialize the database connection
     }
 
     /**
