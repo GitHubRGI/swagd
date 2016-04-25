@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.FileSystem;
@@ -39,7 +40,12 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import static java.nio.file.StandardCopyOption.*;
 
@@ -53,12 +59,12 @@ public class JdbcUtilityTest
 {
 
     private static final String TEST_TABLE_NAME = "tiles";
-    private final File gpkgFile = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
+    private File gpkgFile;
     private final Random randomGenerator = new Random();
     private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     @Before
-    public void setUp() throws IOException
+    public void setUp() throws IOException, URISyntaxException
     {
         try
         {
@@ -69,6 +75,7 @@ public class JdbcUtilityTest
             // Could not register driver
             throw new IOException(exception);
         }
+        this.gpkgFile = new File(ClassLoader.getSystemResource("testNetwork.gpkg").toURI());
     }
 
     public static Connection getConnection(final File gpkgFile) throws IOException
@@ -113,6 +120,15 @@ public class JdbcUtilityTest
                                                      preparedStatement -> preparedStatement.setString(1, "tiles"),
                                                      resultSet -> resultSet.getInt(1)) > 0;
         fail("selectOne should have thrown an IllegalArgumentException for a null or empty String.");
+    }
+
+    @Test
+    public void openDBConnectionWithSpaces() throws IOException, URISyntaxException, SQLException
+    {
+        // This is a hyper-specific test for build machines that have spaces in their path
+        final File gpkgFile = new File(ClassLoader.getSystemResource("space test/testNetwork.gpkg").toURI());
+        final Connection con = JdbcUtilityTest.getConnection(gpkgFile);
+        assertFalse("DB connection should be closed.", con.isClosed());
     }
 
     /**
