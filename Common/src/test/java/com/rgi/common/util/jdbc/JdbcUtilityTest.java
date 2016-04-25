@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -72,7 +73,7 @@ public class JdbcUtilityTest
     {
         try
         {
-            return DriverManager.getConnection("jdbc:sqlite:" + gpkgFile.getAbsolutePath());
+            return DriverManager.getConnection("jdbc:sqlite:" + gpkgFile.toURI());
         }
         catch (final SQLException exception)
         {
