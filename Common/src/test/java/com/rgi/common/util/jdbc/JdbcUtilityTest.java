@@ -446,7 +446,7 @@ public class JdbcUtilityTest
     {
         final FileSystem system = FileSystems.getDefault();
         File toReplace = this.getRandomFile(8);
-        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
+        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").toURI());
         final Path file = toReplace.toPath();
         final Path originalFile = Original.toPath();
         Connection con = null;
@@ -562,10 +562,10 @@ public class JdbcUtilityTest
     public void update3TryStatementPassTest() throws Exception
     {
         final FileSystem system = FileSystems.getDefault();
-        File toReplace = this.getRandomFile(8);
-        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
+        final File toReplace = this.getRandomFile(8);
+        final File original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").toURI());
         final Path file = toReplace.toPath();
-        final Path originalFile = Original.toPath();
+        final Path originalFile = original.toPath();
         Connection con = null;
         try
         {
