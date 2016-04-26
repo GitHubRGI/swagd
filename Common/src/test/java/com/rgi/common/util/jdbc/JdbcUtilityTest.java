@@ -24,7 +24,6 @@
 package com.rgi.common.util.jdbc;
 
 import com.mockrunner.mock.jdbc.MockConnection;
-import com.rgi.common.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,573 +31,536 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.Consumer;
-import static java.nio.file.StandardCopyOption.*;
 
-import static org.junit.Assert.*;
+import static com.rgi.common.TestUtility.getConnection;
+import static com.rgi.common.TestUtility.getRandomFile;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
- * Created by justin.rhee on 10/29/2015.
+ * @author Justin Rhee
+ * @author Luke Lambert
  */
+@SuppressWarnings("JavaDoc")
 public class JdbcUtilityTest
 {
-
-    private static final String TEST_TABLE_NAME = "tiles";
     private File gpkgFile;
-    private final Random randomGenerator = new Random();
-    private List<ExtensionData> gpkgExtensionsDataAndColumnName;
 
     @Before
-    public void setUp() throws IOException, URISyntaxException
+    public void setUp() throws IOException, URISyntaxException, ClassNotFoundException
     {
-        try
-        {
-            Class.forName("org.sqlite.JDBC");
-        }
-        catch (final ClassNotFoundException exception)
-        {
-            // Could not register driver
-            throw new IOException(exception);
-        }
+        Class.forName("org.sqlite.JDBC");
         this.gpkgFile = new File(ClassLoader.getSystemResource("testNetwork.gpkg").toURI());
-    }
-
-    public static Connection getConnection(final File gpkgFile) throws IOException
-    {
-        try
-        {
-            return DriverManager.getConnection("jdbc:sqlite:" + gpkgFile.toURI());
-        }
-        catch (final SQLException exception)
-        {
-            System.out.println("Could not get DB instance.");
-            throw new IOException(exception);
-        }
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the databaseConnection is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void selectOneNullConectionTest() throws SQLException
     {
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        final boolean result = JdbcUtility.selectOne(null, str,
-                                                     preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                     resultSet -> resultSet.getInt(1)) > 0;
+        JdbcUtility.selectOne(null,
+                              "SELECT COUNT(*) FROM sqlite_master",
+                              null,
+                              resultSet -> resultSet.getInt(1));
+
         fail("selectOne should have thrown an IllegalArgumentException for a null Connection.");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the String str is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void selectOneNullStringTest() throws Exception
+    public void selectOneNullStringTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final boolean result = JdbcUtility.selectOne(con,
-                                                     null,
-                                                     preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                     resultSet -> resultSet.getInt(1)) > 0;
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.selectOne(connection,
+                                  null,
+                                  null,
+                                  resultSet -> resultSet.getInt(1));
+        }
+
         fail("selectOne should have thrown an IllegalArgumentException for a null or empty String.");
     }
 
+    /**
+     * This is a hyper-specific test for build machines that have spaces in their path
+     */
     @Test
     public void openDBConnectionWithSpaces() throws IOException, URISyntaxException, SQLException
     {
-        // This is a hyper-specific test for build machines that have spaces in their path
         final File gpkgFile = new File(ClassLoader.getSystemResource("space test/testNetwork.gpkg").toURI());
-        final Connection con = JdbcUtilityTest.getConnection(gpkgFile);
-        assertFalse("DB connection should be closed.", con.isClosed());
+
+        try(final Connection connection = getConnection(gpkgFile))
+        {
+            assertFalse("DB connection should not be closed.", connection.isClosed());
+        }
     }
 
     /**
-     * Tests if an IllegalArgumentException is thrown
-     * when the preparedStatementConsumer is null
-     * @throws Exception
+     * Tests if an IllegalArgumentException is thrown when the resultMapper is
+     * null
      */
-    @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
-    public void selectOneNullResultSetFunctionTest() throws Exception 
+    public void selectOneNullResultSetFunctionTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        final boolean result = JdbcUtility.selectOne(con,
-                                                     str,
-                                                     preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                     null);
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.selectOne(connection,
+                                  "SELECT COUNT(*) FROM sqlite_master",
+                                  null,
+                                  null);
+        }
+
         fail("selectOne should have thrown an IllegalArgumentException for a null resultMapper.");
     }
 
     /**
      * Tests to only run if the string is
      * a sql statement
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test(expected = AssertionError.class)
-    public void selectOneTryStatementTest() throws Exception
+    public void selectOneTryStatementTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "This is not a sql command";
-        JdbcUtility.selectOne(con,
-                              str,
-                              preparedStatement -> preparedStatement.setString(1, "tiles"),
-                              resultSet -> resultSet.getInt(1));
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.selectOne(connection,
+                                  "This is not a sql command",
+                                  null,
+                                  resultSet -> 1);
+        }
+
         fail("selectOne should have a sql command in the String str");
     }
 
     /**
      * Tests if a connection is made and a value is returned
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test
-    public void selectOneTryStatementPassTest() throws Exception
+    public void selectOneTryStatementPassTest() throws SQLException
     {
-        final Connection con = getConnection(this.gpkgFile);
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-        final String result = JdbcUtility.selectOne(con,
-                                                    str,
-                                                    preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                    resultSet -> resultSet.getString(1));
-        con.close();
-        assertNotNull("Result returned null when it should have returned a value", result);
+        try(final Connection connection = getConnection(this.gpkgFile))
+        {
+            final Integer result = JdbcUtility.selectOne(connection,
+                                                         "SELECT COUNT(*) FROM sqlite_master;",
+                                                         null,
+                                                         resultSet -> resultSet.getInt(1));
+
+            assertNotNull("Result returned null when it should have returned a value", result);
+        }
     }
 
     /**
      * Tests if a MockConnection will return a null value
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test
-    public void selectOneTryStatementNullTest() throws Exception
+    public void selectOneTryStatementNullTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-        final String result = JdbcUtility.selectOne(con,
-                                                    str,
-                                                    preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                    resultSet -> resultSet.getString(1));
-        assertNull("Result should return null", result);
+        try(final Connection connection = new MockConnection())
+        {
+            final String result = JdbcUtility.selectOne(connection,
+                                                        "SELECT COUNT(*) FROM sqlite_master;",
+                                                        null,
+                                                        resultSet -> resultSet.getString(1));
+
+            assertNull("Result should return null", result);
+        }
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the Connection is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void selectNullConnectionTest() throws SQLException
     {
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
         JdbcUtility.select(null,
-                           str,
-                           preparedStatement -> preparedStatement.setString(1, "tiles"),
+                           "SELECT COUNT(*) FROM sqlite_master;",
+                           null,
                            resultSet -> resultSet.getInt(1));
+
         fail("select should have thrown an IllegalArgumentException for a null Connection.");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
-     * whhen the String is null
-     * @throws Exception
+     * when the query string is null
      */
     @Test(expected = IllegalArgumentException.class)
-    public void selectNullStringTest() throws Exception
+    public void selectNullStringTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        JdbcUtility.select(con,
-                           null,
-                           preparedStatement -> preparedStatement.setString(1, "tiles"),
-                           resultSet -> resultSet.getInt(1));
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.select(connection,
+                               null,
+                               null,
+                               resultSet -> 1);
+        }
+
         fail("select should have thrown an IllegalArgumentException for a null or empty String.");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the resultSetFunction is null
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
-    public void selectNullResultSetFunctionTest() throws Exception
+    public void selectNullResultSetFunctionTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        JdbcUtility.select(con,
-                           str,
-                           preparedStatement -> preparedStatement.setString(1, "tiles"),
-                           null);
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.select(connection,
+                               "SELECT COUNT(*) FROM sqlite_master;",
+                               null,
+                               null);
+        }
+
         fail("select should have thrown an IllegalArgumentException for a null resultMapper.");
     }
 
     /**
      * Tests if select will return a list with the size of 1
      * when connected to the gpkgFile
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test
-    public void selectTryStatementPassTest() throws Exception
+    public void selectTryStatementPassTest() throws SQLException
     {
-        final Connection con = getConnection(this.gpkgFile);
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-        final List result = JdbcUtility.select(con,
-                                               str,
-                                               preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                               resultSet -> resultSet.getString(1));
-        con.close();
-        assertEquals("result should return a size of 1", 1, result.size());
+        try(final Connection connection = getConnection(this.gpkgFile))
+        {
+            final List<Integer> result = JdbcUtility.select(connection,
+                                                            "SELECT COUNT(*) FROM sqlite_master;",
+                                                            null,
+                                                            resultSet -> resultSet.getInt(1));
+
+            assertEquals("result should return a size of 1", 1, result.size());
+        }
     }
 
     /**
      * Tests if select will return an empty list if
      * connected to a MockConnection
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test
-    public void selectTryStatementNullTest() throws Exception
+    public void selectTryStatementNullTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-        final List result = JdbcUtility.select(con,
-                                               str,
-                                               preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                               resultSet -> resultSet.getString(1));
-        assertTrue("result should return a size of 0", result.isEmpty());
+        try(final Connection connection = new MockConnection())
+        {
+            final List<Integer> result = JdbcUtility.select(connection,
+                                                            "SELECT COUNT(*) FROM sqlite_master",
+                                                            null,
+                                                            resultSet -> 1);
+
+            assertTrue("result should return a size of 0", result.isEmpty());
+        }
     }
 
     /**
      * tests if an IllegalArgumentException is thrown
      * when the connection is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void forEachNullConnectionTest() throws Exception
+    public void forEachNullConnectionTest() throws SQLException
     {
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
         JdbcUtility.forEach(null,
-                            str,
-                            preparedStatement -> preparedStatement.setString(1, "tiles"),
-                            resultSet -> resultSet.getInt(1));
+                            "SELECT * FROM sqlite_master;",
+                            null,
+                            resultSet -> {});
+
         fail("select should have thrown an IllegalArgumentException for a null Connection.");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the String is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void forEachNullStringTest() throws Exception
+    public void forEachNullStringTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        JdbcUtility.forEach(con,
-                            null,
-                            preparedStatement -> preparedStatement.setString(1, "tiles"),
-                            resultSet -> resultSet.getInt(1));
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.forEach(connection,
+                                null,
+                                null,
+                                resultSet -> {});
+        }
+
         fail("forEach should have thrown an IllegalArgumentException for a null String.");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when ResultSetConsumer is null
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test(expected = IllegalArgumentException.class)
-    public void forEachNullResultSetConsumerFunctionTest() throws Exception
+    public void forEachNullResultSetConsumerFunctionTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        JdbcUtility.forEach(con,
-                            str,
-                            preparedStatement -> preparedStatement.setString(1, "tiles"),
-                            null);
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.forEach(connection,
+                                "SELECT * FROM sqlite_master;",
+                                null,
+                                null);
+        }
+
         fail("forEach should have thrown an IllegalArgumentException for a null resultMapper.");
     }
 
     /**
      * Tests when the forEach function passes and should
      * return a non-empty list
-     * @throws Exception
      */
     @Test
-    public void forEachTryStatementPassTest() throws Exception
+    public void forEachTryStatementPassTest() throws SQLException
     {
-        final List<Integer> list = new ArrayList<>();
-        final boolean result = runConsumer(list, list::add);
-        assertTrue("Result List should have items in it after running the forEach method", result);
+        final Collection<Integer> collection = new ArrayList<>();
+
+        try(final Connection connection = getConnection(this.gpkgFile))
+        {
+            JdbcUtility.forEach(connection,
+                                "SELECT COUNT(*) FROM sqlite_master;",
+                                null,
+                                resultSet -> collection.add(resultSet.getInt(1)));
+        }
+
+        assertTrue("Result List should have items in it after running the forEach method", !collection.isEmpty());
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the Connection is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void update1NullDatabaseConnectionTest() throws Exception
+    public void update1NullDatabaseConnectionTest() throws SQLException
     {
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        JdbcUtility.update(null, str);
+        JdbcUtility.update(null,
+                           "SELECT COUNT(*) FROM sqlite_master;");
+
         fail("update should have thrown an IllegalArgumentException for a null connection");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the String is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void update1NullStringTest() throws Exception
+    public void update1NullStringTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        JdbcUtility.update(con, null);
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.update(connection, null);
+        }
+
         fail("update should have thrown an IllegalArgumentException for a null string");
     }
 
     /**
      * Runs the function with a String that is not a sql statement
      * and should return an Assertion error
-     * @throws Exception
      */
     @Test(expected = AssertionError.class)
-    public void update1PreparedStatementCatchTest() throws Exception
+    public void update1PreparedStatementCatchTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "Hello! what is up my mans.";
-        JdbcUtility.update(con, str);
-        fail("update should return a sql string");
+        try(final Connection connection = new MockConnection())
+        {
+            final String str = "not valid sql";
+            JdbcUtility.update(connection, str);
+        }
+
+        fail("update should fail on invalid SQL");
     }
 
-    /**
-     * runs the update function with a string
-     * that is a sql statement
-     * @throws Exception
-     */
-    @Test
-     public void update1tryStatementTest() throws Exception
-     {
-        final List<Integer> list = new ArrayList<>();
-        final boolean result = runConsumerUpdate(list, list::add);
-        assertFalse("Result List should have items in it after running the forEach method", result);
-    }
+    // TODO this test made no sense in its original form, and it still doesn't really. It's unclear what's being tested. -- LLambert
+//    /**
+//     * runs the update function with a string
+//     * that is a sql statement
+//     */
+//    @Test
+//    public void update1tryStatementTest() throws SQLException
+//    {
+//        final Collection<Integer> collection = new ArrayList<>();
+//
+//        final Connection connection = getConnection(this.gpkgFile);
+//        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
+//        JdbcUtility.update(connection, str);
+//        connection.close();
+//
+//        assertFalse("Result List should have items in it after running the forEach method", !collection.isEmpty());
+//    }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the Connection is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void update2NullConnectionTest() throws Exception
+    public void update2NullConnectionTest() throws SQLException
     {
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
         JdbcUtility.update(null,
-                           str,
-                           preparedStatement -> preparedStatement.setString(1, "tiles"));
+                           "SELECT COUNT(*) FROM sqlite_master;",
+                           null);
+
         fail("update should have thrown an IllegalArgumentException for a null connection");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the String is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void update2NullStringTest() throws Exception
+    public void update2NullStringTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        JdbcUtility.update(con,
-                           null,
-                           preparedStatement -> preparedStatement.setString(1, "tiles"));
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.update(connection,
+                               null,
+                               null);
+        }
+
         fail("update should have thrown an IllegalArgumentException for a null String");
     }
 
     /**
      * Tests if the function properly updates the File
      * and sets the preparedStatementConsumer values
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test
-    public void update2TryStatementPassTest() throws Exception
+    public void update2TryStatementPassTest() throws SQLException, IOException, URISyntaxException
     {
-        final FileSystem system = FileSystems.getDefault();
-        File toReplace = this.getRandomFile(8);
-        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").toURI());
-        final Path file = toReplace.toPath();
-        final Path originalFile = Original.toPath();
-        Connection con = null;
-        try
+        final File file = getRandomFile();
+        final File original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").toURI());
+
+        Files.copy(original.toPath(), file.toPath(), REPLACE_EXISTING);
+
+        try(final Connection connection = getConnection(file))
         {
-            Files.copy(originalFile, file, REPLACE_EXISTING);
-            con = getConnection(this.gpkgFile);
-            // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
-            con.setAutoCommit(false);
             final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
                                                 "alaska2",
                                                 "from_node",
                                                 "to_node");
-            JdbcUtility.update(con,
+            JdbcUtility.update(connection,
                                insert,
-                               preparedStatement ->
-                               {
-                                   preparedStatement.setInt(1, 1);
-                                   preparedStatement.setInt(2, 2);
-                               });
+                               preparedStatement -> { preparedStatement.setInt(1, 1);
+                                                      preparedStatement.setInt(2, 2);
+                                                    });
 
+            // TODO this test doesn't absolutely nothing relevant. We should start with an empty file, update it, and re-read that update
             assertNotNull("runs the function properly", file);
-        }
-        catch(Exception ex)
-        {
-            ex.printStackTrace();
-        }
-        finally
-        {
-            if (con != null)
-            {
-                con.close();
-            }
-            Files.copy(originalFile, file, REPLACE_EXISTING);
-            toReplace.delete();
         }
     }
 
     /**
      * This tests if an IllegalArgumentException is thrown
      * if the connection is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void update3NullConnectionTest() throws Exception
+    public void update3NullConnectionTest() throws SQLException
     {
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        final boolean result = JdbcUtility.update(null,
-                                                  str,
-                                                  preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                  resultSet -> resultSet.getInt(1)) > 0;
+        JdbcUtility.update(null,
+                           "SELECT COUNT(*) FROM sqlite_master;",
+                           null,
+                           resultSet -> resultSet.getInt(1));
+
         fail("update should have thrown an IllegalArgumentException for a null Connection");
     }
 
     /**
      * This tests if an IllegalArgumentException is thrown
      * if the String is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void update3NullStringTest() throws Exception
+    public void update3NullStringTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final boolean result = JdbcUtility.update(con,
-                                                  null,
-                                                  preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                  resultSet -> resultSet.getInt(1)) > 0;
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.update(connection,
+                               null,
+                               null,
+                               resultSet -> resultSet.getInt(1));
+        }
+
         fail("update should have thrown an IllegalArgumentException for a null Connection");
     }
 
     /**
      * This tests if an IllegalArgumentException is thrown
      * if ResultSetFunction is null
-     * @throws Exception
      */
     @Test(expected = IllegalArgumentException.class)
-    public void update3NullKeyMapperTest() throws Exception
+    public void update3NullKeyMapperTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        final boolean result = JdbcUtility.update(con,
-                                                  str,
-                                                  preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                  null);
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.update(connection,
+                               "SELECT COUNT(*) FROM sqlite_master;",
+                               preparedStatement -> preparedStatement.setString(1, "tiles"),
+                               null);
+        }
+
         fail("update should have thrown an illegalArgumentException for a null resultMapper");
     }
 
     /**
      * Tests if the function returns null when the connection
      * is connected to a MockConnection
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test(expected = SQLException.class)
-    public void update3TryStatementNullTest() throws Exception
+    public void update3TryStatementNullTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-        final String result = JdbcUtility.update(con,
-                                                 str,
-                                                 preparedStatement -> preparedStatement.setString(1, "tiles"),
-                                                 resultSet -> resultSet.getString(1));
-        assertNull("Result should return null", result);
+        try(final Connection connection = new MockConnection())
+        {
+            final String result = JdbcUtility.update(connection,
+                                                     "SELECT COUNT(*) FROM sqlite_master;",
+                                                     preparedStatement -> preparedStatement.setString(1, "tiles"),
+                                                     resultSet -> resultSet.getString(1));
+
+            assertNull("Result should return null", result);
+        }
     }
 
     /**
      * Tests if the function runs with the proper connection
      * and the preparedStatement updates the database
-     * @throws Exception
      */
-    @SuppressWarnings("ConstantConditions")
     @Test
-    public void update3TryStatementPassTest() throws Exception
+    public void update3TryStatementPassTest() throws SQLException, IOException, URISyntaxException
     {
-        final FileSystem system = FileSystems.getDefault();
-        final File toReplace = this.getRandomFile(8);
+        final File file = getRandomFile();
         final File original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").toURI());
-        final Path file = toReplace.toPath();
-        final Path originalFile = original.toPath();
-        Connection con = null;
-        try
+
+        Files.copy(original.toPath(), file.toPath(), REPLACE_EXISTING);
+
+        try(final Connection connection = getConnection(file))
         {
-            Files.copy(originalFile, file, REPLACE_EXISTING);
-            con = getConnection(this.gpkgFile);
-            // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
-            con.setAutoCommit(false);
             final String insert = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
                                                 "alaska2",
                                                 "from_node",
                                                 "to_node");
-            final int identifier = JdbcUtility.update(con,
+
+            final int identifier = JdbcUtility.update(connection,
                                                       insert,
-                                                      preparedStatement ->
-                                                      {
-                                                          preparedStatement.setInt(1, 1);
-                                                          preparedStatement.setInt(2, 2);
-                                                      },
+                                                      preparedStatement -> { preparedStatement.setInt(1, 1);
+                                                                             preparedStatement.setInt(2, 2);
+                                                                           },
                                                       resultSet -> resultSet.getInt(1));
+
             assertTrue("Result should be a non negative, non-zero integer", identifier > 0);
-        }
-        catch(Exception ex)
-        {
-            ex.printStackTrace();
-        }
-        finally
-        {
-            if (con != null)
-            {
-                con.close();
-            }
-            Files.copy(originalFile, file, REPLACE_EXISTING);
-            toReplace.delete();
         }
     }
 
@@ -606,116 +568,87 @@ public class JdbcUtilityTest
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the connection is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void update4NullConnectionTest() throws SQLException
     {
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        final Iterable<Pair<Integer, Integer>> edges;
-        edges = Arrays.asList(new Pair<>(12, 23),
-                              new Pair<>(12, 42),
-                              new Pair<>(34, 56));
         JdbcUtility.update(null,
-                           str,
-                           edges,
-                           (preparedStatement, edge) ->
-                           {
-                               preparedStatement.setInt(1, edge.getLeft());
-                               preparedStatement.setInt(2, edge.getRight());
-                           });
+                           "SELECT COUNT(*) FROM sqlite_master;",
+                           Collections.emptyList(),
+                           (preparedStatement, args) -> { });
+
         fail("update should have thrown an illegalArgumentException for a null connection");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the String is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void update4NullStringTest() throws SQLException
     {
-        final Connection con = new MockConnection();
-        final Iterable<Pair<Integer, Integer>> edges;
-        edges = Arrays.asList(new Pair<>(12, 23),
-                              new Pair<>(12, 42),
-                              new Pair<>(34, 56));
-        JdbcUtility.update(con,
-                           null,
-                           edges,
-                           (preparedStatement, edge) ->
-                           {
-                               preparedStatement.setInt(1, edge.getLeft());
-                               preparedStatement.setInt(2, edge.getRight());
-                           });
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.update(connection,
+                               null,
+                               Collections.emptyList(),
+                               (preparedStatement, args) -> { });
+        }
+
         fail("update should have thrown an illegalArgumentException for a null connection");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the Iterable is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void update4NullIterableTest() throws SQLException
     {
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;";
-        final Connection con = new MockConnection();
-        JdbcUtility.update(con,
-                           str,
-                           null,
-                           (preparedStatement, edge) ->
-                           {
-                               preparedStatement.setInt(1, Integer.parseInt("tiles"));
-                               preparedStatement.setInt(2, Integer.parseInt("tiles"));
-                           });
-        fail("update should have thrown an illegalArgumentException for a null Iterable");
-    }
+        try(final Connection connection = new MockConnection())
+        {
+            JdbcUtility.update(connection,
+                               "SELECT COUNT(*) FROM sqlite_master;",
+                               null,
+                               (preparedStatement, args) -> { });
+        }
 
-    /**
-     * runs the update function with a string
-     * that is a sql statement
-     * @throws Exception
-     */
-    @Test
-    public void update4tryStatementTest() throws Exception
-    {
-        final List<Integer> list = new ArrayList<>();
-        final boolean result = runConsumerUpdate4(list, list::add);
-        assertFalse("Result List should have items in it after running the forEach method", result);
+        fail("update should have thrown an illegalArgumentException for a null Iterable");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the resultSet is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void map2ResultSetNullTest() throws SQLException
     {
-        final String str = "SELECT table_name FROM %s WHERE data_type = 'tiles';";
         JdbcUtility.map(null,
-                        resultSet -> resultSet.getString("table_name"),
+                        resultSet -> "",
                         HashSet<String>::new);
+
         fail("map should have thrown an IllegalArgumentException for a null resultSet");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the ResultSetFunction is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void map2ResultSetFunctionNullTest() throws SQLException
     {
-        final String str = "SELECT table_name FROM %s WHERE data_type = 'tiles';";
-        final Connection con = new MockConnection();
-        try (final Statement createStmt2 = con.createStatement();
-             final ResultSet contentsPyramidTables = createStmt2.executeQuery(str))
+        try(final Connection connection = new MockConnection())
         {
-            JdbcUtility.map(contentsPyramidTables,
-                            null,
-                            HashSet<String>::new);
+            try(final Statement statement = connection.createStatement())
+            {
+                try(final ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM sqlite_master;"))
+                {
+                    JdbcUtility.map(resultSet,
+                                    null,
+                                    HashSet<String>::new);
+                }
+            }
+
             fail("map should have thrown an IllegalArgumentException for a null resultSetFunction");
         }
     }
@@ -723,128 +656,120 @@ public class JdbcUtilityTest
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the CollectionFactory is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void map2NullCollectionFactoryTest() throws SQLException
     {
-        final String str = "SELECT table_name FROM %s WHERE data_type = 'tiles';";
-        final Connection con = new MockConnection();
-        try (final Statement createStmt2 = con.createStatement();
-             final ResultSet contentsPyramidTables = createStmt2.executeQuery(str))
+        try(final Connection connection = new MockConnection())
         {
-            JdbcUtility.map(contentsPyramidTables,
-                            resultSet -> resultSet.getString("table_name"),
-                            null);
-            fail("map should have thrown an IllegalArgumentException for a null collectionFactory");
+            try(final Statement statement = connection.createStatement())
+            {
+                try(final ResultSet results = statement.executeQuery("SELECT COUNT(*) FROM sqlite_master;"))
+                {
+                    JdbcUtility.map(results,
+                                    resultSet -> "",
+                                    null);
+                }
+            }
         }
+
+        fail("map should have thrown an IllegalArgumentException for a null collectionFactory");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when the ResultSet is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void mapFilterNullResultSetTest() throws SQLException
     {
-        final Connection con = new MockConnection();
         JdbcUtility.mapFilter(null,
-                              resultSet -> resultSet.getString("table_name"),
-                              pyramidName -> JdbcUtilityTest.tableOrViewExists(con, pyramidName),
-                              HashSet<String>::new);
+                             resultSet -> "",
+                             pyramidName -> true,
+                             HashSet<String>::new);
+
         fail("mapFilter should have thrown an IllegalArgumentException for a null resultSet");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when ResultSetFunction is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void mapFilterResultSetTest() throws SQLException
     {
-        final String str = "SELECT DISTINCT table_name FROM %s;";
-        final Connection con = new MockConnection();
-        try (Statement createStmt3 = con.createStatement();
-             ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(str))
+        try(final Connection connection = new MockConnection())
         {
-            JdbcUtility.mapFilter(tileMatrixPyramidTables,
-                                  null,
-                                  pyramidName -> JdbcUtilityTest.tableOrViewExists(con, pyramidName),
-                                  HashSet<String>::new);
-            fail("mapFilter should have thrown an IllegalArgumentException for a null funciton");
+            try(final Statement statement = connection.createStatement())
+            {
+                try(final ResultSet results = statement.executeQuery("SELECT COUNT(*) FROM sqlite_master;"))
+                {
+                    JdbcUtility.mapFilter(results,
+                                          null,
+                                          pyramidName -> true,
+                                          HashSet<String>::new);
+                }
+            }
         }
-    }
 
-    @SuppressWarnings("ConstantConditions")
-    public static boolean tableOrViewExists(final Connection connection, final String name) throws SQLException
-    {
-        final Connection con = new MockConnection();
-        JdbcUtilityTest.verify(connection);
-
-        if (name == null || name.isEmpty())
-        {
-            throw new IllegalArgumentException("Table/view name cannot be null or empty");
-        }
-        return JdbcUtility.selectOne(connection,
-                "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ? LIMIT 1;",
-                preparedStatement -> preparedStatement.setString(1, name),
-                resultSet -> resultSet.getInt(1)) > 0;
+        fail("mapFilter should have thrown an IllegalArgumentException for a null funciton");
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when JdbcPredicate is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void mapFilterNullpredicateTest() throws SQLException
     {
-        final String str = "SELECT DISTINCT table_name FROM %s;";
-        final Connection con = new MockConnection();
-        try (Statement createStmt3 = con.createStatement();
-             ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(str))
+        try(final Connection connection = new MockConnection())
         {
-            JdbcUtility.mapFilter(tileMatrixPyramidTables,
-                                  resultSet -> resultSet.getString("table_name"),
-                                  null,
-                                  HashSet<String>::new);
-            fail("mapFilter should have thrown an IllegalArgumentException for a null predicate");
+            try(final Statement statement = connection.createStatement())
+            {
+                try(ResultSet results = statement.executeQuery("SELECT COUNT(*) FROM sqlite_master;"))
+                {
+                    JdbcUtility.mapFilter(results,
+                                          resultSet -> "",
+                                          null,
+                                          HashSet<String>::new);
+                }
+            }
         }
+
+        fail("mapFilter should have thrown an IllegalArgumentException for a null predicate");
     }
 
     /**
      * Tests if an the function returns a collection after
      * executing with a proper string
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void mapFilterFunctionTest() throws SQLException
     {
-        final String str = "SELECT DISTINCT table_name FROM %s;";
-        final Connection con = new MockConnection();
-        try (Statement createStmt3 = con.createStatement();
-             ResultSet tileMatrixPyramidTables = createStmt3.executeQuery(str))
+        try(final Connection connection = new MockConnection())
         {
-            final Set<String> pyramidTablesInTileMatrix;
-            pyramidTablesInTileMatrix = JdbcUtility.mapFilter(tileMatrixPyramidTables,
-                                                              resultSet -> resultSet.getString("table_name"),
-                                                              pyramidName -> JdbcUtilityTest.tableOrViewExists(con, pyramidName),
-                                                              HashSet<String>::new);
-            assertNotNull("mapFilter should have a set", pyramidTablesInTileMatrix);
+            try(final Statement statement = connection.createStatement())
+            {
+                try(final ResultSet results = statement.executeQuery("SELECT COUNT(*) FROM sqlite_master;"))
+                {
+                    final Collection<String> collection = JdbcUtility.mapFilter(results,
+                                                                                resultSet -> "",
+                                                                                pyramidName -> true,
+                                                                                HashSet<String>::new);
+
+                    assertNotNull("mapFilter should have a set", collection);
+                }
+            }
         }
     }
 
     /**
      * Tests if an IllegalArgumentException is thrown
      * when ResultSet is null
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void getObjectsNullResultSetTest() throws SQLException
     {
-        final Connection con = new MockConnection();
         JdbcUtility.getObjects(null, 1, 3);
         fail("getObjects should have thrown an IllegalArgumentException for a null ResultSet");
     }
@@ -852,117 +777,21 @@ public class JdbcUtilityTest
     /**
      * Tests if an IllegalArgumentException is thrown
      * when startColumnIndex is greater than EndColumnIndex
-     * @throws SQLException
      */
     @Test(expected = IllegalArgumentException.class)
     public void getObjectsEndLessThanStartTest() throws SQLException
     {
-        final String str = "SELECT tile_data FROM tileSetName WHERE zoom_level = 2 AND tile_column = 0 AND tile_row =0;";
-        try (final Connection con = new MockConnection();
-             final Statement stmt = con.createStatement();
-             final ResultSet tileData = stmt.executeQuery(str))
+        try(final Connection connection = new MockConnection())
         {
-            JdbcUtility.getObjects(tileData, 3, 1);
-            fail("getObjects should have thrown an IllegalArgumentException where endColumn is greater than startIndex");
-        }
-    }
-
-    private Set<String> pyramidTablesInContents;
-
-    private static final class ExtensionData
-    {
-        private ExtensionData(final String tableName,
-                              final String columnName,
-                              final String extensionName)
-        {
-            this.tableName = tableName;
-            this.columnName = columnName;
-            this.extensionName = extensionName;
+            try(final Statement statement = connection.createStatement())
+            {
+                try(final ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM sqlite_master;"))
+                {
+                    JdbcUtility.getObjects(resultSet, 3, 1);
+                }
+            }
         }
 
-        private final String tableName;
-        private final String columnName;
-        private final String extensionName;
-    }
-
-    private static void verify(final Connection connection) throws SQLException
-    {
-        if (connection == null || connection.isClosed())
-        {
-            throw new IllegalArgumentException("The connection cannot be null or closed.");
-        }
-    }
-
-    private File getRandomFile(final int length)
-    {
-        File testFile;
-        do
-        {
-            testFile = new File(FileSystems.getDefault().getPath(this.getRandomString(length)) + ".gpkg");
-        }
-        while (testFile.exists());
-        return testFile;
-    }
-
-    private String getRandomString(final int length)
-    {
-        final String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final char[] text = new char[length];
-        for (int i = 0; i < length; i++)
-        {
-            text[i] = characters.charAt(this.randomGenerator.nextInt(characters.length()));
-        }
-        return new String(text);
-    }
-
-    private boolean runConsumer(List<Integer> list, Consumer<Integer> consumer) throws Exception
-    {
-        final Connection con = getConnection(this.gpkgFile);
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-        JdbcUtility.forEach(con,
-                            str,
-                            preparedStatement -> preparedStatement.setString(1, "tiles"),
-                            resultSet -> consumer.accept(resultSet.getInt(1)));
-        con.close();
-        return !list.isEmpty();
-    }
-
-    private boolean runConsumerUpdate4(List<Integer> list, Consumer<Integer> consumer) throws Exception
-    {
-        final FileSystem system = FileSystems.getDefault();
-        File toReplace = this.getRandomFile(8);
-        File Original = new File(ClassLoader.getSystemResource("testNetwork_orig.gpkg").getFile());
-        final Path file = toReplace.toPath();
-        final Path originalFile = Original.toPath();
-        final String str = String.format("INSERT INTO %s (%s, %s) VALUES (?, ?)",
-                                         "alaska2",
-                                         "from_node",
-                                         "to_node");
-        final Connection con = getConnection(this.gpkgFile);
-        con.setAutoCommit(false);
-        final Iterable<Pair<Integer, Integer>> edges;
-        edges = Arrays.asList(new Pair<>(12, 23),
-                              new Pair<>(12, 42),
-                              new Pair<>(34, 56));
-        JdbcUtility.update(con,
-                           str,
-                           edges,
-                           (preparedStatement, edge) ->
-                           {
-                               preparedStatement.setInt(1, edge.getLeft());
-                               preparedStatement.setInt(2, edge.getRight());
-                           });
-        con.close();
-        toReplace.delete();
-        return !list.isEmpty();
-    }
-
-    private boolean runConsumerUpdate(List<Integer> list, Consumer<Integer> consumer) throws Exception
-    {
-        final Connection con = getConnection(this.gpkgFile);
-        final String str = "SELECT COUNT(*) FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND name = ?;";
-        JdbcUtility.update(con, str);
-        con.close();
-        return !list.isEmpty();
+        fail("getObjects should have thrown an IllegalArgumentException where endColumn is greater than startIndex");
     }
 }
