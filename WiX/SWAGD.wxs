@@ -68,8 +68,8 @@
         <Component Id="gdal.jar" DiskId="1" KeyPath="yes" Guid="9e19a102-f7be-46a7-b6f9-4ee6b66b2477" Win64='yes'>
           <File Id="GDAL.JAR" Name="gdal.jar" Source="..\RGISuite\lib\gdal.jar" ProcessorArchitecture ="x64"/>
         </Component>
-        <Component Id="gdal111.dll" DiskId="1" KeyPath="yes" Guid="cf4adb64-2d86-4de4-8d3b-9c4f904d5e1c" Win64='yes'>
-          <File Id="GDAL111.DLL" Name="gdal111.dll" Source="..\RGISuite\lib\gdal111.dll" ProcessorArchitecture ="x64"/>
+        <Component Id="gdal201.dll" DiskId="1" KeyPath="yes" Guid="cf4adb64-2d86-4de4-8d3b-9c4f904d5e1c" Win64='yes'>
+          <File Id="GDAL201.DLL" Name="gdal201.dll" Source="..\RGISuite\lib\gdal201.dll" ProcessorArchitecture ="x64"/>
         </Component>
         <Component Id="gdalconstjni.dll" DiskId="1" KeyPath="yes" Guid="48dacc48-0e3f-4afa-940a-73222dbc56d1" Win64='yes'>
           <File Id="GDALCONSTJNI.DLL" Name="gdalconstjni.dll" Source="..\RGISuite\lib\gdalconstjni.dll" ProcessorArchitecture ="x64"/>
@@ -96,7 +96,7 @@
       <!-- Feature Info: lists what components will be installed. -->
       <Feature Id="DefaultFeature" Title="Main Feature" Level="1">
         <ComponentRef Id="gdal.jar" />
-        <ComponentRef Id="gdal111.dll" />
+        <ComponentRef Id="gdal201.dll" />
         <ComponentRef Id="gdalconstjni.dll" />
         <ComponentRef Id="gdaljni.dll" />
         <ComponentRef Id="ogrjni.dll" />
