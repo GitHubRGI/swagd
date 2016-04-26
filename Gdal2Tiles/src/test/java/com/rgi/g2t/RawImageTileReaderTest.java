@@ -74,7 +74,7 @@ import com.rgi.store.tiles.TileStoreException;
 public class RawImageTileReaderTest
 {
     // Tiff used for testing
-    private final File rawData = new File("test.tif");
+    private final File rawData = new File(ClassLoader.getSystemResource("test.tif").getPath());
 
     /**
      * Tests RawImageTileReader constructor
@@ -701,7 +701,8 @@ public class RawImageTileReaderTest
                                             .findFirst()
                                             .get();
 
-            final BufferedImage image = ImageIO.read(new File("224798.png"));
+            final File testTile = new File(ClassLoader.getSystemResource("224798.png").getPath());
+            final BufferedImage image = ImageIO.read(testTile);
 
             assertTrue("RawImageTileHandle method getImage did not return the correct image.",
                        bufferedImagesEqual(image, handle.getImage()));
@@ -750,8 +751,8 @@ public class RawImageTileReaderTest
                                            .filter(tile -> tile.getColumn() == 16313 && tile.getRow() == 112398)
                                            .findAny()
                                            .get();
-
-           final BufferedImage image = ImageIO.read(new File("112398.png"));
+            final File testTile = new File(ClassLoader.getSystemResource("112398.png").getPath());
+            final BufferedImage image = ImageIO.read(testTile);
 
            assertTrue("RawImageTileHandle method getImage did not return the correct image.",
                       bufferedImagesEqual(image, handle.getImage()));
