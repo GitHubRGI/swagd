@@ -1,7 +1,7 @@
 group = 'Gdal2Tiles'
 description = 'Gdal2Tiles Library'
 
-String osName = System.getProperty("os.name").toLowerCase();
+String osName = System.getProperty("os.name").toLowerCase()
 
 dependencies
 {
@@ -10,10 +10,12 @@ dependencies
 
     if (osName.contains("windows"))
     {
+        println "Windows:" + osName
         compile fileTree(dir: 'lib', include: ['gdal-2.0.1-windows.jar'])
     }
     else
     {
+        println "Linux:" + osName
         compile fileTree(dir: 'lib', include: ['gdal-2.0.1-linux.jar'])
     }
     compile 'xerces:xercesImpl:2.11.0'
