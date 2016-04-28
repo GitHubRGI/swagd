@@ -102,9 +102,6 @@ public class GdalUtilityTest
 
     private static void initializeDataset(final GdalUtilityTest.ImageDataProperties datasetProperties,final String fileName, final boolean hasAlpha, final CrsProfile profile, final BoundingBox bounds, final Double[] noData) throws URISyntaxException
     {
-        // In order to provide GdalUtility.open() a good File object, the File object must be made in this manner
-        // You CANNOT simply make a new File object using the ClassLoader, because the File object will have encoding
-        // that prohibits gdal.Open() from working correctly when spaces are part of the file path
         datasetProperties.imageFile   = TestUtility.loadFileFromDisk(fileName);
         datasetProperties.dataset     = gdal.Open(datasetProperties.imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
         datasetProperties.srs         = new SpatialReference(datasetProperties.dataset.GetProjection());
