@@ -27,7 +27,6 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
 import com.rgi.common.util.functional.ThrowingFunction;
 import com.rgi.common.util.jdbc.JdbcUtility;
-import com.rgi.geopackage.core.ContentFactory;
 import com.rgi.geopackage.core.GeoPackageCore;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.features.geometry.Geometry;
@@ -94,7 +93,6 @@ import java.util.stream.Collectors;
  */
 public class GeoPackageFeatures
 {
-
     /**
      * Constructor
      *
@@ -103,7 +101,6 @@ public class GeoPackageFeatures
      * @param core
      *             Access to GeoPackage's "core" methods
      */
-    @SuppressWarnings("MagicNumber")
     public GeoPackageFeatures(final Connection databaseConnection, final GeoPackageCore core)
     {
         this.databaseConnection = databaseConnection;
@@ -365,6 +362,15 @@ public class GeoPackageFeatures
                                                                      ValueRequirement.fromInt(resultSet.getInt(5)))); // m value requirement
     }
 
+    /**
+     * Gets the non-identifier (primary key) and non-geometry columns
+     *
+     * @param featureSet
+     *             Handle to a feature table
+     * @return a collection of {@link Column}s that describe the attributes the feature set contains
+     * @throws SQLException
+     *             If there is a database error
+     */
     public List<Column> getAttributeColumns(final FeatureSet featureSet) throws SQLException
     {
         try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
@@ -413,13 +419,11 @@ public class GeoPackageFeatures
      * Gets a feature set object based on its table name
      *
      * @param featureSetTableName
-     *            Name of a feature set table
+     *             Name of a feature set table
      * @return Returns a {@link FeatureSet} or null if there isn't with the
-     *            supplied table name
+     *             supplied table name
      * @throws SQLException
-     *             throws if the method
-     *             {@link GeoPackageCore#getContent(String, ContentFactory, SpatialReferenceSystem)}
-     *             throws an SQLException
+     *             If there is a database error
      */
     @SuppressWarnings("JDBCExecuteWithNonConstantString")
     public FeatureSet getFeatureSet(final String featureSetTableName) throws SQLException
@@ -529,9 +533,12 @@ public class GeoPackageFeatures
      * avoid memory issues
      *
      * @param featureSet
-     * @return
+     *             Handle to a feature table
+     * @return List of features
      * @throws SQLException
+     *             if there is a database error
      * @throws WellKnownBinaryFormatException
+     *             Handle to a feature table
      */
     public List<Feature> getFeatures(final FeatureSet featureSet) throws SQLException, WellKnownBinaryFormatException
     {
@@ -583,6 +590,8 @@ public class GeoPackageFeatures
      * @return a {@link Feature}
      * @throws SQLException
      *             if there is a database error
+     * @throws WellKnownBinaryFormatException
+     *             if any of the features contain malformed Well Known Binary data
      */
     public Feature getFeature(final FeatureSet featureSet,
                               final int        featureIdentifier) throws SQLException, WellKnownBinaryFormatException
@@ -625,6 +634,18 @@ public class GeoPackageFeatures
                            feature.getRight());
     }
 
+    /**
+     * Applies a consumer to every feature in a feature set
+     *
+     * @param featureSet
+     *             Handle to a feature table
+     * @param featureConsumer
+     *             Callback that operates on a single feature
+     * @throws SQLException
+     *             if there is a database error
+     * @throws WellKnownBinaryFormatException
+     *             Handle to a feature table
+     */
     public void visitFeatures(final FeatureSet        featureSet,
                               final Consumer<Feature> featureConsumer) throws SQLException, WellKnownBinaryFormatException
     {
@@ -667,6 +688,19 @@ public class GeoPackageFeatures
         }
     }
 
+    /**
+     * Adds a feature to a feature set
+     *
+     * @param geometryColumn
+     *             Geometry column of a feature set
+     * @param geometry
+     *             Geometry of a feature
+     * @param attributes
+     *             Attributes of a feature
+     * @return a handle to the newly created {@link Feature} object
+     * @throws SQLException
+     *             if there is a database error
+     */
     public Feature addFeature(final GeometryColumn      geometryColumn,
                               final Geometry            geometry,
                               final Map<String, Object> attributes) throws SQLException
@@ -734,8 +768,15 @@ public class GeoPackageFeatures
                            attributes);
     }
 
+    /**
+     *
+     * @param geometryColumn
+     * @param attributeColumns
+     * @param features
+     * @throws SQLException
+     */
     public void addFeatures(final GeometryColumn                         geometryColumn,
-                            final Set<String>                            columns,
+                            final List<String>                           attributeColumns,
                             final Iterable<Pair<Geometry, List<Object>>> features) throws SQLException
     {
         if(geometryColumn == null)
@@ -743,7 +784,7 @@ public class GeoPackageFeatures
             throw new IllegalArgumentException("Geometry column may not be null");
         }
 
-        if(columns == null)
+        if(attributeColumns == null)
         {
             throw new IllegalArgumentException("Columns may not be null");
         }
@@ -765,7 +806,7 @@ public class GeoPackageFeatures
                                       verifyValueRequirements(geometryColumn, geometry);
                                     });
 
-        final List<String> columnNames = new LinkedList<>(columns);
+        final List<String> columnNames = new LinkedList<>(attributeColumns);
 
         columnNames.add(0, geometryColumn.getColumnName());
 
