@@ -57,7 +57,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -121,7 +120,7 @@ public final class GdalUtility
      */
     public static Dataset open(final File rawImage, final CoordinateReferenceSystem coordinateReferenceSystem)
     {
-        final Dataset dataset = gdal.Open(rawImage.getAbsolutePath()); // Opening is read-only by default
+        final Dataset dataset = gdal.Open(rawImage.getAbsmlutePath()); // Opening is read-only by default
 
         if(dataset == null)
         {
