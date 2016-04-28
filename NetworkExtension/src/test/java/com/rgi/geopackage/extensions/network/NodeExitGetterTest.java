@@ -31,6 +31,8 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -47,8 +49,12 @@ import static org.junit.Assert.*;
 public class NodeExitGetterTest
 {
     @Before
-    public void setUp() throws IOException
+    public void setUp() throws IOException, URISyntaxException
     {
+        // In order to provide GdalUtility.open() a good File object, the File object must be made in this manner
+        // You CANNOT simply make a new File object using the ClassLoader, because the File object will have encoding
+        // that prohibits gdal.Open() from working correctly when spaces are part of the file path
+        this.gpkgFile = Paths.get(ClassLoader.getSystemResource("testNetwork.gpkg").toURI()).toFile();
         try
         {
             Class.forName("org.sqlite.JDBC");
@@ -169,7 +175,7 @@ public class NodeExitGetterTest
         }
     }
 
-    private final File gpkgFile = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
+    private File gpkgFile;
     private GeoPackageNetworkExtension networkExtension;
     private Connection connection;
     private Network network;

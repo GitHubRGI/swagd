@@ -50,7 +50,10 @@ import org.junit.Test;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +92,7 @@ public class GdalUtilityTest
 
 
     @Before
-    public void setUp()
+    public void setUp() throws URISyntaxException
     {
         osr.UseExceptions();
         // Register GDAL for use
@@ -99,9 +102,12 @@ public class GdalUtilityTest
         initializeDataset(this.dataset2, "testRasterv2-3857WithAlpha.tif", true, new SphericalMercatorCrsProfile(), new BoundingBox(-15042794.840, 8589662.396, -15042426.875, 8590031.386), this.noDataValues);
     }
 
-    private static void initializeDataset(final GdalUtilityTest.ImageDataProperties datasetProperties,final String fileName, final boolean hasAlpha, final CrsProfile profile, final BoundingBox bounds, final Double[] noData)
+    private static void initializeDataset(final GdalUtilityTest.ImageDataProperties datasetProperties,final String fileName, final boolean hasAlpha, final CrsProfile profile, final BoundingBox bounds, final Double[] noData) throws URISyntaxException
     {
-        datasetProperties.imageFile   = new File(ClassLoader.getSystemResource(fileName).getFile());
+        // In order to provide GdalUtility.open() a good File object, the File object must be made in this manner
+        // You CANNOT simply make a new File object using the ClassLoader, because the File object will have encoding
+        // that prohibits gdal.Open() from working correctly when spaces are part of the file path
+        datasetProperties.imageFile   = Paths.get(ClassLoader.getSystemResource(fileName).toURI()).toFile();
         datasetProperties.dataset     = gdal.Open(datasetProperties.imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
         datasetProperties.srs         = new SpatialReference(datasetProperties.dataset.GetProjection());
         datasetProperties.crsProfile  = profile;
@@ -294,12 +300,12 @@ public class GdalUtilityTest
      */
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     @Test
-    public void verifyGetSpatialReferenceFromDataset2() {
+    public void verifyGetSpatialReferenceFromDataset2() throws URISyntaxException {
         final GCP[] testData = new GCP[1];
         testData[0] = new GCP(0, 0, 0, 0);
 
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
-        final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_Update);
+        final Path imageFile = Paths.get(ClassLoader.getSystemResource("testRasterCompressed.tif").toURI());
+        final Dataset dataset = gdal.Open(imageFile.toString(), gdalconstConstants.GA_Update);
         final String proj = dataset.GetProjection();
 
         try
@@ -449,10 +455,10 @@ public class GdalUtilityTest
      * dataset that has no georeference
      */
     @Test
-    public void verifyDatasetHasGeoReference2()
+    public void verifyDatasetHasGeoReference2() throws URISyntaxException
     {
-        final File testFile = new File(ClassLoader.getSystemResource("NonGeo.tif").getPath());
-        final Dataset rawData = gdal.Open(testFile.getPath());
+        final Path testFile = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI());
+        final Dataset rawData = gdal.Open(testFile.toString());
 
         try
         {
@@ -469,10 +475,10 @@ public class GdalUtilityTest
      * Tests hasGeoReference(Dataset)
      */
     @Test
-    public void verifyDatasetHasGeoReference3()
+    public void verifyDatasetHasGeoReference3() throws URISyntaxException
     {
-        final File testFile = new File(ClassLoader.getSystemResource("NonGeo.tif").getPath());
-        final Dataset rawData = gdal.Open(testFile.getPath(), gdalconstConstants.GA_Update);
+        final Path testFile = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI());
+        final Dataset rawData = gdal.Open(testFile.toString(), gdalconstConstants.GA_Update);
 
         final double[] original = rawData.GetGeoTransform();
         final double[] geoTransform = { 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
@@ -507,12 +513,12 @@ public class GdalUtilityTest
      * IllegalArgumentException when the image is tilted
      */
     @Test(expected = DataFormatException.class)
-    public void verifyGetBoundsException2() throws DataFormatException
+    public void verifyGetBoundsException2() throws DataFormatException, URISyntaxException
     {
-        final File rawData = new File(ClassLoader.getSystemResource("NonGeo.tif").getPath());
+        final Path rawData = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI());
         final double[] argins = { 0.0, 1.0, 3.0, 0.0, 0.0, 1.0 };
 
-        final Dataset testData = gdal.Open(rawData.getPath(), gdalconstConstants.GA_Update );
+        final Dataset testData = gdal.Open(rawData.toString(), gdalconstConstants.GA_Update );
 
         final double[] original = testData.GetGeoTransform();
         testData.SetGeoTransform(argins);
@@ -533,12 +539,12 @@ public class GdalUtilityTest
      * IllegalArgumentException when the image is tilted
      */
     @Test(expected = DataFormatException.class)
-    public void verifyGetBoundsException3() throws DataFormatException
+    public void verifyGetBoundsException3() throws DataFormatException, URISyntaxException
     {
-        final File rawData = new File(ClassLoader.getSystemResource("NonGeo.tif").getPath());
+        final Path rawData = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI());
         final double[] argins = { 0.0, 1.0, 0.0, 0.0, 5.0, 1.0 };
 
-        final Dataset testData = gdal.Open(rawData.getPath(), gdalconstConstants.GA_Update );
+        final Dataset testData = gdal.Open(rawData.toString(), gdalconstConstants.GA_Update );
 
         final double[] original = testData.GetGeoTransform();
         testData.SetGeoTransform(argins);

@@ -16,6 +16,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,11 +93,11 @@ public class HeadlessValidatorTest
      * @throws IOException
      */
     @Test
-    public void validateRequiredInputsTileSetNameMissingGPKG() throws CmdLineException, IOException
+    public void validateRequiredInputsTileSetNameMissingGPKG() throws CmdLineException, IOException, URISyntaxException
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = this.getClass().getResource( "../../../../testRaster.tif" ).getPath();
+        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, ".gpkg" );
         final String[]        args       = {"-in", inputFile, "-out", outputFile,};
         parser.parseArgument( args );
@@ -126,11 +128,11 @@ public class HeadlessValidatorTest
      * @throws IOException
      */
     @Test
-    public void inputValidTilingTMS() throws CmdLineException, IOException
+    public void inputValidTilingTMS() throws CmdLineException, IOException, URISyntaxException
     {
         final HeadlessOptions opts      = new HeadlessOptions( this.logger );
         final CmdLineParser   parser    = new CmdLineParser( opts );
-        final String          inputFile = this.getClass().getResource( "../../../../testRaster.tif" ).getPath();
+        final String          inputFile = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
         final String outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder,
                                                                                 ".TMS" ); //tms extension can be anything but .gpkg
         final String[] args = {"-in", inputFile, "-out", outputFile,};
@@ -152,11 +154,11 @@ public class HeadlessValidatorTest
      * @throws IOException
      */
     @Test
-    public void inputValidTilingNonExistantGPKG() throws CmdLineException, IOException
+    public void inputValidTilingNonExistantGPKG() throws CmdLineException, IOException, URISyntaxException
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = this.getClass().getResource( "../../../../testRaster.tif" ).getPath();
+        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, ".gpkg" );
         final String[]        args       = {"-in", inputFile, "-out", outputFile,};
         parser.parseArgument( args );
@@ -177,11 +179,11 @@ public class HeadlessValidatorTest
      * @throws IOException
      */
     @Test
-    public void inputInvalidEmptyGPKG() throws CmdLineException, IOException
+    public void inputInvalidEmptyGPKG() throws CmdLineException, IOException, URISyntaxException
     {
         final HeadlessOptions opts      = new HeadlessOptions( this.logger );
         final CmdLineParser   parser    = new CmdLineParser( opts );
-        final String          inputFile = this.getClass().getResource( "../../../../testRaster.tif" ).getPath();
+        final String          inputFile = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
         final String outputFile =
                 HeadlessTestUtility.getRandomFile( 6, ".gpkg", this.tempFolder ).getAbsolutePath();
         final String[] args = {"-in", inputFile, "-out", outputFile,};
@@ -204,7 +206,7 @@ public class HeadlessValidatorTest
      * @throws IOException
      */
     @Test
-    public void validateFailTilingSameTilesetNameGPKG() throws CmdLineException, IOException
+    public void validateFailTilingSameTilesetNameGPKG() throws CmdLineException, IOException, URISyntaxException
     {
 
         //Content information
@@ -215,8 +217,8 @@ public class HeadlessValidatorTest
         {
             final HeadlessOptions opts = new HeadlessOptions( this.logger );
             final CmdLineParser parser = new CmdLineParser( opts );
-            final String inputFile = this.getClass().getResource( "../../../../testRaster.tif" ).getPath();
-            final String outputFile = this.getClass().getResource( "../../../../testRaster.gpkg" ).getPath();
+            final String inputFile = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
+            final String outputFile = Paths.get(ClassLoader.getSystemResource("testRaster.gpkg").toURI()).toString();
             final String tableName = "testRaster";
             final String[] args = {"-in", inputFile, "-out", outputFile, "-to", tableName};
             parser.parseArgument( args );
@@ -305,11 +307,11 @@ public class HeadlessValidatorTest
      * @throws IOException
      */
     @Test
-    public void validateFailNoTilesetGPKGtoTMS() throws CmdLineException, IOException
+    public void validateFailNoTilesetGPKGtoTMS() throws CmdLineException, IOException, URISyntaxException
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = this.getClass().getResource( "../../../../testRaster.gpkg" ).getPath();
+        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.gpkg").toURI()).toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, "" );
         final String[]        args       = {"-in", inputFile, "-out", outputFile,};
         parser.parseArgument( args );
@@ -330,11 +332,11 @@ public class HeadlessValidatorTest
      * @throws IOException
      */
     @Test
-    public void inputValidGPKGtoTMS() throws CmdLineException, IOException
+    public void inputValidGPKGtoTMS() throws CmdLineException, IOException, URISyntaxException
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = this.getClass().getResource( "../../../../testRaster.gpkg" ).getPath();
+        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.gpkg").toURI()).toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, "" );
         final String[]        args       = {"-in", inputFile, "-out", outputFile, "-ti", "testRaster"};
         parser.parseArgument( args );
@@ -356,11 +358,11 @@ public class HeadlessValidatorTest
      * @throws IOException
      */
     @Test
-    public void inputValidGPKGtoGPKG() throws CmdLineException, IOException
+    public void inputValidGPKGtoGPKG() throws CmdLineException, IOException, URISyntaxException
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = this.getClass().getResource( "../../../../testRaster.gpkg" ).getPath();
+        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.gpkg").toURI()).toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, ".gpkg" );
         final String[] args =
                 {"-in", inputFile, "-out", outputFile, "-ti", "testRaster", "-to", "outTable"};
