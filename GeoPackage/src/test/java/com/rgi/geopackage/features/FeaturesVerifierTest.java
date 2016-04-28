@@ -23,19 +23,30 @@
 
 package com.rgi.geopackage.features;
 
+import com.mockrunner.mock.jdbc.MockConnection;
+import com.rgi.geopackage.verification.VerificationLevel;
 import org.junit.Test;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * @author Luke Lambert
  */
+@SuppressWarnings("JavaDoc")
 public class FeaturesVerifierTest
 {
     /**
      * Test the constructor
      */
     @Test
-    public void constructor()
+    @SuppressWarnings("JUnitTestMethodWithNoAssertions")
+    public void constructor() throws SQLException
     {
-        
+        try(final Connection connection = new MockConnection())
+        {
+            new FeaturesVerifier(connection,
+                                 VerificationLevel.Full);
+        }
     }
 }

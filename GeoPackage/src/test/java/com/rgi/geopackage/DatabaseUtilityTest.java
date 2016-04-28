@@ -306,7 +306,7 @@ public class DatabaseUtilityTest
             DatabaseUtilityTest.addTable(connection, "foo");
 
             final DatabaseVersion foundSqliteVersion = DatabaseUtility.getSqliteVersion(testFile);
-            
+
             assertEquals(String.format("The SQLite Version was different from expected. Expected: %s.x, Actual: %s",
                                        sqliteMajorVersion,
                                        foundSqliteVersion),
