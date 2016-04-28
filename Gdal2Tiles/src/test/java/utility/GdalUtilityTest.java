@@ -304,7 +304,7 @@ public class GdalUtilityTest
         final GCP[] testData = new GCP[1];
         testData[0] = new GCP(0, 0, 0, 0);
 
-        final Path imageFile = Paths.get(ClassLoader.getSystemResource("testRasterCompressed.tif").toURI());
+        final File imageFile = Paths.get(ClassLoader.getSystemResource("testRasterCompressed.tif").toURI()).toFile();
         final Dataset dataset = gdal.Open(imageFile.toString(), gdalconstConstants.GA_Update);
         final String proj = dataset.GetProjection();
 
@@ -457,7 +457,7 @@ public class GdalUtilityTest
     @Test
     public void verifyDatasetHasGeoReference2() throws URISyntaxException
     {
-        final Path testFile = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI());
+        final File testFile = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI()).toFile();
         final Dataset rawData = gdal.Open(testFile.toString());
 
         try
@@ -477,7 +477,7 @@ public class GdalUtilityTest
     @Test
     public void verifyDatasetHasGeoReference3() throws URISyntaxException
     {
-        final Path testFile = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI());
+        final File testFile = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI()).toFile();
         final Dataset rawData = gdal.Open(testFile.toString(), gdalconstConstants.GA_Update);
 
         final double[] original = rawData.GetGeoTransform();
@@ -515,7 +515,7 @@ public class GdalUtilityTest
     @Test(expected = DataFormatException.class)
     public void verifyGetBoundsException2() throws DataFormatException, URISyntaxException
     {
-        final Path rawData = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI());
+        final File rawData = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI()).toFile();
         final double[] argins = { 0.0, 1.0, 3.0, 0.0, 0.0, 1.0 };
 
         final Dataset testData = gdal.Open(rawData.toString(), gdalconstConstants.GA_Update );
@@ -541,7 +541,7 @@ public class GdalUtilityTest
     @Test(expected = DataFormatException.class)
     public void verifyGetBoundsException3() throws DataFormatException, URISyntaxException
     {
-        final Path rawData = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI());
+        final File rawData = Paths.get(ClassLoader.getSystemResource("NonGeo.tif").toURI()).toFile();
         final double[] argins = { 0.0, 1.0, 0.0, 0.0, 5.0, 1.0 };
 
         final Dataset testData = gdal.Open(rawData.toString(), gdalconstConstants.GA_Update );
@@ -1219,13 +1219,13 @@ public class GdalUtilityTest
      * an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyZoomLevelForPixelSizeException5() throws TileStoreException
+    public void verifyZoomLevelForPixelSizeException5() throws TileStoreException, URISyntaxException
     {
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
         final Coordinate<Integer> coordinate = new Coordinate<>(0, 0);
         tileRanges.put(0,new Range<>(coordinate, coordinate));
 
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
+        final File imageFile = Paths.get(ClassLoader.getSystemResource("testRasterCompressed.tif").toURI()).toFile();
         final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final CrsProfile crsProfile = new EllipsoidalMercatorCrsProfile();
@@ -1242,13 +1242,13 @@ public class GdalUtilityTest
      * an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyZoomLevelForPixelSizeException6() throws TileStoreException
+    public void verifyZoomLevelForPixelSizeException6() throws TileStoreException, URISyntaxException
     {
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
         final Coordinate<Integer> coordinate = new Coordinate<>(0,0);
         tileRanges.put(0,new Range<>(coordinate, coordinate));
 
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
+        final File imageFile = Paths.get(ClassLoader.getSystemResource("testRasterCompressed.tif").toURI()).toFile();
         final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final CrsProfile crsProfile = new EllipsoidalMercatorCrsProfile();
@@ -1265,13 +1265,13 @@ public class GdalUtilityTest
      * an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyZoomLevelForPixelSizeException7() throws TileStoreException
+    public void verifyZoomLevelForPixelSizeException7() throws TileStoreException, URISyntaxException
     {
         final Map<Integer, Range<Coordinate<Integer>>> tileRanges = new HashMap<>(100);
         final Coordinate<Integer> coordinate = new Coordinate<>(0,0);
         tileRanges.put(0,new Range<>(coordinate, coordinate));
 
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
+        final File imageFile = Paths.get(ClassLoader.getSystemResource("testRasterCompressed.tif").toURI()).toFile();
         final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final CrsProfile crsProfile = new EllipsoidalMercatorCrsProfile();
@@ -1385,9 +1385,9 @@ public class GdalUtilityTest
      * an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyWarpDatasetToSrsException2()
+    public void verifyWarpDatasetToSrsException2() throws URISyntaxException
     {
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
+        final File imageFile = Paths.get(ClassLoader.getSystemResource("testRasterCompressed.tif").toURI()).toFile();
         final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final SpatialReference fromSrs = null;
@@ -1404,9 +1404,9 @@ public class GdalUtilityTest
      * an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
-    public void verifyWarpDatasetToSrsException3()
+    public void verifyWarpDatasetToSrsException3() throws URISyntaxException
     {
-        final File imageFile = new File(ClassLoader.getSystemResource("testRasterCompressed.tif").getFile());
+        final File imageFile = Paths.get(ClassLoader.getSystemResource("testRasterCompressed.tif").toURI()).toFile();
         final Dataset dataset = gdal.Open(imageFile.getAbsolutePath(), gdalconstConstants.GA_ReadOnly);
 
         final SpatialReference fromSrs = GdalUtility.getSpatialReference(new CoordinateReferenceSystem("EPSG", 3857));
