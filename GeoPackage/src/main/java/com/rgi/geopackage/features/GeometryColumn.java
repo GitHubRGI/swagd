@@ -44,6 +44,7 @@ public class GeometryColumn
      *            "http://www.geopackage.org/spec/#geometry_types">Geometry
      *            Types (Normative)</a>
      * @param spatialReferenceSystemIdentifier
+     *            Spatial reference system identifier
      * @param zRequirement
      *            Restrictions on the presence of a 'z' value
      * @param mRequirement
@@ -99,6 +100,7 @@ public class GeometryColumn
     /**
      * @return the zRequirement
      */
+    @SuppressWarnings("SuspiciousGetterSetter") // the inspection complains about ZRequirement vs zRequirement
     public ValueRequirement getZRequirement()
     {
         return this.zRequirement;
@@ -107,6 +109,7 @@ public class GeometryColumn
     /**
      * @return the mRequirement
      */
+    @SuppressWarnings("SuspiciousGetterSetter") // the inspection complains about MRequirement vs mRequirement
     public ValueRequirement getMRequirement()
     {
         return this.mRequirement;

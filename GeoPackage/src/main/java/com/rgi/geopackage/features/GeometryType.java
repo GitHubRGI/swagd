@@ -29,6 +29,7 @@ package com.rgi.geopackage.features;
  * @author Luke Lambert
  *
  */
+@SuppressWarnings("JavaDoc")
 public enum GeometryType
 {
     // http://www.geopackage.org/spec/#geometry_types_core
@@ -58,17 +59,11 @@ public enum GeometryType
         this.extension = extension;
     }
 
-    /**
-     * @return the code
-     */
     public long getCode()
     {
         return this.code;
     }
 
-    /**
-     * @return the extension
-     */
     public boolean isExtension()
     {
         return this.extension;

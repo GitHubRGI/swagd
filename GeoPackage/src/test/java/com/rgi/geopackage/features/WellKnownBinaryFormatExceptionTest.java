@@ -21,32 +21,32 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage;
+package com.rgi.geopackage.features;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import org.junit.Test;
 
 /**
- * @author Luke Lambert
+ * @author Luke.Lambert
  */
-@SuppressWarnings("JavaDoc")
-public final class TestUtility
+public class WellKnownBinaryFormatExceptionTest
 {
-    private TestUtility() {}
-
-    public static File getRandomFile() throws IOException
+    /**
+     * Test the string-parameter constructor
+     */
+    @Test
+    @SuppressWarnings({"JUnitTestMethodWithNoAssertions", "ThrowableInstanceNeverThrown"})
+    public void stringConstructor()
     {
-        final File testFile = File.createTempFile("test", ".gpkg");
-        testFile.delete();
-        testFile.deleteOnExit();
-        return testFile;
+        new WellKnownBinaryFormatException("error");
     }
 
-    public static Connection getConnection(final File testFile) throws SQLException
+    /**
+     * Test the throwable-parameter constructor
+     */
+    @Test
+    @SuppressWarnings({"JUnitTestMethodWithNoAssertions", "ThrowableInstanceNeverThrown"})
+    public void throwableConstructor()
     {
-        return DriverManager.getConnection("jdbc:sqlite:" + testFile.toURI());
+        new WellKnownBinaryFormatException(new Throwable());
     }
 }

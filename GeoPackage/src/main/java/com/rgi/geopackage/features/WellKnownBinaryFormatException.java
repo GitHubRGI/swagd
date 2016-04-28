@@ -1,33 +1,32 @@
 package com.rgi.geopackage.features;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 /**
  * @author Luke Lambert
  */
-@SuppressWarnings("CheckedExceptionClass")
+@SuppressWarnings({"CheckedExceptionClass", "SerializableHasSerializationMethods", "DeserializableClassInSecureContext", "SerializableClassInSecureContext"})
 public class WellKnownBinaryFormatException extends Exception
 {
     private static final long serialVersionUID = 160039456060440345L;
 
+    /**
+     * Constructor
+     *
+     * @param message
+     *             Error message
+     */
     public WellKnownBinaryFormatException(final String message)
     {
         super(message);
     }
 
+    /**
+     * Constructor
+     *
+     * @param cause
+     *             Original error
+     */
     public WellKnownBinaryFormatException(final Throwable cause)
     {
         super(cause);
-    }
-
-    private void writeObject(final ObjectOutputStream stream)
-    {
-        throw new RuntimeException("Serialization not supported");
-    }
-
-    private void readObject(final ObjectInputStream stream)
-    {
-        throw new RuntimeException("Serialization not supported");
     }
 }
