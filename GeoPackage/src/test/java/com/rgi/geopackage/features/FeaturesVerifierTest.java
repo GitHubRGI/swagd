@@ -23,28 +23,19 @@
 
 package com.rgi.geopackage.features;
 
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
-
-import java.sql.Connection;
+import org.junit.Test;
 
 /**
  * @author Luke Lambert
  */
-public class FeaturesVerifier extends Verifier
+public class FeaturesVerifierTest
 {
     /**
-     * Constructor
-     *
-     * @param verificationLevel
-     *             Controls the level of verification testing performed
-     * @param sqliteConnection
-     *             A connection handle to the database
+     * Test the constructor
      */
-    public FeaturesVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
+    @Test
+    public void constructor()
     {
-        super(sqliteConnection, verificationLevel);
+        
     }
-
-    // TODO
 }

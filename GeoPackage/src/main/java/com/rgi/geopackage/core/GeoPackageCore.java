@@ -47,7 +47,7 @@ import java.util.List;
 public class GeoPackageCore
 {
     /**
-     * The Date value in ISO 8601 format as defined by the strftime function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
+     * The Date value in ISO 8601 format as defined by the {@code strftime} function %Y-%m-%dT%H:%M:%fZ format string applied to the current time
      */
     public static final SimpleDateFormat DateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 

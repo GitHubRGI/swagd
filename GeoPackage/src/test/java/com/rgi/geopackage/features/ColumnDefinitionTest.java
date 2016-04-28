@@ -23,28 +23,28 @@
 
 package com.rgi.geopackage.features;
 
-import com.rgi.geopackage.verification.VerificationLevel;
-import com.rgi.geopackage.verification.Verifier;
+import org.junit.Test;
 
-import java.sql.Connection;
+import java.util.EnumSet;
 
 /**
  * @author Luke Lambert
  */
-public class FeaturesVerifier extends Verifier
+public class ColumnDefinitionTest
 {
     /**
-     * Constructor
-     *
-     * @param verificationLevel
-     *             Controls the level of verification testing performed
-     * @param sqliteConnection
-     *             A connection handle to the database
+     * Tests to make sure a good set of parameters works
      */
-    public FeaturesVerifier(final Connection sqliteConnection, final VerificationLevel verificationLevel)
+    @Test
+    @SuppressWarnings("JUnitTestMethodWithNoAssertions")
+    public void columnDefinitionConstructor()
     {
-        super(sqliteConnection, verificationLevel);
+        // Not the most exciting of tests...
+        new ColumnDefinition("column",
+                             "INTEGER",
+                             EnumSet.of(ColumnFlag.PrimaryKey),
+                             null,
+                             ColumnDefault.None,
+                             "this is a column");
     }
-
-    // TODO
 }

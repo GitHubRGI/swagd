@@ -25,9 +25,13 @@ package com.rgi.geopackage.features;
 
 import com.rgi.geopackage.features.geometry.Geometry;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Representation of a row in a GeoPackage features table
+ *
  * @author Luke Lambert
  *
  */
@@ -35,17 +39,28 @@ public class Feature
 {
 
     /**
+     * Constructor
+     *
      * @param identifier
+     *             Unique integer identifier
      * @param geometry
+     *             Feature geometry
      * @param attributes
+     *             Key-value mapping of attribute's column names to their values
      */
     protected Feature(final int                 identifier,
                       final Geometry            geometry,
                       final Map<String, Object> attributes)
     {
+        if(geometry == null)
+        {
+            throw new IllegalArgumentException("Geometry may not be null");
+        }
+
         this.identifier = identifier;
         this.geometry   = geometry;
-        this.attributes = attributes;
+        this.attributes = attributes == null ? Collections.emptyMap()
+                                             : new HashMap<>(attributes);
     }
 
     /**
@@ -69,7 +84,7 @@ public class Feature
      */
     public Map<String, Object> getAttributes()
     {
-        return this.attributes;
+        return Collections.unmodifiableMap(this.attributes);
     }
 
     private final int                 identifier;

@@ -55,7 +55,7 @@ public class Column
      * @param flags
      *             Column constraint flags
      * @param defaultValue
-     *             Column default value. Ignored if null.
+     *             Column default value
      */
     protected Column(final String              name,
                      final String              type,
@@ -75,11 +75,6 @@ public class Column
 
         this.flags = flags == null ? EnumSet.noneOf(ColumnFlag.class)
                                    : flags;
-
-        if(defaultValue == null)
-        {
-            throw new IllegalArgumentException("The default type may not be null. Use ColumnDefault.Null to specify a null value, or ColumnDefault.None to leave the default unspecified.");
-        }
 
         this.name            = name;
         this.type            = type;

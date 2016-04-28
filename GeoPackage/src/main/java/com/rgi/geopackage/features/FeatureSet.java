@@ -35,7 +35,6 @@ import java.util.Collections;
  */
 public class FeatureSet extends Content
 {
-
     /**
      * Constructor
      *
@@ -57,6 +56,12 @@ public class FeatureSet extends Content
      *             Bounding box maximum northing or latitude for all content
      * @param spatialReferenceSystemIdentifier
      *             Spatial Reference System (SRS)
+     * @param primaryKeyColumnName
+     *             Column name of the primary key
+     * @param geometryColumnName
+     *             Column name of the geometry attribute
+     * @param attributeColumnNames
+     *             Column names of the other attributes
      */
     protected FeatureSet(final String             tableName,
                          final String             identifier,
@@ -82,9 +87,20 @@ public class FeatureSet extends Content
               maximumY,
               spatialReferenceSystemIdentifier);
 
+        if(primaryKeyColumnName == null || primaryKeyColumnName.isEmpty())
+        {
+            throw new IllegalArgumentException("Primary key column name may not be null");
+        }
+
+        if(geometryColumnName == null || geometryColumnName.isEmpty())
+        {
+            throw new IllegalArgumentException("Geometry key column name may not be null");
+        }
+
         this.primaryKeyColumnName = primaryKeyColumnName;
         this.geometryColumnName   = geometryColumnName;
-        this.attributeColumnNames = new ArrayList<>(attributeColumnNames);
+        this.attributeColumnNames = new ArrayList<>(attributeColumnNames == null ? Collections.emptyList()
+                                                                                 : attributeColumnNames);
     }
 
     public String getPrimaryKeyColumnName()
