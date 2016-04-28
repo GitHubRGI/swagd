@@ -28,6 +28,7 @@ import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.verification.ConformanceException;
 import org.junit.Before;
 import org.junit.Test;
+import utility.TestUtility;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,11 +36,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -51,10 +49,7 @@ public class NodeExitGetterTest
     @Before
     public void setUp() throws IOException, URISyntaxException
     {
-        // In order to provide GdalUtility.open() a good File object, the File object must be made in this manner
-        // You CANNOT simply make a new File object using the ClassLoader, because the File object will have encoding
-        // that prohibits gdal.Open() from working correctly when spaces are part of the file path
-        this.gpkgFile = Paths.get(ClassLoader.getSystemResource("testNetwork.gpkg").toURI()).toFile();
+        this.gpkgFile = TestUtility.loadFileFromDisk("testNetwork.gpkg");
         try
         {
             Class.forName("org.sqlite.JDBC");

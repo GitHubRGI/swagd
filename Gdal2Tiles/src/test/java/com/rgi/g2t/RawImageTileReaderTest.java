@@ -32,7 +32,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -47,7 +46,6 @@ import org.gdal.gdal.Band;
 import org.gdal.gdal.ColorTable;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
-import org.junit.Before;
 import org.junit.Test;
 
 
@@ -67,6 +65,7 @@ import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.store.tiles.TileHandle;
 import com.rgi.store.tiles.TileStoreException;
+import utility.TestUtility;
 
 /**
  *
@@ -76,17 +75,8 @@ import com.rgi.store.tiles.TileStoreException;
 @SuppressWarnings("MagicNumber")
 public class RawImageTileReaderTest
 {
-    private File rawData;
-
-    @Before
-    public void setUp() throws URISyntaxException
-    {
-        // Tiff used for testing
-        // In order to provide GdalUtility.open() a good File object, the File object must be made in this manner
-        // You CANNOT simply make a new File object using the ClassLoader, because the File object will have encoding
-        // that prohibits gdal.Open() from working correctly when spaces are part of the file path
-        this.rawData = Paths.get(ClassLoader.getSystemResource("test.tif").toURI()).toFile();
-    }
+    // Tiff used for testing
+    private final File rawData = TestUtility.loadFileFromDisk("test.tif");
 
     /**
      * Tests RawImageTileReader constructor
@@ -713,7 +703,7 @@ public class RawImageTileReaderTest
                                             .findFirst()
                                             .get();
 
-            final File testTile = Paths.get(ClassLoader.getSystemResource("224798.png").toURI()).toFile();
+            final File testTile = TestUtility.loadFileFromDisk("224798.png");
             final BufferedImage image = ImageIO.read(testTile);
 
             assertTrue("RawImageTileHandle method getImage did not return the correct image.",
@@ -763,7 +753,7 @@ public class RawImageTileReaderTest
                                            .filter(tile -> tile.getColumn() == 16313 && tile.getRow() == 112398)
                                            .findAny()
                                            .get();
-            final File testTile = Paths.get(ClassLoader.getSystemResource("112398.png").toURI()).toFile();
+            final File testTile = TestUtility.loadFileFromDisk("112398.png");
             final BufferedImage image = ImageIO.read(testTile);
 
            assertTrue("RawImageTileHandle method getImage did not return the correct image.",

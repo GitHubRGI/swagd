@@ -4,16 +4,12 @@ import com.rgi.common.util.FileUtility;
 import com.rgi.suite.cli.tilestoreadapter.GPKGTileStoreAdapter;
 import com.rgi.suite.cli.tilestoreadapter.RawImageTileStoreAdapter;
 import com.rgi.suite.cli.tilestoreadapter.TMSTileStoreAdapter;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
@@ -32,11 +28,11 @@ import static org.junit.Assert.assertTrue;
  */
 public class HeadlessValidatorTest
 {
-    private final Logger logger;
+    private final Logger logger = Logger.getLogger("RGISuite.logger");
 
-    public HeadlessValidatorTest()
+    @Before
+    public void setUp()
     {
-        this.logger = Logger.getLogger( "RGISuite.logger" );
         this.logger.setLevel( Level.ALL );
         final ConsoleHandler handler = new ConsoleHandler();
         handler.setFormatter( new SimpleFormatter() );
@@ -97,7 +93,7 @@ public class HeadlessValidatorTest
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
+        final String          inputFile  = TestUtility.loadFileFromDisk("testRaster.tif").toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, ".gpkg" );
         final String[]        args       = {"-in", inputFile, "-out", outputFile,};
         parser.parseArgument( args );
@@ -132,7 +128,7 @@ public class HeadlessValidatorTest
     {
         final HeadlessOptions opts      = new HeadlessOptions( this.logger );
         final CmdLineParser   parser    = new CmdLineParser( opts );
-        final String          inputFile = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
+        final String          inputFile = TestUtility.loadFileFromDisk("testRaster.tif").toString();
         final String outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder,
                                                                                 ".TMS" ); //tms extension can be anything but .gpkg
         final String[] args = {"-in", inputFile, "-out", outputFile,};
@@ -158,7 +154,7 @@ public class HeadlessValidatorTest
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
+        final String          inputFile  = TestUtility.loadFileFromDisk("testRaster.tif").toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, ".gpkg" );
         final String[]        args       = {"-in", inputFile, "-out", outputFile,};
         parser.parseArgument( args );
@@ -183,7 +179,7 @@ public class HeadlessValidatorTest
     {
         final HeadlessOptions opts      = new HeadlessOptions( this.logger );
         final CmdLineParser   parser    = new CmdLineParser( opts );
-        final String          inputFile = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
+        final String          inputFile = TestUtility.loadFileFromDisk("testRaster.tif").toString();
         final String outputFile =
                 HeadlessTestUtility.getRandomFile( 6, ".gpkg", this.tempFolder ).getAbsolutePath();
         final String[] args = {"-in", inputFile, "-out", outputFile,};
@@ -217,8 +213,8 @@ public class HeadlessValidatorTest
         {
             final HeadlessOptions opts = new HeadlessOptions( this.logger );
             final CmdLineParser parser = new CmdLineParser( opts );
-            final String inputFile = Paths.get(ClassLoader.getSystemResource("testRaster.tif").toURI()).toString();
-            final String outputFile = Paths.get(ClassLoader.getSystemResource("testRaster.gpkg").toURI()).toString();
+            final String inputFile = TestUtility.loadFileFromDisk("testRaster.tif").toString();
+            final String outputFile = TestUtility.loadFileFromDisk("testRaster.gpkg").toString();
             final String tableName = "testRaster";
             final String[] args = {"-in", inputFile, "-out", outputFile, "-to", tableName};
             parser.parseArgument( args );
@@ -311,7 +307,7 @@ public class HeadlessValidatorTest
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.gpkg").toURI()).toString();
+        final String          inputFile  = TestUtility.loadFileFromDisk("testRaster.gpkg").toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, "" );
         final String[]        args       = {"-in", inputFile, "-out", outputFile,};
         parser.parseArgument( args );
@@ -336,7 +332,7 @@ public class HeadlessValidatorTest
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.gpkg").toURI()).toString();
+        final String          inputFile  = TestUtility.loadFileFromDisk("testRaster.gpkg").toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, "" );
         final String[]        args       = {"-in", inputFile, "-out", outputFile, "-ti", "testRaster"};
         parser.parseArgument( args );
@@ -362,7 +358,7 @@ public class HeadlessValidatorTest
     {
         final HeadlessOptions opts       = new HeadlessOptions( this.logger );
         final CmdLineParser   parser     = new CmdLineParser( opts );
-        final String          inputFile  = Paths.get(ClassLoader.getSystemResource("testRaster.gpkg").toURI()).toString();
+        final String          inputFile  = TestUtility.loadFileFromDisk("testRaster.gpkg").toString();
         final String          outputFile = HeadlessTestUtility.getNonExistantFileString( this.tempFolder, ".gpkg" );
         final String[] args =
                 {"-in", inputFile, "-out", outputFile, "-ti", "testRaster", "-to", "outTable"};
