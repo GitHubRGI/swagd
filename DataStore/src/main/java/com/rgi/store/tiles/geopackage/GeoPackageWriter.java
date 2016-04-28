@@ -130,7 +130,7 @@ public class GeoPackageWriter implements TileStoreWriter
         {
             if(!geoPackageFile.getParentFile().mkdirs())
             {
-                throw new RuntimeException("Unable to create file: " + geoPackageFile.getAbsolutePath());
+                throw new RuntimeException("Unable to create file: " + geoPackageFile.getPath());
             }
         }
 

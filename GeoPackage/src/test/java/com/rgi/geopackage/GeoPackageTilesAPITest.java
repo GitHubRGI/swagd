@@ -181,7 +181,7 @@ public class GeoPackageTilesAPITest
 
         final String query = "SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = 'pyramid';";
 
-        try(final Connection con       = TestUtility.getConnection(testFile.getAbsolutePath());
+        try(final Connection con       = TestUtility.getConnection(testFile);
             final Statement  stmt      = con.createStatement();
             final ResultSet  tileName  = stmt.executeQuery(query))
         {
@@ -286,7 +286,7 @@ public class GeoPackageTilesAPITest
                                    "definition   = 'definition'            AND "+
                                    "description  = 'description';";
 
-        try(final Connection con     = TestUtility.getConnection(testFile.getAbsolutePath());
+        try(final Connection con     = TestUtility.getConnection(testFile);
             final Statement  stmt    = con.createStatement();
             final ResultSet  srsInfo = stmt.executeQuery(query))
         {
@@ -348,7 +348,7 @@ public class GeoPackageTilesAPITest
         final String query = "SELECT cnts.table_name FROM gpkg_contents        AS cnts WHERE cnts.table_name"+
                              " IN(SELECT tms.table_name  FROM gpkg_tile_matrix_set AS tms  WHERE cnts.table_name = tms.table_name);";
 
-        try(final Connection con            = TestUtility.getConnection(testFile.getAbsolutePath());
+        try(final Connection con            = TestUtility.getConnection(testFile);
             final Statement  stmt           = con.createStatement();
             final ResultSet  tileTableNames = stmt.executeQuery(query))
         {
@@ -945,7 +945,7 @@ public class GeoPackageTilesAPITest
         {
             final String query = "SELECT table_name FROM gpkg_contents WHERE table_name = 'diff_tile_set';";
 
-            try(final Connection con           = TestUtility.getConnection(testFile.getAbsolutePath());
+            try(final Connection con           = TestUtility.getConnection(testFile);
                 final Statement  stmt          = con.createStatement();
                 final ResultSet  tileTableName = stmt.executeQuery(query))
             {
@@ -1043,7 +1043,7 @@ public class GeoPackageTilesAPITest
         //use a query to test if the tile was inserted into database and to correct if the image is the same
         final String query = "SELECT tile_data FROM tileSetName WHERE zoom_level = 2 AND tile_column = 0 AND tile_row =0;";
 
-        try(final Connection con      = TestUtility.getConnection(testFile.getAbsolutePath());
+        try(final Connection con      = TestUtility.getConnection(testFile);
             final Statement  stmt     = con.createStatement();
             final ResultSet  tileData = stmt.executeQuery(query))
         {
@@ -1914,7 +1914,7 @@ public class GeoPackageTilesAPITest
                                            tileWidth);
 
         //noinspection JDBCExecuteWithNonConstantString
-        try(final Connection con      = TestUtility.getConnection(testFile.getAbsolutePath());
+        try(final Connection con      = TestUtility.getConnection(testFile);
             final Statement stmt      = con.createStatement();
             final ResultSet tableName = stmt.executeQuery(query))
         {

@@ -20,7 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.rgi.geopackage;
+package com.rgi.common;
 
 import java.io.File;
 import java.io.IOException;

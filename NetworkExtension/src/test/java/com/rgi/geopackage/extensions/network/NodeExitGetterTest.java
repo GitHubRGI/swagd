@@ -77,7 +77,7 @@ public class NodeExitGetterTest
     {
         try
         {
-            return DriverManager.getConnection("jdbc:sqlite:" + gpkgFile.getAbsolutePath());
+            return DriverManager.getConnection("jdbc:sqlite:" + gpkgFile.toURI());
         }
         catch(final SQLException exception)
         {

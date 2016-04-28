@@ -451,7 +451,7 @@ public class GdalUtilityTest
     @Test
     public void verifyDatasetHasGeoReference2()
     {
-        final File testFile = new File("NonGeo.tif");
+        final File testFile = new File(ClassLoader.getSystemResource("NonGeo.tif").getPath());
         final Dataset rawData = gdal.Open(testFile.getPath());
 
         try
@@ -471,7 +471,7 @@ public class GdalUtilityTest
     @Test
     public void verifyDatasetHasGeoReference3()
     {
-        final File testFile = new File("NonGeo.tif");
+        final File testFile = new File(ClassLoader.getSystemResource("NonGeo.tif").getPath());
         final Dataset rawData = gdal.Open(testFile.getPath(), gdalconstConstants.GA_Update);
 
         final double[] original = rawData.GetGeoTransform();
@@ -509,7 +509,7 @@ public class GdalUtilityTest
     @Test(expected = DataFormatException.class)
     public void verifyGetBoundsException2() throws DataFormatException
     {
-        final File rawData = new File("NonGeo.tif");
+        final File rawData = new File(ClassLoader.getSystemResource("NonGeo.tif").getPath());
         final double[] argins = { 0.0, 1.0, 3.0, 0.0, 0.0, 1.0 };
 
         final Dataset testData = gdal.Open(rawData.getPath(), gdalconstConstants.GA_Update );
@@ -535,7 +535,7 @@ public class GdalUtilityTest
     @Test(expected = DataFormatException.class)
     public void verifyGetBoundsException3() throws DataFormatException
     {
-        final File rawData = new File("NonGeo.tif");
+        final File rawData = new File(ClassLoader.getSystemResource("NonGeo.tif").getPath());
         final double[] argins = { 0.0, 1.0, 0.0, 0.0, 5.0, 1.0 };
 
         final Dataset testData = gdal.Open(rawData.getPath(), gdalconstConstants.GA_Update );
