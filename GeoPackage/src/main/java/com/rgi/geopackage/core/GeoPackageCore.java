@@ -317,6 +317,11 @@ public class GeoPackageCore
             throw new IllegalArgumentException("Bounding box cannot be null.");
         }
 
+        if(spatialReferenceSystem == null)
+        {
+            throw new IllegalArgumentException("Spatial reference system may not be null");
+        }
+
         final Content existingContent = this.getContent(tableName);
 
         if(existingContent != null)

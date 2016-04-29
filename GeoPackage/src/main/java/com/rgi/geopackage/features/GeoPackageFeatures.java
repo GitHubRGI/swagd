@@ -252,44 +252,14 @@ public class GeoPackageFeatures
     {
         DatabaseUtility.validateTableName(tableName);
 
-        if(boundingBox == null)
-        {
-            throw new IllegalArgumentException("Bounding box cannot be mull.");
-        }
-
-        if(spatialReferenceSystem == null)
-        {
-            throw new IllegalArgumentException("Spatial reference system may not be null");
-        }
-
         if(geometryColumn == null)
         {
             throw new IllegalArgumentException("Geometry column definition name may not be null");
         }
 
-        if(columnDefinitions == null || Arrays.asList(columnDefinitions).stream().anyMatch(definition -> definition == null))
+        if(columnDefinitions == null || columnDefinitions.contains(null))
         {
             throw new IllegalArgumentException("Column definitions may not be null");
-        }
-
-        final FeatureSet existingContent = this.getFeatureSet(tableName);
-
-        if(existingContent != null)
-        {
-            if(existingContent.equals(tableName,
-                                      FeatureSet.FeatureContentType,
-                                      identifier,
-                                      description,
-                                      boundingBox.getMinimumX(),
-                                      boundingBox.getMinimumY(),
-                                      boundingBox.getMaximumX(),
-                                      boundingBox.getMaximumY(),
-                                      spatialReferenceSystem.getIdentifier()))
-            {
-                return existingContent;
-            }
-
-            throw new IllegalArgumentException("An entry in the content table already exists with this table name, but has different values for its other fields");
         }
 
         if(DatabaseUtility.tableOrViewExists(this.databaseConnection, tableName))
@@ -321,10 +291,10 @@ public class GeoPackageFeatures
 
             return this.getFeatureSet(tableName);   // TODO this is a lazy way of doing things (carried on from the tiles implementation). There should be a method in core to query for the only information that can't already be obtained in this function - the last_change
         }
-        catch(final Exception ex)
+        catch(final Throwable th)
         {
             this.databaseConnection.rollback();
-            throw ex;
+            throw th;
         }
     }
 

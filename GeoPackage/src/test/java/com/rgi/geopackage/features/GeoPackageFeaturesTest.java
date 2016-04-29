@@ -27,7 +27,8 @@ import com.rgi.common.BoundingBox;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.TestUtility;
 import com.rgi.geopackage.core.GeoPackageCore;
-import com.rgi.geopackage.verification.*;
+import com.rgi.geopackage.verification.ConformanceException;
+import com.rgi.geopackage.verification.VerificationLevel;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -35,7 +36,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLType;
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author Luke Lambert
@@ -83,15 +85,11 @@ public class GeoPackageFeaturesTest
      * Test addFeatureSet()
      */
     @Test
+    @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     public void addFeatureSet() throws IOException, SQLException, ConformanceException, ClassNotFoundException
     {
         try(final GeoPackage gpkg = new GeoPackage(TestUtility.getRandomFile()))
         {
-            final String tableName            = "mytable";
-            final String identifier           = "identifier";
-            final String description          = "description";
-            final String primaryKeyColumnName = "id";
-
             final GeometryColumnDefinition geometryColumn = new GeometryColumnDefinition("geometry",
                                                                                          GeometryType.Point.toString(),
                                                                                          ValueRequirement.Mandatory,
@@ -112,16 +110,147 @@ public class GeoPackageFeaturesTest
                                                                                ColumnDefault.None,
                                                                                "comment");
 
-            final FeatureSet featureSet = gpkg.features()
-                                              .addFeatureSet(tableName,
-                                                             identifier,
-                                                             description,
-                                                             new BoundingBox(0.0, 0.0, 0.0, 0.0),
-                                                             gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
-                                                             primaryKeyColumnName,
-                                                             geometryColumn,
-                                                             attributeDefinition1,
-                                                             attributeDefinition2);
+            gpkg.features()
+                .addFeatureSet("mytable",
+                               "identifier",
+                               "description",
+                               new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                               gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
+                               "id",
+                               geometryColumn,
+                               attributeDefinition1,
+                               attributeDefinition2);
+        }
+    }
+
+    /**
+     * Test addFeatureSet() with a null spatial reference system
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addFeatureSetNullSpatialReferenceSystem() throws IOException, SQLException, ConformanceException, ClassNotFoundException
+    {
+        try(final GeoPackage gpkg = new GeoPackage(TestUtility.getRandomFile()))
+        {
+            final GeometryColumnDefinition geometryColumn = new GeometryColumnDefinition("geometry",
+                                                                                         GeometryType.Point.toString(),
+                                                                                         ValueRequirement.Mandatory,
+                                                                                         ValueRequirement.Mandatory,
+                                                                                         "comment");
+
+            gpkg.features()
+                .addFeatureSet("mytable",
+                               "identifier",
+                               "description",
+                               new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                               null,
+                               "id",
+                               geometryColumn);
+        }
+    }
+
+    /**
+     * Test addFeatureSet() with a null geometry column
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addFeatureSetNullGeometryColumn() throws IOException, SQLException, ConformanceException, ClassNotFoundException
+    {
+        try(final GeoPackage gpkg = new GeoPackage(TestUtility.getRandomFile()))
+        {
+            gpkg.features()
+                .addFeatureSet("mytable",
+                               "identifier",
+                               "description",
+                               new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                               gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
+                               "id",
+                               null);
+        }
+    }
+
+    /**
+     * Test addFeatureSet() with a null column definition collection
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addFeatureSetNullColumnDefinition() throws IOException, SQLException, ConformanceException, ClassNotFoundException
+    {
+        try(final GeoPackage gpkg = new GeoPackage(TestUtility.getRandomFile()))
+        {
+            final GeometryColumnDefinition geometryColumn = new GeometryColumnDefinition("geometry",
+                                                                                         GeometryType.Point.toString(),
+                                                                                         ValueRequirement.Mandatory,
+                                                                                         ValueRequirement.Mandatory,
+                                                                                         "comment");
+
+            gpkg.features()
+                .addFeatureSet("mytable",
+                               "identifier",
+                               "description",
+                               new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                               gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
+                               "id",
+                               geometryColumn,
+                               (Collection<ColumnDefinition>)null);
+        }
+    }
+
+    /**
+     * Test addFeatureSet() with a null column definition in the column definition collection
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addFeatureSetNullMemberColumnDefinition() throws IOException, SQLException, ConformanceException, ClassNotFoundException
+    {
+        try(final GeoPackage gpkg = new GeoPackage(TestUtility.getRandomFile()))
+        {
+            final GeometryColumnDefinition geometryColumn = new GeometryColumnDefinition("geometry",
+                                                                                         GeometryType.Point.toString(),
+                                                                                         ValueRequirement.Mandatory,
+                                                                                         ValueRequirement.Mandatory,
+                                                                                         "comment");
+
+            //noinspection CastToConcreteClass
+            gpkg.features()
+                .addFeatureSet("mytable",
+                               "identifier",
+                               "description",
+                               new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                               gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
+                               "id",
+                               geometryColumn,
+                               Arrays.asList((ColumnDefinition)null));
+        }
+    }
+
+    /**
+     * Test addFeatureSet() with a table name that already exists
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void addFeatureSetDuplicateFeatureSet() throws IOException, SQLException, ConformanceException, ClassNotFoundException
+    {
+        try(final GeoPackage gpkg = new GeoPackage(TestUtility.getRandomFile()))
+        {
+            final GeometryColumnDefinition geometryColumn = new GeometryColumnDefinition("geometry",
+                                                                                         GeometryType.Point.toString(),
+                                                                                         ValueRequirement.Mandatory,
+                                                                                         ValueRequirement.Mandatory,
+                                                                                         "comment");
+
+            gpkg.features()
+                .addFeatureSet("mytable",
+                               "identifier",
+                               "description",
+                               new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                               gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
+                               "id",
+                               geometryColumn);
+
+            gpkg.features()
+                .addFeatureSet("mytable",
+                               "identifier",
+                               "description",
+                               new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                               gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
+                               "id",
+                               geometryColumn);
         }
     }
 }
