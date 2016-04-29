@@ -12,7 +12,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../Gdal2Tiles/lib/gdal-2.0.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../Gdal2Tiles/lib/gdal-2.0.1-linux.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
