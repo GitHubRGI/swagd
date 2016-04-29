@@ -23,6 +23,8 @@
 
 package com.rgi.geopackage.utility;
 
+import com.rgi.common.util.jdbc.JdbcUtility;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -30,12 +32,12 @@ import java.io.RandomAccessFile;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import com.rgi.common.util.jdbc.JdbcUtility;
+import java.util.regex.Pattern;
 
 /**
  * @author Luke Lambert
@@ -259,6 +261,55 @@ public class DatabaseUtility
                                   resultSet -> resultSet.getString("name"));
     }
 
+    public static void validateTableName(final String tableName)
+    {
+        if(tableName == null || tableName.isEmpty())
+        {
+            throw new IllegalArgumentException("The table name may not be null or empty");
+        }
+
+        if(sqlKeywords.stream()
+                      .anyMatch(keyword -> keyword.equalsIgnoreCase(tableName)))
+        {
+            throw new IllegalArgumentException(String.format("The table name may not be an SQL keyword: %s", String.join(", ", sqlKeywords)));
+        }
+
+        if(!identifierPattern.matcher(tableName).matches())
+        {
+            throw new IllegalArgumentException("The table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
+        }
+
+        if(tableName.startsWith("gpkg_"))
+        {
+            throw new IllegalArgumentException("The table name may not start with the reserved prefix 'gpkg_'");
+        }
+    }
+
+    public static void validateColumnName(final String columnName)
+    {
+        if(columnName == null || columnName.isEmpty())
+        {
+            throw new IllegalArgumentException("The column name may not be null or empty");
+        }
+
+        if(sqlKeywords.stream()
+                      .anyMatch(keyword -> keyword.equalsIgnoreCase(columnName)))
+        {
+            throw new IllegalArgumentException(String.format("The column name may not be an SQL keyword: %s", String.join(", ", sqlKeywords)));
+        }
+
+        // TODO
+        // By wrapping column names in double quotes, you can get away with
+        // a variety of strange names. This is *strongly* discouraged, but I'm
+        // not sure it's correct to explicitly forbid it.
+        if(!identifierPattern.matcher(columnName).matches())
+        {
+            // This is just a best guess. SQLite doesn't actually have an EBNF diagram for "column-name"
+            throw new IllegalArgumentException(String.format("The column '%s' must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers.",
+                                                             columnName));
+        }
+    }
+
     private static void verify(final Connection connection) throws SQLException
     {
         if(connection == null || connection.isClosed())
@@ -266,4 +317,32 @@ public class DatabaseUtility
             throw new IllegalArgumentException("The connection cannot be null or closed.");
         }
     }
+
+    private static final Pattern identifierPattern = Pattern.compile("^[_a-zA-Z]\\w*"); // This is just a best guess. SQLite doesn't actually have an EBNF diagram for "column-name"
+
+    private static final Collection<String> sqlKeywords = Arrays.asList("ABORT",       "ACTION",        "ADD",          "AFTER",        "ALL",
+                                                                        "ALTER",       "ANALYZE",       "AND",          "AS",           "ASC",
+                                                                        "ATTACH",      "AUTOINCREMENT", "BEFORE",       "BEGIN",        "BETWEEN",
+                                                                        "BY",          "CASCADE",       "CASE",         "CAST",         "CHECK",
+                                                                        "COLLATE",     "COLUMN",        "COMMIT",       "CONFLICT",     "CONSTRAINT",
+                                                                        "CREATE",      "CROSS",         "CURRENT_DATE", "CURRENT_TIME", "CURRENT_TIMESTAMP",
+                                                                        "DATABASE",    "DEFAULT",       "DEFERRABLE",   "DEFERRED",     "DELETE",
+                                                                        "DESC",        "DETACH",        "DISTINCT",     "DROP",         "EACH",
+                                                                        "ELSE",        "END",           "ESCAPE",       "EXCEPT",       "EXCLUSIVE",
+                                                                        "EXISTS",      "EXPLAIN",       "FAIL",         "FOR",          "FOREIGN",
+                                                                        "FROM",        "FULL",          "GLOB",         "GROUP",        "HAVING",
+                                                                        "IF",          "IGNORE",        "IMMEDIATE",    "IN",           "INDEX",
+                                                                        "INDEXED",     "INITIALLY",     "INNER",        "INSERT",       "INSTEAD",
+                                                                        "INTERSECT",   "INTO",          "IS",           "ISNULL",       "JOIN",
+                                                                        "KEY",         "LEFT",          "LIKE",         "LIMIT",        "MATCH",
+                                                                        "NATURAL",     "NO",            "NOT",          "NOTNULL",      "NULL",
+                                                                        "OF",          "OFFSET",        "ON",           "OR",           "ORDER",
+                                                                        "OUTER",       "PLAN",          "PRAGMA",       "PRIMARY",      "QUERY",
+                                                                        "RAISE",       "RECURSIVE",     "REFERENCES",   "REGEXP",       "REINDEX",
+                                                                        "RELEASE",     "RENAME",        "REPLACE",      "RESTRICT",     "RIGHT",
+                                                                        "ROLLBACK",    "ROW",           "SAVEPOINT",    "SELECT",       "SET",
+                                                                        "TABLE",       "TEMP",          "TEMPORARY",    "THEN",         "TO",
+                                                                        "TRANSACTION", "TRIGGER",       "UNION",        "UNIQUE",       "UPDATE",
+                                                                        "USING",       "VACUUM",        "VALUES",       "VIEW",         "VIRTUAL",
+                                                                        "WHEN",        "WHERE",         "WITH",         "WITHOUT");
 }

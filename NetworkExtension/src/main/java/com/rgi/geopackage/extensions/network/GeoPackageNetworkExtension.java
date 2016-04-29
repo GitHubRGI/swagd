@@ -318,8 +318,6 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                               final BoundingBox            boundingBox,
                               final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        GeoPackageCore.validateNewContentTableName(tableName);
-
         if(boundingBox == null)
         {
             throw new IllegalArgumentException("Bounding box cannot be mull.");

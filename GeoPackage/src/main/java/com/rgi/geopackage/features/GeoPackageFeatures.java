@@ -83,7 +83,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -251,7 +250,7 @@ public class GeoPackageFeatures
                                     final GeometryColumnDefinition     geometryColumn,
                                     final Collection<ColumnDefinition> columnDefinitions) throws SQLException
     {
-        GeoPackageCore.validateNewContentTableName(tableName);
+        DatabaseUtility.validateTableName(tableName);
 
         if(boundingBox == null)
         {
@@ -262,8 +261,6 @@ public class GeoPackageFeatures
         {
             throw new IllegalArgumentException("Spatial reference system may not be null");
         }
-
-        AbstractColumnDefinition.validateColumnName(primaryKeyColumnName);
 
         if(geometryColumn == null)
         {
@@ -428,6 +425,11 @@ public class GeoPackageFeatures
     @SuppressWarnings("JDBCExecuteWithNonConstantString")
     public FeatureSet getFeatureSet(final String featureSetTableName) throws SQLException
     {
+        if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, GeoPackageFeatures.GeometryColumnsTableName))
+        {
+            return null;
+        }
+
         final String geometryColumnQuery = String.format("SELECT %s FROM %s WHERE %s = ?",
                                                          "column_name",
                                                          GeoPackageFeatures.GeometryColumnsTableName,
@@ -769,11 +771,18 @@ public class GeoPackageFeatures
     }
 
     /**
+     * Add multiple features to a feature set
      *
      * @param geometryColumn
+     *             Geometry column of the target feature set
      * @param attributeColumns
+     *             A list of columns for which the attribute values are being provided
      * @param features
+     *             A collection of geometry/attribute collection pairs. The
+     *             attribute collection must have the same number and order for
+     *             attributes as specified by the attributeColumns parameter.
      * @throws SQLException
+     *             if there is a database error
      */
     public void addFeatures(final GeometryColumn                         geometryColumn,
                             final List<String>                           attributeColumns,
@@ -841,23 +850,33 @@ public class GeoPackageFeatures
         this.databaseConnection.commit();
     }
 
+    /**
+     * Associate a geometry factory with a specific geometry type code.
+     *
+     * @param geometryTypeCode
+     *             Code representation of the geometry type. Must be in the
+     *             range 0 and 2^32 - 1 (range of a 32 bit unsigned integer)
+     * @param geometryFactory
+     *             Callback that creates a geometry that corresponds to the
+     *             geometry type code
+     */
     public void registerGeometryFactory(final long            geometryTypeCode,
                                         final GeometryFactory geometryFactory)
     {
-        if(geometryTypeCode > maxUnsignedIntValue)
+        if(geometryTypeCode < 0 || geometryTypeCode > maxUnsignedIntValue)
         {
             throw new IllegalArgumentException("Type code must be between 0 and 2^32 - 1 (range of a 32 bit unsigned integer)");
-        }
-
-        if(this.geometryFactories.containsKey(geometryTypeCode))    // TODO do we really want to prohibit this?
-        {
-            throw new IllegalArgumentException("A geometry factory already exists for this geometry type code");
         }
 
         if(geometryFactory == null)
         {
             throw new IllegalArgumentException("Geometry factory may not be null");
         }
+
+//        if(this.geometryFactories.containsKey(geometryTypeCode))    // TODO do we really want to prohibit this?
+//        {
+//            throw new IllegalArgumentException("A geometry factory already exists for this geometry type code");
+//        }
 
         this.geometryFactories.put(geometryTypeCode, geometryFactory);
     }
@@ -871,6 +890,7 @@ public class GeoPackageFeatures
      * committed or roll back as a single transaction.
      *
      * @throws SQLException
+     *             if there is a database error
      */
     protected void createGeometryColumnTableNoCommit() throws SQLException
     {
@@ -891,9 +911,12 @@ public class GeoPackageFeatures
      *
      * @param tableName
      *            The name of the features table
+     * @param geometryColumn
+     *            Definition of a geometry column to be added
      * @param spatialReferenceSystemIdentifier
      *            Spatial Reference System (SRS)
      * @throws SQLException
+     *             if there is a database error
      */
     protected void addGeometryColumnNoCommit(final String                   tableName,
                                              final GeometryColumnDefinition geometryColumn,
@@ -1070,13 +1093,8 @@ public class GeoPackageFeatures
 
         final List<AbstractColumnDefinition> columns = new LinkedList<>(columnDefinitions);
 
-        columns.add(0,
-                    new ColumnDefinition(primaryKeyColumnName,
-                                         "INTEGER",
-                                         EnumSet.of(ColumnFlag.PrimaryKey, ColumnFlag.AutoIncrement, ColumnFlag.NotNull),   // Specifying unique is unnecessary as primary keys are assumed to be unique
-                                         null,
-                                         null,
-                                         "Autoincrement primary key"));
+        columns.add(0, new PrimaryKeyColumnDefinition(primaryKeyColumnName));
+
         columns.add(1, geometryColumn);
 
         // TODO Move the table-building functionality to the table definition class?
@@ -1109,6 +1127,9 @@ public class GeoPackageFeatures
         JdbcUtility.update(this.databaseConnection, createTableSql.toString());
     }
 
+    /**
+     * Standard table name of the GeoPackage Geometry Columns table
+     */
     public static final String GeometryColumnsTableName = "gpkg_geometry_columns";
 
     private final Connection     databaseConnection;

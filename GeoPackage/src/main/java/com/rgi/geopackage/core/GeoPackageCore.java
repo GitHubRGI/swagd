@@ -107,31 +107,6 @@ public class GeoPackageCore
     }
 
     /**
-     * Throws if the name of the new content table violates any of the content
-     * table name rules
-     *
-     * @param tableName
-     *             name of the new content table
-     */
-    public static void validateNewContentTableName(final String tableName)
-    {
-        if(tableName == null || tableName.isEmpty())
-        {
-            throw new IllegalArgumentException("Table name may not be null or empty");
-        }
-
-        if(!tableName.matches("^[_a-zA-Z]\\w*"))
-        {
-            throw new IllegalArgumentException("The table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
-        }
-
-        if(tableName.startsWith("gpkg_"))
-        {
-            throw new IllegalArgumentException("The table name may not start with the reserved prefix 'gpkg_'");
-        }
-    }
-
-    /**
      * Count the number of entries in a user content table
      *
      * @param content
@@ -297,14 +272,14 @@ public class GeoPackageCore
 
     /**
      * Add a reference to a tile or feature set to content table
-     * <br>
-     * <br>
-     * <b>**WARNING**</b> this does not do a database commit. It is expected
-     * that this transaction will always be paired with others that need to be
-     * committed or rollback as a single transaction.
      *
      * @param tableName
-     *             The name of the tiles, feature, or extension specific content table
+     *             The name of the tiles, feature, or extension specific
+     *             content table. The table name must begin with a letter
+     *             (A..Z, a..z) or an underscore (_) and may only be followed
+     *             by letters, underscores, or numbers, and may not begin with
+     *             the prefix "gpkg_". It may also not conflict with any SQL
+     *             keyword.
      * @param dataType
      *             Type of data stored in the table: "features" per clause Features, "tiles" per clause Tiles, or an implementer-defined value for other data tables per clause in an Extended GeoPackage.
      * @param identifier
@@ -315,7 +290,7 @@ public class GeoPackageCore
      *             Bounding box for all content in tableName
      * @param spatialReferenceSystem
      *             Spatial Reference System (SRS)
-     * @return  a Content Object with the following parameter values
+     * @return  a {@link Content} object with the following parameter values
      * @throws SQLException throws if an SQLException occurs
      */
     public Content addContent(final String                 tableName,
@@ -325,7 +300,7 @@ public class GeoPackageCore
                               final BoundingBox            boundingBox,
                               final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        validateNewContentTableName(tableName);
+        DatabaseUtility.validateTableName(tableName);
 
         if(!DatabaseUtility.tableOrViewExists(this.databaseConnection, tableName))
         {
