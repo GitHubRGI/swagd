@@ -55,6 +55,7 @@ local.properties
 cov-int
 
 RGISuite/settings.txt
+settings.txt
 VerifierTool/.project
 WiX/CustomAction3/CustomAction3/obj/
 *.cache
