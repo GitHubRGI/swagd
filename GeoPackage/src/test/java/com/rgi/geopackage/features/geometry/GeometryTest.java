@@ -46,6 +46,18 @@ public class GeometryTest
         final Geometry geometry = new Geometry()
         {
             @Override
+            public boolean equals(final Object o)
+            {
+                return false;
+            }
+
+            @Override
+            public int hashCode()
+            {
+                return 0;
+            }
+
+            @Override
             public long getTypeCode()
             {
                 return 0;

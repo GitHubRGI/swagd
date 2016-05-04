@@ -56,6 +56,28 @@ public class WkbLineStringM extends WkbCurveM
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.linearString.equals(((WkbLineStringM)o).linearString);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.linearString.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return GeometryTypeDimensionalityBase + GeometryType.LineString.getCode();
@@ -64,7 +86,7 @@ public class WkbLineStringM extends WkbCurveM
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.LineString + "M";
+        return GeometryType.LineString.toString();
     }
 
     @Override

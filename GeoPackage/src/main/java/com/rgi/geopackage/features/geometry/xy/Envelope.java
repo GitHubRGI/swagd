@@ -50,11 +50,12 @@ public class Envelope
      */
     public double[] toArray()
     {
-        return new double[]{ this.minimumX,
-                             this.maximumX,
-                             this.minimumY,
-                             this.maximumY
-                           };
+        return this.isEmpty() ? EMPTY_ARRAY
+                              : new double[]{ this.minimumX,
+                                              this.maximumX,
+                                              this.minimumY,
+                                              this.maximumY
+                                            };
     }
 
     public double getMinimumX()
@@ -111,7 +112,8 @@ public class Envelope
     }
 
     public static final Envelope Empty = new Envelope(Double.NaN,
-                                                      Double.NaN, Double.NaN,
+                                                      Double.NaN,
+                                                      Double.NaN,
                                                       Double.NaN);
 
     protected static double nanMinimum(final double first, final double second)
@@ -158,4 +160,6 @@ public class Envelope
     private final double minimumY;
     private final double maximumX;
     private final double maximumY;
+
+    private static final double[] EMPTY_ARRAY = {};
 }

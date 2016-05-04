@@ -68,6 +68,33 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        final WkbPolygonZ other = (WkbPolygonZ)o;
+
+        return this.exteriorRing.equals(other.exteriorRing) &&
+               this.interiorRings.equals(other.interiorRings);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = this.exteriorRing.hashCode();
+        result = 31 * result + this.interiorRings.hashCode();
+        return result;
+    }
+
+    @Override
     public long getTypeCode()
     {
         return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.Polygon.getCode();
@@ -76,7 +103,7 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.Polygon + "Z";
+        return GeometryType.Polygon.toString();
     }
 
     @Override

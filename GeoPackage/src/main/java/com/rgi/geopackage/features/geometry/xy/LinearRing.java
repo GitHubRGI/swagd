@@ -59,6 +59,28 @@ public class LinearRing
         this.coordinates = new ArrayList<>(coordinates);
     }
 
+    @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.coordinates.equals((LinearRing)o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.coordinates.hashCode();
+    }
+
     public List<Coordinate> getCoordinates()
     {
         return Collections.unmodifiableList(this.coordinates);

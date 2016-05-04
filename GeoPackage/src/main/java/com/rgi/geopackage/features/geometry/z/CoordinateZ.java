@@ -43,6 +43,38 @@ public class CoordinateZ
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        final CoordinateZ other = (CoordinateZ)o;
+
+        return Double.compare(other.x, this.x) == 0 &&
+               Double.compare(other.y, this.y) == 0 &&
+               Double.compare(other.z, this.z) == 0;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final long longBitsX = Double.doubleToLongBits(this.x);
+        int result = (int) (longBitsX ^ (longBitsX >>> 32));
+        final long longBitsY = Double.doubleToLongBits(this.y);
+        result = 31 * result + (int) (longBitsY ^ (longBitsY >>> 32));
+        final long longBitsZ = Double.doubleToLongBits(this.z);
+        result = 31 * result + (int) (longBitsZ ^ (longBitsZ >>> 32));
+        return result;
+    }
+
+    @Override
     public String toString()
     {
         return String.format("(%f, %f, %f z)",

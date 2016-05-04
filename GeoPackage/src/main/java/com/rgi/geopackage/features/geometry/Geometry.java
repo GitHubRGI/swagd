@@ -45,11 +45,14 @@ public abstract class Geometry
      *
      * @return
      */
+    public abstract boolean equals(final Object o);
+    public abstract int     hashCode();
     public abstract long    getTypeCode();
     public abstract String  getGeometryTypeName();
     public abstract boolean hasZ();
     public abstract boolean hasM();
     public abstract boolean isEmpty();
+
 
     public abstract void writeWellKnownBinary(final ByteOutputStream byteOutputStream);
 

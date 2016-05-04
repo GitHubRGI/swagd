@@ -51,7 +51,7 @@ public abstract class WkbCurvePolygonM extends WkbSurfaceM
 //    @Override
 //    public String getGeometryTypeName()
 //    {
-//        return GeometryType.CurvePolygon.toString() + "M";
+//        return GeometryType.CurvePolygon.toString().toString();
 //    }
 //
 //    @Override

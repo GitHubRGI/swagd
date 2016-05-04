@@ -61,7 +61,7 @@ public class WkbMultiPolygonM extends WkbMultiSurfaceM<WkbPolygonM>
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiPolygon + "M";
+        return GeometryType.MultiPolygon.toString();
     }
 
     public List<WkbPolygonM> getPolygons()

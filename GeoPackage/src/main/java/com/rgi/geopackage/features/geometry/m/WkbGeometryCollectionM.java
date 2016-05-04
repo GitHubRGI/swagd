@@ -83,6 +83,28 @@ public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.geometries.equals((WkbGeometryCollectionM<?>)o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.geometries.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode();
@@ -91,7 +113,7 @@ public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.GeometryCollection + "M";
+        return GeometryType.GeometryCollection.toString();
     }
 
     @Override

@@ -83,6 +83,28 @@ public class WkbGeometryCollectionZM<T extends WkbGeometryZM> extends WkbGeometr
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.geometries.equals((WkbGeometryCollectionZM<?>)o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.geometries.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode();
@@ -91,7 +113,7 @@ public class WkbGeometryCollectionZM<T extends WkbGeometryZM> extends WkbGeometr
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.GeometryCollection + "ZM";
+        return GeometryType.GeometryCollection.toString();
     }
 
     @Override

@@ -60,6 +60,28 @@ public class LinearRingZM
         this.coordinates = new ArrayList<>(coordinates);
     }
 
+    @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.coordinates.equals((LinearRingZM)o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.coordinates.hashCode();
+    }
+
     public List<CoordinateZM> getCoordinates()
     {
         return Collections.unmodifiableList(this.coordinates);

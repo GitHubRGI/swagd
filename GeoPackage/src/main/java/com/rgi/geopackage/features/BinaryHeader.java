@@ -26,7 +26,6 @@ package com.rgi.geopackage.features;
 import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
@@ -273,10 +272,8 @@ public class BinaryHeader
      *
      * @param byteOutputStream
      *             Destination for the bytes of the header
-     * @throws IOException
-     *             If any of the byte buffer 'put' operations fail
      */
-    public void writeBytes(final ByteOutputStream byteOutputStream) throws IOException
+    public void writeBytes(final ByteOutputStream byteOutputStream)
     {
         if(byteOutputStream == null)
         {
@@ -309,12 +306,10 @@ public class BinaryHeader
      *             the geometry's binary type
      * @param spatialReferenceSystemIdentifier
      *             Spatial reference system identifier for the geometry
-     * @throws IOException
-     *             If any of the byte buffer 'put' operations fail
      */
     public static void writeBytes(final ByteOutputStream byteOutputStream,
                                   final Geometry         geometry,
-                                  final int              spatialReferenceSystemIdentifier) throws IOException
+                                  final int              spatialReferenceSystemIdentifier)
     {
         if(geometry == null)
         {

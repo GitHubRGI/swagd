@@ -56,6 +56,28 @@ public class WkbPoint extends WkbGeometry
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.coordinate.equals(((WkbPoint)o).coordinate);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.coordinate.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return GeometryType.Point.getCode();

@@ -82,6 +82,28 @@ public class WkbGeometryCollection<T extends WkbGeometry> extends WkbGeometry
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.geometries.equals((WkbGeometryCollection<?>)o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.geometries.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return GeometryType.GeometryCollection.getCode();

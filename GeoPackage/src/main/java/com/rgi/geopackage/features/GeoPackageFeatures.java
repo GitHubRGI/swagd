@@ -66,7 +66,6 @@ import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
 
-import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -309,6 +308,11 @@ public class GeoPackageFeatures
      */
     public GeometryColumn getGeometryColumn(final FeatureSet featureSet) throws SQLException
     {
+        if(featureSet == null)
+        {
+            throw new IllegalArgumentException("Feature set may not be null");
+        }
+
         final String geometryColumnQuery = String.format("SELECT %s, %s, %s, %s, %s FROM %s WHERE %s = ?",
                                                          "column_name",
                                                          "geometry_type_name",
@@ -340,6 +344,11 @@ public class GeoPackageFeatures
      */
     public List<Column> getAttributeColumns(final FeatureSet featureSet) throws SQLException
     {
+        if(featureSet == null)
+        {
+            throw new IllegalArgumentException("Feature set may not be null");
+        }
+
         try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
         {
             //noinspection JDBCExecuteWithNonConstantString
@@ -354,7 +363,6 @@ public class GeoPackageFeatures
                     if(!tableInfo.getBoolean("pk") &&                               // We don't want the primary key column
                        !name.equalsIgnoreCase(featureSet.getGeometryColumnName()))  // We also don't want the geometry column
                     {
-
                             final String type         = tableInfo.getString("type");
                             final String defaultValue = tableInfo.getString("dflt_value");
 
@@ -366,13 +374,12 @@ public class GeoPackageFeatures
                             }
 
                             // TODO there are other ColumnFlags that need to be checked here: AutoIncrement, Unique
-                            // TODO the "check" expression is not being read
-                            // TODO neither those flags nor check expression is available in table_info
+                            // TODO neither those flags aren't directly available in table_info
 
                             columns.add(new Column(name,
                                                    type,
                                                    flags,
-                                                   null,    // see above TODO
+                                                   null,
                                                    defaultValue));
                     }
                 }
@@ -409,6 +416,11 @@ public class GeoPackageFeatures
                                                                 geometryColumnQuery,
                                                                 preparedStatement -> preparedStatement.setString(1, featureSetTableName),
                                                                 resultSet -> resultSet.getString(1)); // geometry column name
+
+        if(geometryColumnName == null) // If the table exists, but isn't an entry in the geometry column table...
+        {
+            return null;
+        }
 
         try(final Statement statement = GeoPackageFeatures.this.databaseConnection.createStatement())
         {
@@ -524,7 +536,7 @@ public class GeoPackageFeatures
                                                   featureSet.getGeometryColumnName(),
                                                   featureSet.getAttributeColumnNames().isEmpty() ? ""
                                                                                                  : ", " + String.join(", ", featureSet.getAttributeColumnNames()),
-                                                  GeoPackageFeatures.GeometryColumnsTableName);
+                                                  featureSet.getTableName());
 
         try(final Statement statement = this.databaseConnection.createStatement())
         {
@@ -570,14 +582,14 @@ public class GeoPackageFeatures
     {
         if(featureSet == null)
         {
-            throw new IllegalArgumentException("Feature setmay not be null");
+            throw new IllegalArgumentException("Feature set may not be null");
         }
 
         final String featureQuery = String.format("SELECT %s%s FROM %s WHERE %s = ?",
                                                   featureSet.getGeometryColumnName(),
                                                   featureSet.getAttributeColumnNames().isEmpty() ? ""
                                                                                                  : ", " + String.join(", ", featureSet.getAttributeColumnNames()),
-                                                  GeoPackageFeatures.GeometryColumnsTableName,
+                                                  featureSet.getTableName(),
                                                   featureSet.getPrimaryKeyColumnName());
 
         final Pair<byte[], Map<String, Object>> feature = JdbcUtility.selectOne(this.databaseConnection,
@@ -595,10 +607,7 @@ public class GeoPackageFeatures
                                                                                              });
         if(feature == null)
         {
-            throw new IllegalArgumentException(String.format("No feature exists for geometry column %s.%s and identifier %d",
-                                                             featureSet.getTableName(),
-                                                             featureSet.getGeometryColumnName(),
-                                                             featureIdentifier));
+            return null;
         }
 
         return new Feature(featureIdentifier,
@@ -653,8 +662,8 @@ public class GeoPackageFeatures
                     }
 
                     featureConsumer.accept(new Feature(resultSet.getInt(featureSet.getPrimaryKeyColumnName()),
-                                            this.createGeometry(resultSet.getBytes(featureSet.getGeometryColumnName())),
-                                            attributes));
+                                                       this.createGeometry(resultSet.getBytes(featureSet.getGeometryColumnName())),
+                                                       attributes));
                 }
             }
         }
@@ -667,15 +676,18 @@ public class GeoPackageFeatures
      *             Geometry column of a feature set
      * @param geometry
      *             Geometry of a feature
-     * @param attributes
-     *             Attributes of a feature
+     * @param attributeColumnNames
+     *             List of attribute column names, specified in the same order as the supplied values
+     * @param attributeValues
+     *             List of attribute values, specified in the same order as the supplied column names
      * @return a handle to the newly created {@link Feature} object
      * @throws SQLException
      *             if there is a database error
      */
-    public Feature addFeature(final GeometryColumn      geometryColumn,
-                              final Geometry            geometry,
-                              final Map<String, Object> attributes) throws SQLException
+    public Feature addFeature(final GeometryColumn geometryColumn,
+                              final Geometry       geometry,
+                              final List<String>   attributeColumnNames,
+                              final List<Object>   attributeValues) throws SQLException
     {
         if(geometryColumn == null)
         {
@@ -687,9 +699,19 @@ public class GeoPackageFeatures
             throw new IllegalArgumentException("Geometry may not be null");
         }
 
-        if(attributes == null)
+        if(attributeColumnNames == null)
         {
-            throw new IllegalAccessError("Attributes may not be null");
+            throw new IllegalArgumentException("Attribute column names may not be null");
+        }
+
+        if(attributeValues == null)
+        {
+            throw new IllegalArgumentException("Attribute values may not be null");
+        }
+
+        if(attributeColumnNames.size() != attributeValues.size())
+        {
+            throw new IllegalArgumentException("The number of attribute column names must match the number of attribute values");
         }
 
         if(!geometryColumn.getGeometryType()
@@ -701,7 +723,7 @@ public class GeoPackageFeatures
 
         verifyValueRequirements(geometryColumn, geometry);
 
-        final List<String> columnNames = new LinkedList<>(attributes.keySet());
+        final List<String> columnNames = new LinkedList<>(attributeColumnNames);
 
         columnNames.add(0, geometryColumn.getColumnName());
 
@@ -714,26 +736,27 @@ public class GeoPackageFeatures
                                                   insertFeatureSql,
                                                   preparedStatement -> { int parameterIndex = 1;
 
-                                                                         try
-                                                                         {
-                                                                             final byte[] bytes = createBlob(geometry, geometryColumn.getSpatialReferenceSystemIdentifier());
-                                                                             preparedStatement.setBytes(parameterIndex++, bytes);
-                                                                         }
-                                                                         catch(final IOException e)
-                                                                         {
-                                                                             throw new RuntimeException(e);
-                                                                         }
+                                                                         final byte[] bytes = createBlob(geometry, geometryColumn.getSpatialReferenceSystemIdentifier());
+                                                                         preparedStatement.setBytes(parameterIndex++, bytes);
 
                                                                          columnNames.remove(0);    // Skip the geometry column
 
-                                                                         for(final String columnName : columnNames)
+                                                                         for(final Object attributeValue : attributeValues)
                                                                          {
-                                                                             preparedStatement.setObject(parameterIndex++, attributes.get(columnName)); // TODO Map index instead of iterating over the KVPs due to order iteration concerns. Looking up values might be slow.
+                                                                             preparedStatement.setObject(parameterIndex++, attributeValue);
                                                                          }
                                                                         },
                                                   resultSet -> resultSet.getInt(1));    // New feature identifier
 
         this.databaseConnection.commit();
+
+        final Map<String, Object> attributes = new HashMap<>(attributeColumnNames.size());
+
+        for(int x = 0; x < attributeColumnNames.size(); ++x)
+        {
+            attributes.put(attributeColumnNames.get(x),
+                           attributeValues     .get(x));
+        }
 
         return new Feature(identifier,
                            geometry,
@@ -745,7 +768,7 @@ public class GeoPackageFeatures
      *
      * @param geometryColumn
      *             Geometry column of the target feature set
-     * @param attributeColumns
+     * @param attributeColumnNames
      *             A list of columns for which the attribute values are being provided
      * @param features
      *             A collection of geometry/attribute collection pairs. The
@@ -755,7 +778,7 @@ public class GeoPackageFeatures
      *             if there is a database error
      */
     public void addFeatures(final GeometryColumn                         geometryColumn,
-                            final List<String>                           attributeColumns,
+                            final List<String>                           attributeColumnNames,
                             final Iterable<Pair<Geometry, List<Object>>> features) throws SQLException
     {
         if(geometryColumn == null)
@@ -763,7 +786,7 @@ public class GeoPackageFeatures
             throw new IllegalArgumentException("Geometry column may not be null");
         }
 
-        if(attributeColumns == null)
+        if(attributeColumnNames == null)
         {
             throw new IllegalArgumentException("Columns may not be null");
         }
@@ -773,7 +796,29 @@ public class GeoPackageFeatures
             throw new IllegalArgumentException("Values may not be null");
         }
 
-        features.forEach(feature -> { final Geometry geometry = feature.getLeft();
+        features.forEach(feature -> { if(feature == null)
+                                      {
+                                          throw new IllegalArgumentException("Features collection may not contain null features");
+                                      }
+
+                                      final Geometry geometry = feature.getLeft();
+
+                                      if(geometry == null)
+                                      {
+                                          throw new IllegalArgumentException("Features collection may not contain null geometries");
+                                      }
+
+                                      final List<Object> attributes = feature.getRight();
+
+                                      if(attributes == null)
+                                      {
+                                          throw new IllegalArgumentException("Feature collection may not have a null set of attributes");
+                                      }
+
+                                      if(attributes.size() != attributeColumnNames.size())
+                                      {
+                                          throw new IllegalArgumentException("Feature attribute collections must match the size of the attribute column name collection");
+                                      }
 
                                       if(!geometryColumn.getGeometryType()
                                                         .toUpperCase()
@@ -782,10 +827,12 @@ public class GeoPackageFeatures
                                           throw new IllegalArgumentException("Geometry column may only contain geometries of type " + geometryColumn.getGeometryType().toUpperCase());
                                       }
 
+
+
                                       verifyValueRequirements(geometryColumn, geometry);
                                     });
 
-        final List<String> columnNames = new LinkedList<>(attributeColumns);
+        final List<String> columnNames = new LinkedList<>(attributeColumnNames);
 
         columnNames.add(0, geometryColumn.getColumnName());
 
@@ -802,18 +849,11 @@ public class GeoPackageFeatures
                            (preparedStatement, feature) -> { final Geometry     geometry   = feature.getLeft();
                                                              final List<Object> attributes = feature.getRight();
 
-                                                             try
-                                                             {
-                                                                 preparedStatement.setBytes(1, createBlob(geometry, geometryColumn.getSpatialReferenceSystemIdentifier()));
-                                                             }
-                                                             catch(final IOException ex)
-                                                             {
-                                                                 throw new RuntimeException(ex);
-                                                             }
+                                                             preparedStatement.setBytes(1, createBlob(geometry, geometryColumn.getSpatialReferenceSystemIdentifier()));
 
                                                              for(int parameterIndex = 2; parameterIndex <= columnCount; ++parameterIndex)
                                                              {
-                                                                 preparedStatement.setObject(parameterIndex, attributes.get(parameterIndex-1));
+                                                                 preparedStatement.setObject(parameterIndex, attributes.get(parameterIndex-2));
                                                              }
                                                            });
 
@@ -1010,7 +1050,7 @@ public class GeoPackageFeatures
 
     }
 
-    private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier) throws IOException
+    private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier)
     {
         final ByteOutputStream byteOutputStream = new ByteOutputStream();
 
@@ -1077,7 +1117,8 @@ public class GeoPackageFeatures
         {
             final AbstractColumnDefinition column = columns.get(columnIndex);
 
-            final String comment = column.getComment();
+            final String comment      = column.getComment();
+            final String defaultValue = column.getDefaultValue().equals(ColumnDefault.None) ? "" : " DEFAULT " + column.getDefaultValue().sqlLiteral();
 
             createTableSql.append(System.lineSeparator());
 
@@ -1088,6 +1129,7 @@ public class GeoPackageFeatures
             createTableSql.append(column.hasFlag(ColumnFlag.AutoIncrement) ? " AUTOINCREMENT" : "");
             createTableSql.append(column.hasFlag(ColumnFlag.NotNull)       ? " NOT NULL"      : "");
             createTableSql.append(column.hasFlag(ColumnFlag.Unique)        ? " UNIQUE"        : "");
+            createTableSql.append(defaultValue);
             createTableSql.append(columnIndex == columns.size()-1          ? ""               : ",");
             createTableSql.append(comment     == null                      ? ""               : " -- " + comment);  // Verified by AbstractColumnDefinition to not contain newlines, which I think is the only way injection could work here
         }

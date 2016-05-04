@@ -51,7 +51,7 @@ public abstract class WkbCurvePolygonZ extends WkbSurfaceZ
 //    @Override
 //    public String getGeometryTypeName()
 //    {
-//        return GeometryType.CurvePolygon.toString() + "Z";
+//        return GeometryType.CurvePolygon.toString();
 //    }
 //
 //    @Override

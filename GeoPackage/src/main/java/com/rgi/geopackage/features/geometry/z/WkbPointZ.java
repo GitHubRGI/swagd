@@ -59,6 +59,28 @@ public class WkbPointZ extends WkbGeometryZ
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.coordinate.equals(((WkbPointZ)o).coordinate);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.coordinate.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return WkbGeometryZ.GeometryTypeDimensionalityBase + GeometryType.Point.getCode();
@@ -67,7 +89,7 @@ public class WkbPointZ extends WkbGeometryZ
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.Point + "Z";
+        return GeometryType.Point.toString();
     }
 
     @Override

@@ -40,7 +40,7 @@ public class ColumnDefinitionTest
     public void columnDefinitionConstructor()
     {
         // Not the most exciting of tests...
-        new ColumnDefinition("column",
+        new ColumnDefinition("mycolumn",
                              "INTEGER",
                              EnumSet.of(ColumnFlag.PrimaryKey),
                              null,

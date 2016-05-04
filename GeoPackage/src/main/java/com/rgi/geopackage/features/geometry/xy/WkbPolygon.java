@@ -68,6 +68,33 @@ public class WkbPolygon extends WkbCurvePolygon
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        final WkbPolygon other = (WkbPolygon)o;
+
+        return this.exteriorRing.equals(other.exteriorRing) &&
+               this.interiorRings.equals(other.interiorRings);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = this.exteriorRing.hashCode();
+        result = 31 * result + this.interiorRings.hashCode();
+        return result;
+    }
+
+    @Override
     public long getTypeCode()
     {
         return GeometryType.Polygon.getCode();

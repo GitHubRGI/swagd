@@ -50,7 +50,7 @@ public class ColumnDefaultTest
 
         assertEquals("Incorrect expression default value",
                      String.format("(%s)", expression),
-                     columnDefault.toString());
+                     columnDefault.sqlLiteral());
     }
 
     /**
@@ -65,7 +65,7 @@ public class ColumnDefaultTest
 
         assertEquals("Incorrect int default value",
                      Integer.toString(value),
-                     columnDefault.toString());
+                     columnDefault.sqlLiteral());
     }
 
     /**
@@ -80,7 +80,7 @@ public class ColumnDefaultTest
 
         assertEquals("Incorrect double default value",
                      Double.toString(value),
-                     columnDefault.toString());
+                     columnDefault.sqlLiteral());
     }
 
     /**
@@ -95,7 +95,7 @@ public class ColumnDefaultTest
 
         assertEquals("Incorrect string default value",
                      String.format("'%s'", ESCAPE_SQL_STRING.matcher(value).replaceAll(Matcher.quoteReplacement("''"))),
-                     columnDefault.toString());
+                     columnDefault.sqlLiteral());
 
     }
 
@@ -115,7 +115,7 @@ public class ColumnDefaultTest
 
         assertEquals("Incorrect blob default value",
                      String.format("X'%0" + (value.length << 1) + "X'", bigInt),
-                     columnDefault.toString());
+                     columnDefault.sqlLiteral());
     }
 
     /**
@@ -126,7 +126,7 @@ public class ColumnDefaultTest
     {
         assertEquals("Incorrect None default value",
                      "",
-                     ColumnDefault.None.toString());
+                     ColumnDefault.None.sqlLiteral());
     }
 
     /**
@@ -137,7 +137,7 @@ public class ColumnDefaultTest
     {
         assertEquals("Incorrect null default value",
                      "NULL",
-                     ColumnDefault.Null.toString());
+                     ColumnDefault.Null.sqlLiteral());
     }
 
     /**
@@ -148,7 +148,7 @@ public class ColumnDefaultTest
     {
         assertEquals("Incorrect  default value",
                      "CURRENT_TIME",
-                     ColumnDefault.CurrentTime.toString());
+                     ColumnDefault.CurrentTime.sqlLiteral());
     }
 
     /**
@@ -159,7 +159,7 @@ public class ColumnDefaultTest
     {
         assertEquals("Incorrect current date default value",
                      "CURRENT_DATE",
-                     ColumnDefault.CurrentDate.toString());
+                     ColumnDefault.CurrentDate.sqlLiteral());
     }
 
     /**
@@ -170,6 +170,6 @@ public class ColumnDefaultTest
     {
         assertEquals("Incorrect current timestamp default value",
                      "CURRENT_TIMESTAMP",
-                     ColumnDefault.CurrentTimestamp.toString());
+                     ColumnDefault.CurrentTimestamp.sqlLiteral());
     }
 }

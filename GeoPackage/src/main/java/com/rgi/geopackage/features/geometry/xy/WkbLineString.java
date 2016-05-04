@@ -55,6 +55,28 @@ public class WkbLineString extends WkbCurve
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.linearString.equals(((WkbLineString)o).linearString);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.linearString.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return GeometryType.LineString.getCode();
