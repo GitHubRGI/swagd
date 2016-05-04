@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 # check to see if the swig_1.3.40 folder is empty
-if [ ! -d "$HOME/swig_1.3.40/lib" ]; then
+if [ ! -d "$HOME/swig_1.3.40/bin" ]; then
     # get swig 1.3.40 source
     wget https://sourceforge.net/projects/swig/files/swig/swig-1.3.40/swig-1.3.40.tar.gz;
     # quietly untar
