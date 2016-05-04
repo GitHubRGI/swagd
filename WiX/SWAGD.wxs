@@ -26,7 +26,7 @@
       <!-- swagd components -->
       <DirectoryRef Id="INSTALLDIR">
         <Component Id="SWAGD.exe" DiskId="1" Guid="eed0a7a6-d443-4835-8d4f-42d57875b07a" Win64='yes'>
-            <File Id="SWAGDEXE" Name="SWAGD.exe" Source="..\RGISuite\build/launch4j\SWAGD.exe" KeyPath="yes" ProcessorArchitecture ="x64">
+            <File Id="SWAGDEXE" Name="SWAGD.exe" Source="..\RGISuite\build\launch4j\SWAGD.exe" KeyPath="yes" ProcessorArchitecture ="x64">
             <Shortcut Id="ApplicationStartMenuShortcut" Name="SWAGD" Description="SoftWare that Aggregates Geospatial Data" WorkingDirectory="INSTALLDIR" Icon="SWAGD.exe" Directory="ProgramMenuDir" IconIndex="0" Advertise="yes" />
           </File>
         </Component>
@@ -34,7 +34,7 @@
           <File Id="LICENSE.TXT" Name="LICENSE.txt" Source="..\LICENSE.txt"/>
         </Component>
         <Component Id="swagdShared.jar" DiskId="1" KeyPath="yes" Guid="c5bc0fb2-fef6-45e0-9343-1ae6da204dc8" Win64='yes'>
-          <File Id="RGISUITE_0.0.1_SNAPSHOT_WITH_DEPENDENCIES.JAR" Name="RGISuite-0.0.1-SNAPSHOT-with_dependencies.jar" Source="..\RGISuite\target\RGISuite-0.0.1-SNAPSHOT-with_dependencies.jar" ProcessorArchitecture ="x64"/>
+          <File Id="RGISUITE_0.0.1_SNAPSHOT_ALL.JAR" Name="RGISuite-0.0.1-SNAPSHOT-all.jar" Source="..\RGISuite\build\libs\RGISuite-0.0.1-SNAPSHOT-all.jar" ProcessorArchitecture ="x64"/>
         </Component>
         <Component Id="settings" DiskId="1" KeyPath="yes" Guid="E7C4DB1B-E7AC-4006-9733-81C677D2D521" Win64='yes'>
           <File Id="settings" Name="settings.txt" Source=".\Resources\settings.txt" ProcessorArchitecture ="x64"/>

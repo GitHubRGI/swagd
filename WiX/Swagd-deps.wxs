@@ -72,7 +72,7 @@
         Its also set to permanant, so uninstalling swagd will not remove the java install. -->
         <ExePackage Id="InstallJava"
                     InstallCondition="NOT (JAVA_CURRENT_VERSION= &quot;1.8&quot;)"
-                    SourceFile=".\Resources\jre-8u77-windows-x64.exe"
+                    SourceFile=".\Resources\jre-8u92-windows-x64.exe"
                     Compressed="yes"
                     Permanent="yes"
                     />
