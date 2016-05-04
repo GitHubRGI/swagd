@@ -1,5 +1,6 @@
 # Vim swap files
 *.swp
+*~
 
 ## Java section
 *.class
@@ -19,22 +20,6 @@ build
 
 # virtual machine crash logs, see http://www.java/com/en/download/help/error_hotspot.xml
 hs_err_pid*
-
-#################
-## Eclipse
-#################
-
-*.pydevproject
-.metadata
-bin/
-tmp/
-org/
-*.tmp
-*.bak
-*.swp
-*~.nib
-local.properties
-.loadpath
 
 # External tool builders
 .externalToolBuilders/
@@ -75,6 +60,8 @@ out/
 
 #Wix files
 *.wixpdb
-*.msi
 *.wixobj
-*.exe
+
+# Installer and launch4j files
+WiX/Resources/Swagd.msi
+WiX/Swagd-deps.exe
