@@ -31,6 +31,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -64,6 +65,7 @@ import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.store.tiles.TileHandle;
 import com.rgi.store.tiles.TileStoreException;
+import utility.TestUtility;
 
 /**
  *
@@ -74,7 +76,7 @@ import com.rgi.store.tiles.TileStoreException;
 public class RawImageTileReaderTest
 {
     // Tiff used for testing
-    private final File rawData = new File(ClassLoader.getSystemResource("test.tif").getPath());
+    private final File rawData = TestUtility.loadFileFromDisk("test.tif");
 
     /**
      * Tests RawImageTileReader constructor
@@ -690,7 +692,7 @@ public class RawImageTileReaderTest
      */
     @SuppressWarnings("static-method")
     @Test
-    public void testGetImage1() throws TileStoreException, DataFormatException, IOException
+    public void testGetImage1() throws TileStoreException, DataFormatException, IOException, URISyntaxException
     {
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
@@ -701,7 +703,7 @@ public class RawImageTileReaderTest
                                             .findFirst()
                                             .get();
 
-            final File testTile = new File(ClassLoader.getSystemResource("224798.png").getPath());
+            final File testTile = TestUtility.loadFileFromDisk("224798.png");
             final BufferedImage image = ImageIO.read(testTile);
 
             assertTrue("RawImageTileHandle method getImage did not return the correct image.",
@@ -715,7 +717,7 @@ public class RawImageTileReaderTest
      */
     @SuppressWarnings("static-method")
     @Test
-    public void testGetImage2() throws TileStoreException, DataFormatException, IOException
+    public void testGetImage2() throws TileStoreException, DataFormatException, IOException, URISyntaxException
     {
         final Dimensions<Integer> tileSize = new Dimensions<>(256, 256);
 
@@ -751,7 +753,7 @@ public class RawImageTileReaderTest
                                            .filter(tile -> tile.getColumn() == 16313 && tile.getRow() == 112398)
                                            .findAny()
                                            .get();
-            final File testTile = new File(ClassLoader.getSystemResource("112398.png").getPath());
+            final File testTile = TestUtility.loadFileFromDisk("112398.png");
             final BufferedImage image = ImageIO.read(testTile);
 
            assertTrue("RawImageTileHandle method getImage did not return the correct image.",

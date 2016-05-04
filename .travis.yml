@@ -1,20 +1,19 @@
 language: java
-addons:
-    apt:
-        packages:
-            - swig
 jdk:
     - oraclejdk8
 before_install:
-    - bash gdal_2.0.0_jni.sh
-    - export LD_LIBRARY_PATH=RGISuite/lib:$HOME/gdal_2.0.0/lib:$HOME/gdal_2.0.0/swig/java
-    - export GDAL_DATA=$HOME/gdal_2.0.0/share/gdal
-    - export PATH=$PATH:RGISuite/lib:$HOME/gdal_2.0.0/lib
+    - bash scripts/swig_1.3.40.sh
+    - export PATH=$HOME/swig_1.3.40/bin:$PATH
+    - bash scripts/gdal_2.1.0_jni.sh
+    - export LD_LIBRARY_PATH=RGISuite/lib:$HOME/gdal_2.1.0/lib:$HOME/gdal_2.1.0/swig/java
+    - export GDAL_DATA=$HOME/gdal_2.1.0/share/gdal
+    - export PATH=$PATH:$HOME/gdal_2.1.0/lib
 script:
-    gradle test
+    - gradle test
 after_success:
     - gradle cobertura coveralls
 cache:
     directories:
         - $HOME/.m2
-        - $HOME/gdal_2.0.0
+        - $HOME/gdal_2.1.0
+        - $HOME/swig_1.3.40

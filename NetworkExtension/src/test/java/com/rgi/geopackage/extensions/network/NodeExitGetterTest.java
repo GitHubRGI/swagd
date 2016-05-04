@@ -28,16 +28,16 @@ import com.rgi.geopackage.extensions.implementation.BadImplementationException;
 import com.rgi.geopackage.verification.ConformanceException;
 import org.junit.Before;
 import org.junit.Test;
+import utility.TestUtility;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -47,8 +47,9 @@ import static org.junit.Assert.*;
 public class NodeExitGetterTest
 {
     @Before
-    public void setUp() throws IOException
+    public void setUp() throws IOException, URISyntaxException
     {
+        this.gpkgFile = TestUtility.loadFileFromDisk("testNetwork.gpkg");
         try
         {
             Class.forName("org.sqlite.JDBC");
@@ -169,7 +170,7 @@ public class NodeExitGetterTest
         }
     }
 
-    private final File gpkgFile = new File(ClassLoader.getSystemResource("testNetwork.gpkg").getFile());
+    private File gpkgFile;
     private GeoPackageNetworkExtension networkExtension;
     private Connection connection;
     private Network network;
