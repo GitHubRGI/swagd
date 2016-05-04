@@ -3,10 +3,11 @@ jdk:
     - oraclejdk8
 before_install:
     - bash scripts/swig_1.3.40.sh
+    - export PATH=$HOME/swig_1.3.40/bin:$PATH
     - bash scripts/gdal_2.1.0_jni.sh
     - export LD_LIBRARY_PATH=RGISuite/lib:$HOME/gdal_2.1.0/lib:$HOME/gdal_2.1.0/swig/java
     - export GDAL_DATA=$HOME/gdal_2.1.0/share/gdal
-    - export PATH=$HOME/swig_1.3.40/bin:RGISuite/lib:$HOME/gdal_2.1.0/lib:$PATH
+    - export PATH=$PATH:$HOME/gdal_2.1.0/lib
 script:
     - gradle test
 after_success:
