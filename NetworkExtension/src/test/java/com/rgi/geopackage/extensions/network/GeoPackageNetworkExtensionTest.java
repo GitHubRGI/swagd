@@ -28,12 +28,6 @@ import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.extensions.Scope;
 import com.rgi.geopackage.extensions.implementation.BadImplementationException;
-import com.rgi.geopackage.extensions.network.AttributeDescription;
-import com.rgi.geopackage.extensions.network.AttributedType;
-import com.rgi.geopackage.extensions.network.DataType;
-import com.rgi.geopackage.extensions.network.Edge;
-import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
-import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.verification.ConformanceException;
 import org.junit.Test;
 import utility.TestUtility;
@@ -57,7 +51,7 @@ import static org.junit.Assert.fail;
  * Unit tests for GeoPackageNetworkExtensions
  *
  * @author Mary Carome
- *
+ * @author Luke Lambert
  */
 @SuppressWarnings("JavaDoc")
 public class GeoPackageNetworkExtensionTest
@@ -68,7 +62,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetExtensionName() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final String networkName = "SWAGD_network";
@@ -79,10 +73,6 @@ public class GeoPackageNetworkExtensionTest
                          networkName,
                          networkExtension.getExtensionName());
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -91,7 +81,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetDefinition() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final String definition = "definition";
@@ -102,10 +92,6 @@ public class GeoPackageNetworkExtensionTest
                          definition,
                          networkExtension.getDefinition());
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -114,7 +100,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetScope() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(7);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -123,10 +109,6 @@ public class GeoPackageNetworkExtensionTest
                                        Scope.ReadWrite),
                          Scope.ReadWrite,
                          networkExtension.getScope());
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -137,17 +119,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeCountException() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             networkExtension.getEdgeCount(null);
             fail("Expected getEdgeCount to throw an IllegalArgumentException when given a null Network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -158,7 +136,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetEdgeCount1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -174,10 +152,6 @@ public class GeoPackageNetworkExtensionTest
                          0,
                          networkExtension.getEdgeCount(network));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -187,7 +161,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetEdgeCount2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -209,10 +183,6 @@ public class GeoPackageNetworkExtensionTest
                          4,
                          networkExtension.getEdgeCount(network));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -222,17 +192,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetNodeCountException() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             networkExtension.getNodeCount(null);
             fail("Expected getNodeCount to throw an IllegalArgumentException when given a null Network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -243,7 +209,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetNodeCount1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -259,11 +225,6 @@ public class GeoPackageNetworkExtensionTest
                          0,
                          networkExtension.getNodeCount(network));
         }
-
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -273,7 +234,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetNodeCount2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(10);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -294,10 +255,6 @@ public class GeoPackageNetworkExtensionTest
                                        0),
                          5,
                          networkExtension.getNodeCount(network));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -330,7 +287,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void getNodeAttributesTableName1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -347,10 +304,6 @@ public class GeoPackageNetworkExtensionTest
                                        expected),
                          expected,
                          GeoPackageNetworkExtension.getNodeAttributesTableName(network));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -377,17 +330,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetNetworkException() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(3);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
             final String networkName = null;
             networkExtension.getNetwork(networkName);
             fail("Expected GeoPackageNetworkExtension method getNetwork to throw an illegal argument exception when given a null networkTableName");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -398,17 +347,13 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetNetworkNull() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(7);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
             final String networkName = "my_network";
             assertNull("Expected GeoPackageNetworkExtension method getNetwork(String) to return null when no network has been added",
                        networkExtension.getNetwork(networkName));
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -419,7 +364,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetNetwork() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(7);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -441,10 +386,6 @@ public class GeoPackageNetworkExtensionTest
                                                 box.getMaximumY(),
                                                 srs.getIdentifier()));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -453,7 +394,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNetworkException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(7);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -467,10 +408,6 @@ public class GeoPackageNetworkExtensionTest
 
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given a null tableName");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -479,7 +416,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNetworkException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(7);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -492,10 +429,6 @@ public class GeoPackageNetworkExtensionTest
                                         gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given an empty tableaName");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -504,7 +437,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNetworkException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(7);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -515,11 +448,8 @@ public class GeoPackageNetworkExtensionTest
                                         "empty",
                                         box,
                                         gpkg.core().getSpatialReferenceSystem(-1));
+
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given an invalid table");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -529,7 +459,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNetworkException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(7);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -542,10 +472,6 @@ public class GeoPackageNetworkExtensionTest
                                         gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given a table Name that starts with 'gpkg_'");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -554,7 +480,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNetworkException5() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -566,10 +492,6 @@ public class GeoPackageNetworkExtensionTest
                                         gpkg.core().getSpatialReferenceSystem(-1));
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when given a null BoundingBox");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -578,7 +500,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNetworkException6() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -592,10 +514,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addNetwork(name, identifier, description, box, srs);
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when adding two networks with the same name");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -604,7 +522,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNetworkException7() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -617,10 +535,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addNetwork("my_table", identifier, description, box, srs);
             fail("Expected GeoPackageNetworkExtension method addNetwork to throw an IllegalArgumentException when adding a network whose node attributes table already exists");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -630,7 +544,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testAddNetwork() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -653,10 +567,6 @@ public class GeoPackageNetworkExtensionTest
                                                box.getMaximumY(),
                                                srs.getIdentifier()));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -666,16 +576,12 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
             networkExtension.getEdge(null, 0, 12);
             fail("Expected GeoPackageNetworkExtension method getEdge(Network, int, int) to throw an IllegalArgumentException when given a null Network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -686,7 +592,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -700,10 +606,6 @@ public class GeoPackageNetworkExtensionTest
             assertNull("Expected GeoPackageNetworkExtension method getEdge(Network, int) to return null when queried for a bad edge identifier",
                        networkExtension.getEdge(network, 0, 12));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -713,7 +615,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetEdge() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -735,10 +637,6 @@ public class GeoPackageNetworkExtensionTest
             assertTrue(String.format("Expected GeoPackageNetworkExtension method getEdge to return %s, but (%s, %s) was returned", printEdge(edge), from, to),
                        edge.getFrom() == from && edge.getTo() == to);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -748,17 +646,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEntriesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             networkExtension.getEntries(null, 0);
             fail("Expected GeoPackageNetworkExtension getEntries(Network, int) to throw an IllegalArgumentException when passed a null network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -770,7 +664,7 @@ public class GeoPackageNetworkExtensionTest
 //    @Test(expected = IllegalArgumentException.class)
 //    public void testGetEntriesException2()
 //    {
-//        final File testFile = TestUtility.getRandomFile(5);
+//        final File testFile = TestUtility.getRandomFile();
 //        try(GeoPackage gpkg = new GeoPackage(testFile))
 //        {
 //            final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -802,7 +696,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetEntries1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -827,10 +721,6 @@ public class GeoPackageNetworkExtensionTest
                                list.get(1).getFrom() == 23 &&
                                list.get(2).getFrom() == 33);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -840,17 +730,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetExitsException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             networkExtension.getExits(null, 0);
             fail("Expected GeoPackageNetworkExtension getExits(Network, int) to throw an IllegalArgumentException when passed a null Network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -860,7 +746,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetExits1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -886,10 +772,6 @@ public class GeoPackageNetworkExtensionTest
                                list.get(1).getTo() == 15 &&
                                list.get(2).getTo() == 44);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -899,17 +781,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testVisitEdgesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             networkExtension.visitEdges(null, edges -> {});
             fail("Expected GeoPackageNetworkExtension method visitEdges to throw an IllegalArgumentException when passed a null Network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -920,7 +798,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testVisitEdgesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -933,10 +811,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.visitEdges(network, null);
             fail("Expected GeoPackageNetworkExtension method visitEdges to throw an IllegalArgumentException when passed a null Consumer");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -945,7 +819,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testVisitEdges() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -969,10 +843,6 @@ public class GeoPackageNetworkExtensionTest
                                e2 == edges.get(1).getIdentifier() &&
                                e3 == edges.get(2).getIdentifier());
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -982,17 +852,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddEdgeException() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             networkExtension.addEdge(null, 12, 10);
             fail("Expected GeoPackageNetworkExtension method addEdge to throw an IllegalArgumentException when passed a null Consumer");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1002,7 +868,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testAddEdge() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1018,10 +884,6 @@ public class GeoPackageNetworkExtensionTest
                        edge.getFrom() == 12 &&
                                edge.getTo() == 54);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1031,17 +893,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddEdgesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             networkExtension.addEdges(null, Collections.emptyList());
             fail("Expected GeoPackageNetworkExtension method addEdges(Network, Interable) to throw an IllegalArgumentException when passed a null Network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1052,7 +910,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddEdgesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1065,10 +923,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addEdges(network, null);
             fail("Expected GeoPackageNetworkExtension method addEdges(Network, Interable) to throw an IllegalArgumentException when passed a null edge Collection");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1078,7 +932,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testAddEdges() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1105,10 +959,6 @@ public class GeoPackageNetworkExtensionTest
                               networkExtension.getEdge(network, i, i * i));
             }
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1117,7 +967,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributedEdgesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1132,10 +982,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributedEdges(null, Collections.singletonList(test));
             fail("Expected GeoPackageNetworkExtension method addAttributedEdges to throw an IllegalArgumentException when given a null attributed edges collection");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1144,7 +990,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributedEdgesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1166,10 +1012,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributedEdges(attributedEdges, Collections.singletonList(test));
             fail("Expected GeoPackageNetworkExtension method addAttributedEdges to throw an IllegalArgumentException when given an empty attributed edges collection");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1178,7 +1020,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributedEdgesException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1208,10 +1050,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributedEdges(attributedEdges, Collections.singletonList(test));
             fail("Expected GeoPackageNetworkExtension method addAttributedEdges method to throw an IllegalArgumentException when the number of AttributeDescriptions does not match the number of attributes for each edge");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1220,7 +1058,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testAddAttributedEdges() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1259,10 +1097,6 @@ public class GeoPackageNetworkExtensionTest
             assertTrue("GeoPackageNetworkExtension method addAttributedEdges did not add attributed edges correctly",
                        (Integer) networkExtension.getEdgeAttributes(e3, attributeDescriptions).get(0) == 488);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1271,17 +1105,13 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetAttributeDescriptionsException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
 
             networkExtension.getAttributeDescriptions(null, AttributedType.Edge);
             fail("Expected GeoPackageNetworkExtension(Network, AttributedType to throw an IllegalArgumentException when passed a null Network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1291,7 +1121,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetAttributeDescriptionsException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1305,10 +1135,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getAttributeDescriptions(network, null);
             fail("Expected GeoPackageNetworkExtension(Network, AttributedType to throw an IllegalArgumentException when passed a null AttributedType");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1318,7 +1144,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetAttributeDescriptions1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1334,10 +1160,6 @@ public class GeoPackageNetworkExtensionTest
                          0,
                          list.size());
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1347,7 +1169,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetAttributeDescriptions2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1390,10 +1212,6 @@ public class GeoPackageNetworkExtensionTest
                        list.get(0).getName().equals("one") &&
                                list.get(1).getName().equals("two"));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1402,16 +1220,12 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetAttributeDescriptionException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
             networkExtension.getAttributeDescription(null, "name", AttributedType.Edge);
             fail("Expected GeoPackageNetworkExtension method getAttributeDescription(Network, String, AttributedType) to throw an IllegalArgumentException when passed a null Network");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -1421,7 +1235,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetAttributeDescriptionException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1435,10 +1249,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getAttributeDescription(network, null, AttributedType.Edge);
             fail("Expected GeoPackageNetworkExtensionmethod getAttributeDescription(Network, String, AttributedType) to throw an IllegalArgumentException when passed a null String");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1447,7 +1257,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetAttributeDescriptionException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1461,10 +1271,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getAttributeDescription(network, "name", null);
             fail("Expected GeoPackageNetworkExtensionmethod getAttributeDescription(Network, String, AttributedType) to throw an IllegalArgumentException when passed a null AttributedType");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1474,7 +1280,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetAttributeDescription1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1488,10 +1294,6 @@ public class GeoPackageNetworkExtensionTest
             final AttributeDescription attribute = networkExtension.getAttributeDescription(network, "name", AttributedType.Edge);
             assertNull("Nonexistant attribute description should be null", attribute);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1501,7 +1303,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetAttributeDescription2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1540,10 +1342,6 @@ public class GeoPackageNetworkExtensionTest
                                attribute.getDescription().equals("empty") &&
                                attribute.getAttributedType() == AttributedType.Edge);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1552,7 +1350,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1566,10 +1364,6 @@ public class GeoPackageNetworkExtensionTest
 
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null Network");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1578,7 +1372,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1598,10 +1392,6 @@ public class GeoPackageNetworkExtensionTest
 
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null name");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1610,7 +1400,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1630,10 +1420,6 @@ public class GeoPackageNetworkExtensionTest
 
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed an empty name");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1642,7 +1428,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1656,10 +1442,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributeDescription(network, "name", null, DataType.Real, "description", AttributedType.Edge);
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null units");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1668,7 +1450,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException5() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1682,10 +1464,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributeDescription(network, "name", "", DataType.Real, "description", AttributedType.Edge);
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed an empty units");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1694,7 +1472,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException6() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1708,10 +1486,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributeDescription(network, "name", "units", null, "description", AttributedType.Edge);
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null DataType");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1720,7 +1494,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException7() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1734,10 +1508,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributeDescription(network, "name", "units", DataType.Real, null, AttributedType.Edge);
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null description");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1746,7 +1516,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException8() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1760,10 +1530,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributeDescription(network, "name", "units", DataType.Real, "", AttributedType.Edge);
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed an empty units");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1772,7 +1538,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddAttributeDescriptionException9() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1786,10 +1552,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addAttributeDescription(network, "name", "units", DataType.Real, "description", null);
             fail("Expected GeoPackageNetworkExtension method addAttributeDescription(Network, String, String, DataType, String, AttributedType) to throw an IllegalArgumentException when passed a null AttributedType");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1799,7 +1561,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testAddAttributeDescription() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1826,19 +1588,15 @@ public class GeoPackageNetworkExtensionTest
                                attribute.getDescription().equals("description") &&
                                attribute.getAttributedType() == AttributedType.Edge);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
-     * Tests getEdgeAttribute throws an IllegalArgumetnException
+     * Tests getEdgeAttribute throws an IllegalArgumentException
      */
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributeException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1854,10 +1612,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getEdgeAttributes(edge, null);
             fail("Expected GeoPackageNetworkExtension method getEdgeAttribute to throw an IllegalArgumentException when given a null AttributeDescription");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1866,7 +1620,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributeException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1886,10 +1640,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getEdgeAttributes(edge, Collections.singletonList(attributeDescription));
             fail("Expected GeoPackageNetworkExtension method getEdgeAttributes to throw an IllegalArgumentException when the AttributeDescription belongs to a node.");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1899,7 +1649,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetEdgeAttribute1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1920,10 +1670,6 @@ public class GeoPackageNetworkExtensionTest
             assertNull("Expected GeoPackageNetworkExtension method getEdgeAttribute to return null.",
                        networkExtension.getEdgeAttributes(edge, Collections.singletonList(attributeDescription)).get(0));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1932,7 +1678,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1960,10 +1706,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getEdgeAttributes(-1, Arrays.asList(attribute1, attribute2));
             fail("Expected GeoPackageNetworkExtension method getEdgeAttributes to throw an IllegalArgumentException when given a null Edge");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -1972,7 +1714,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -1988,10 +1730,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getEdgeAttributes(edge, Collections.emptyList());
             fail("Expected GeoPackageNetworkExtension method getEdgeAttributes to throw an IllegalArgumentException when given no AttributeDescriptions");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2000,7 +1738,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributesException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2016,10 +1754,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getEdgeAttributes(edge, null);
             fail("Expected GeoPackageNetworkExtension method getEdgeAttributes to throw an IllegalArgumentException when given null AttributeDescriptions");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2028,7 +1762,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributesException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2064,10 +1798,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getEdgeAttributes(edge, Arrays.asList(attribute1, attribute2));
             fail("Expected GeoPackageNetworkExtension method getEdgeAttributes to throw an IllegalArgumentException when given AttributeDescriptions for different tables");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2076,7 +1806,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributesException5() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2099,10 +1829,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getEdgeAttributes(edge, Collections.singletonList(attribute1));
             fail("Expected GeoPackageNetworkExtension method getEdgeAttributes to throw an IllegalArgumentException when given an AttributeDescription for a Node");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2112,7 +1838,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetEdgeAttributes2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2139,10 +1865,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getEdgeAttributes(-1, Arrays.asList(attribute1, attribute2));
             fail("Expected GeoPackageNetworkExtension did not throw an IllegalArgumentException when given an edge not in the table");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2152,7 +1874,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetEdgeAttributes3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2184,10 +1906,6 @@ public class GeoPackageNetworkExtensionTest
                                list.get(0) == null &&
                                list.get(1) == null);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2197,7 +1915,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testGetNodeAttributesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2225,10 +1943,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.getNodeAttributes(0, Arrays.asList(attribute1, attribute2));
             fail("Expected GeoPackageNetworkExtension to throw an IllegalArgumentException when given a node not in the network");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2237,7 +1951,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testGetNodeAttributes1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2275,10 +1989,6 @@ public class GeoPackageNetworkExtensionTest
                                (Double) list.get(0) == 10.20 &&
                                ((String) list.get(1)).equals("word"));
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2287,7 +1997,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNodeAttributesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2315,10 +2025,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addNodeAttributes(0, null, Arrays.asList(attribute1, attribute2));
             fail("Expected GeoPackageNetworkExtension method addNodeAttributes to throw an IllegalArgumentException when given a null Values collection");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2327,7 +2033,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNodeAttributesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2356,10 +2062,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addNodeAttributes(0, values, Arrays.asList(attribute1, attribute2));
             fail("Expected GeoPackageNetworkExtension method addNodeAttributes to throw an IllegalArgumentException when the attributes list and values list are different sizes");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2369,7 +2071,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testAddNodeAttributes() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2410,10 +2112,6 @@ public class GeoPackageNetworkExtensionTest
                        (Integer)attributes.get(0) == 555 &&
                        (Integer)attributes.get(1) == 444);
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2422,7 +2120,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNodesException1() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2430,10 +2128,6 @@ public class GeoPackageNetworkExtensionTest
 
             networkExtension.addNodes(nodeAttributePairs , null);
             fail("Expected GeoPackageNetworkExtension method addNodes to throw an IllegalArgumentException when given a null AttributeDescriptions");
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
@@ -2443,7 +2137,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNodesException2() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2464,10 +2158,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addNodes(null , Collections.singletonList(attribute));
             fail("Expected GeoPackageNetworkExtension method addNodes to throw an IllegalArgumentException when given a null List of node attribute pairs");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2476,7 +2166,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNodesException3() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2499,10 +2189,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addNodes(nodeAttributePairs, Collections.singletonList(attribute));
             fail("Expected GeoPackageNetworkExtension method addNodes to throw an IllegalArgumentException when the given nodes have null for their values");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2511,7 +2197,7 @@ public class GeoPackageNetworkExtensionTest
     @Test(expected = IllegalArgumentException.class)
     public void testAddNodesException4() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2534,10 +2220,6 @@ public class GeoPackageNetworkExtensionTest
             networkExtension.addNodes(nodeAttributePairs, Collections.singletonList(attribute));
             fail("Expected GeoPackageNetworkExtension method addNodes to throw an IllegalArgumentException when the given nodes have null for their values");
         }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
-        }
     }
 
     /**
@@ -2547,7 +2229,7 @@ public class GeoPackageNetworkExtensionTest
     @Test
     public void testAddNodes() throws ClassNotFoundException, SQLException, ConformanceException, IOException, BadImplementationException
     {
-        final File testFile = TestUtility.getRandomFile(5);
+        final File testFile = TestUtility.getRandomFile();
         try(final GeoPackage gpkg = new GeoPackage(testFile))
         {
             final GeoPackageNetworkExtension networkExtension = gpkg.extensions().getExtensionImplementation(GeoPackageNetworkExtension.class);
@@ -2579,10 +2261,6 @@ public class GeoPackageNetworkExtensionTest
                        (Integer)networkExtension.getNodeAttributes(2, attributeDescriptions).get(0) == 14);
             assertTrue("GeoPackageNetworkExtension method addNodes did not correctly add nodes to the network",
                        (Integer)networkExtension.getNodeAttributes(3, attributeDescriptions).get(0) == 16);
-        }
-        finally
-        {
-            TestUtility.deleteFile(testFile);
         }
     }
 
