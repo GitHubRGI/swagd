@@ -23,10 +23,26 @@
 
 package com.rgi.geopackage.features;
 
+/**
+ * Description for Geometry Column 'z' and 'm' value requirements
+ *
+ * @author Luke Lambert
+ */
 public enum ValueRequirement
 {
+    /**
+     * Value is prohibited
+     */
     Prohibited(0),
+
+    /**
+     * Value is required
+     */
     Mandatory (1),
+
+    /**
+     * Value is optional
+     */
     Optional  (2);
 
     ValueRequirement(final int value)
@@ -39,6 +55,13 @@ public enum ValueRequirement
         return this.value;
     }
 
+    /**
+     * Converts integer into a ValueRequirement enum value
+     *
+     * @param value
+     *             Value to map
+     * @return The appropriate corresponding enum value
+     */
     public static ValueRequirement fromInt(final int value)
     {
         //noinspection SwitchStatement

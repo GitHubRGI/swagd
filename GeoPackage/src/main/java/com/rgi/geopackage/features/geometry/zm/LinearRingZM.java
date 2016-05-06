@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.zm;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.geometry.m.CoordinateM;
 
 import java.nio.ByteBuffer;
@@ -59,6 +60,28 @@ public class LinearRingZM
         this.coordinates = new ArrayList<>(coordinates);
     }
 
+    @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.coordinates.equals((LinearRingZM)o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.coordinates.hashCode();
+    }
+
     public List<CoordinateZM> getCoordinates()
     {
         return Collections.unmodifiableList(this.coordinates);
@@ -80,20 +103,20 @@ public class LinearRingZM
     }
 
     /**
-     * Assumes the bytebuffer's byte order has been properly set
+     * Assumes the ByteOutputStream's byte order has been properly set
      *
-     * @param byteBuffer
+     * @param byteOutputStream
      */
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        if(byteBuffer == null)
+        if(byteOutputStream == null)
         {
             throw new IllegalArgumentException("Byte buffer may not be null");
         }
 
-        byteBuffer.putInt(this.coordinates.size());
+        byteOutputStream.write(this.coordinates.size());
 
-        this.coordinates.forEach(coordinate -> coordinate.writeWellKnownBinary(byteBuffer));
+        this.coordinates.forEach(coordinate -> coordinate.writeWellKnownBinary(byteOutputStream));
     }
 
     /**

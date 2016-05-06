@@ -52,7 +52,7 @@ public class ColumnDefinition extends AbstractColumnDefinition
      * @param flags
      *             Column constraint flags
      * @param defaultValue
-     *             Column default value. Ignored if null.
+     *             Column default value
      * @param comment
      *             Comment to be added to the table definition. Ignored if
      *             null.
@@ -65,5 +65,7 @@ public class ColumnDefinition extends AbstractColumnDefinition
                             final String              comment)
     {
         super(name, type, flags, checkExpression, defaultValue, comment);
+
+        // TODO explicitly disallow primary key/auto increment here since those belong solely to PrimaryKeyColumnDefinition?
     }
 }

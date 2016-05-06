@@ -25,7 +25,6 @@ package com.rgi.geopackage.verification;
 
 import com.rgi.common.Pair;
 import com.rgi.common.util.jdbc.JdbcUtility;
-import org.sqlite.JDBC;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

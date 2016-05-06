@@ -34,10 +34,25 @@ public enum Contents
     /**
      * This indicates a non-empty GeoPackage geometry
      */
-    NotEmpty,
+    NotEmpty((byte)0b00000000),
 
     /**
      * This indicates an empty GeoPackage geometry
      */
-    Empty
+    Empty((byte)0b00010000);
+
+    /**
+     * @return the bitMask
+     */
+    public byte getBitMask()
+    {
+        return this.bitMask;
+    }
+
+    Contents(final byte bitMask)
+    {
+        this.bitMask = bitMask;
+    }
+
+    private final byte bitMask;
 }

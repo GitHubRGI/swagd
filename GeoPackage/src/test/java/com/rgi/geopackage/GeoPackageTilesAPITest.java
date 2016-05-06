@@ -36,7 +36,6 @@ import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.common.util.ImageUtility;
-import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.tiles.Tile;
 import com.rgi.geopackage.tiles.TileMatrix;
@@ -44,7 +43,6 @@ import com.rgi.geopackage.tiles.TileMatrixSet;
 import com.rgi.geopackage.tiles.TileSet;
 import com.rgi.geopackage.verification.ConformanceException;
 import com.rgi.geopackage.verification.VerificationLevel;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -62,11 +60,13 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
  * @author Jenifer Cochran
+ * @uahtor Luke Lambert
  */
 @SuppressWarnings("JavaDoc")
 public class GeoPackageTilesAPITest
@@ -738,7 +738,7 @@ public class GeoPackageTilesAPITest
         {
             final TileSet tileSet = gpkg.tiles().getTileSet("table_not_here");
 
-            Assert.assertNull("GeoPackage expected to return null when the tile set does not exist in GeoPackage", tileSet);
+            assertNull("GeoPackage expected to return null when the tile set does not exist in GeoPackage", tileSet);
         }
     }
 
@@ -949,7 +949,7 @@ public class GeoPackageTilesAPITest
                 final Statement  stmt          = con.createStatement();
                 final ResultSet  tileTableName = stmt.executeQuery(query))
             {
-                Assert.assertNull("The data should not be in the contents table since it throws an SQLException", tileTableName.getString("table_name"));
+                assertNull("The data should not be in the contents table since it throws an SQLException", tileTableName.getString("table_name"));
             }
         }
     }
@@ -1274,7 +1274,7 @@ public class GeoPackageTilesAPITest
             //Retrieve tile from gpkg
             final Tile gpkgTile1 = gpkg.tiles().getTile(tileSet, 4, 0, 4);
 
-            Assert.assertNull("GeoPackage did not null when the tile doesn't exist in the getTile method.", gpkgTile1);
+            assertNull("GeoPackage did not null when the tile doesn't exist in the getTile method.", gpkgTile1);
         }
     }
 
@@ -1360,7 +1360,7 @@ public class GeoPackageTilesAPITest
                                        tileWidth,
                                        tileHeight);
 
-            Assert.assertNull("GeoPackage should have returned null for a missing tile.", gpkg.tiles().getTile(tileSet, 0, 0, 0));
+            assertNull("GeoPackage should have returned null for a missing tile.", gpkg.tiles().getTile(tileSet, 0, 0, 0));
         }
     }
 
@@ -2016,7 +2016,7 @@ public class GeoPackageTilesAPITest
 
             final TileMatrixSet tileMatrixSet = gpkg.tiles().getTileMatrixSet(tileSet);
 
-            Assert.assertNull("GeoPackage was supposed to return null when there is a nonexistant TileMatrix entry at that zoom level and TileSet", gpkg.tiles().getTileMatrix(tileMatrixSet, 0));
+            assertNull("GeoPackage was supposed to return null when there is a nonexistant TileMatrix entry at that zoom level and TileSet", gpkg.tiles().getTileMatrix(tileMatrixSet, 0));
         }
     }
 

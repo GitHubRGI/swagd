@@ -23,9 +23,8 @@
 
 package com.rgi.geopackage.features.geometry.m;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
-
-import java.nio.ByteBuffer;
 
 /**
  * Proxy for member coordinates in GeoPackage geometries
@@ -41,6 +40,39 @@ public class CoordinateM
         this.x = x;
         this.y = y;
         this.m = m;
+    }
+
+    @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        final CoordinateM other = (CoordinateM)o;
+
+        return Double.compare(other.x, this.x) == 0 &&
+               Double.compare(other.y, this.y) == 0 &&
+               Double.compare(other.m, this.m) == 0;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final long longBitsX = Double.doubleToLongBits(this.x);
+        int result = (int) (longBitsX ^ (longBitsX >>> 32));
+        final long longBitsY = Double.doubleToLongBits(this.y);
+        result = 31 * result + (int) (longBitsY ^ (longBitsY >>> 32));
+        final long longBitsM = Double.doubleToLongBits(this.m);
+        result = 31 * result + (int) (longBitsM ^ (longBitsM >>> 32));
+
+        return result;
     }
 
     @Override
@@ -90,11 +122,11 @@ public class CoordinateM
                              this.m);
     }
 
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        byteBuffer.putDouble(this.x);
-        byteBuffer.putDouble(this.y);
-        byteBuffer.putDouble(this.m);
+        byteOutputStream.write(this.x);
+        byteOutputStream.write(this.y);
+        byteOutputStream.write(this.m);
     }
 
     private final double x;

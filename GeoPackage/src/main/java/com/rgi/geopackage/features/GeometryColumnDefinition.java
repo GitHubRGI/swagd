@@ -46,6 +46,7 @@ public class GeometryColumnDefinition extends AbstractColumnDefinition
      * @param mRequirement
      *            Restrictions on the presence of an 'm' value
      * @param comment
+     *            Human readable comment appended to the column line that can be viewed in some database editors
      */
     public GeometryColumnDefinition(final String           name,
                                     final String           geometryType,
@@ -77,6 +78,7 @@ public class GeometryColumnDefinition extends AbstractColumnDefinition
     /**
      * @return the zRequirement
      */
+    @SuppressWarnings("SuspiciousGetterSetter") // the inspection complains about ZRequirement vs zRequirement
     public ValueRequirement getZRequirement()
     {
         return this.zRequirement;
@@ -85,6 +87,7 @@ public class GeometryColumnDefinition extends AbstractColumnDefinition
     /**
      * @return the mRequirement
      */
+    @SuppressWarnings("SuspiciousGetterSetter") // the inspection complains about MRequirement vs mRequirement
     public ValueRequirement getMRequirement()
     {
         return this.mRequirement;

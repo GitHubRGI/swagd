@@ -61,7 +61,7 @@ public class WkbMultiPointZM extends WkbGeometryCollectionZM<WkbPointZM>
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiPoint + "ZM";
+        return GeometryType.MultiPoint.toString();
     }
 
     public List<WkbPointZM> getPoints()

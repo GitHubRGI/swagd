@@ -55,13 +55,14 @@ public final class EnvelopeZ extends Envelope
     @Override
     public double[] toArray()
     {
-        return new double[]{ this.getMinimumX(),
-                             this.getMaximumX(),
-                             this.getMinimumY(),
-                             this.getMaximumY(),
-                             this.minimumZ,
-                             this.maximumZ
-                           };
+        return this.isEmpty() ? EMPTY_ARRAY
+                              : new double[]{ this.getMinimumX(),
+                                              this.getMaximumX(),
+                                              this.getMinimumY(),
+                                              this.getMaximumY(),
+                                              this.minimumZ,
+                                              this.maximumZ
+                                            };
     }
 
     public double getMinimumZ()
@@ -115,4 +116,6 @@ public final class EnvelopeZ extends Envelope
 
     private final double minimumZ;
     private final double maximumZ;
+
+    private static final double[] EMPTY_ARRAY = {};
 }

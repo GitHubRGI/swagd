@@ -318,7 +318,7 @@ public class GeoPackageNetworkExtension extends ExtensionImplementation
                               final BoundingBox            boundingBox,
                               final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        GeoPackageCore.validateNewContentTableName(tableName);
+        DatabaseUtility.validateTableName(tableName);
 
         if(boundingBox == null)
         {

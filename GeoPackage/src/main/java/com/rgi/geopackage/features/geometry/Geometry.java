@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
@@ -44,13 +45,16 @@ public abstract class Geometry
      *
      * @return
      */
+    public abstract boolean equals(final Object o);
+    public abstract int     hashCode();
     public abstract long    getTypeCode();
     public abstract String  getGeometryTypeName();
     public abstract boolean hasZ();
     public abstract boolean hasM();
     public abstract boolean isEmpty();
 
-    public abstract void writeWellKnownBinary(final ByteBuffer byteBuffer);
+
+    public abstract void writeWellKnownBinary(final ByteOutputStream byteOutputStream);
 
     public abstract Envelope createEnvelope();
 
@@ -82,17 +86,17 @@ public abstract class Geometry
         }
     }
 
-    protected void writeWellKnownBinaryHeader(final ByteBuffer byteBuffer)
+    protected void writeWellKnownBinaryHeader(final ByteOutputStream byteOutputStream)
     {
-        if(byteBuffer == null)
+        if(byteOutputStream == null)
         {
             throw new IllegalArgumentException("Byte buffer may not be null");
         }
 
-        final byte byteOrder = (byte)(byteBuffer.order().equals(ByteOrder.BIG_ENDIAN) ? 0 : 1);
+        final byte byteOrder = (byte)(byteOutputStream.getByteOrder().equals(ByteOrder.BIG_ENDIAN) ? 0 : 1);
 
-        byteBuffer.put(byteOrder);
-        byteBuffer.putInt((int)this.getTypeCode()); // This long -> int cast should be safe. The long value is used to represent an unsigned value
+        byteOutputStream.write(byteOrder);
+        byteOutputStream.write((int)this.getTypeCode()); // This long -> int cast should be safe. The long value is used to represent an unsigned value
     }
 
     protected static long readGeometryType(final ByteBuffer byteBuffer)

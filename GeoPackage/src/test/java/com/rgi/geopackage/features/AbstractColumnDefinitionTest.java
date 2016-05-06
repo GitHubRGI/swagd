@@ -21,14 +21,14 @@
  * SOFTWARE.
  */
 
-package com.rgi.test.geopackage.features;
+package com.rgi.geopackage.features;
 
-import com.rgi.geopackage.features.AbstractColumnDefinition;
-import com.rgi.geopackage.features.ColumnDefault;
-import com.rgi.geopackage.features.ColumnFlag;
 import org.junit.Test;
 
 import java.util.EnumSet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Luke Lambert
@@ -176,5 +176,156 @@ public class AbstractColumnDefinitionTest
                                      "column",
                                      ColumnDefault.None,
                                      "");
+    }
+
+    /**
+     * AbstractColumnDefinition's constructor should fail when the comment field contains a newline
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void constructorCommentContainsNewline()
+    {
+        new ConcreteColumnDefinition("a1",
+                                     "INTEGER",
+                                     EnumSet.noneOf(ColumnFlag.class),
+                                     "column",
+                                     ColumnDefault.None,
+                                     "\n");
+    }
+
+    /**
+     * getName() should return the name the column definition was constructed with
+     */
+    @Test
+    public void getName()
+    {
+        final String columnName = "a1";
+
+        final ConcreteColumnDefinition column = new ConcreteColumnDefinition(columnName,
+                                                                             "INTEGER",
+                                                                             EnumSet.noneOf(ColumnFlag.class),
+                                                                             "column",
+                                                                             ColumnDefault.None,
+                                                                             "");
+
+        assertEquals("getName() failed to return the name the column definition was constructed with",
+                     columnName,
+                     column.getName());
+    }
+
+    /**
+     * getType() should return the type the column definition was constructed with
+     */
+    @Test
+    public void getType()
+    {
+        final String type = "INTEGER";
+
+        final ConcreteColumnDefinition column = new ConcreteColumnDefinition("a1",
+                                                                             type,
+                                                                             EnumSet.noneOf(ColumnFlag.class),
+                                                                             "column",
+                                                                             ColumnDefault.None,
+                                                                             "");
+
+        assertEquals("getType() failed to return the type the column definition was constructed with",
+                     type,
+                     column.getType());
+    }
+
+    /**
+     * hasFlag(...) should return true for flags the column definition was constructed with
+     */
+    @Test
+    public void testHasFlagTrue()
+    {
+        final ColumnFlag flag = ColumnFlag.AutoIncrement;
+
+        final ConcreteColumnDefinition column = new ConcreteColumnDefinition("a1",
+                                                                             "INTEGER",
+                                                                             EnumSet.of(flag),
+                                                                             "column",
+                                                                             ColumnDefault.None,
+                                                                             "");
+
+        assertTrue("hasFlagTrue() failed to return true for a flag the column definition was constructed with",
+                   column.hasFlag(flag));
+    }
+
+    /**
+     * hasFlag(...) should return false for flags the column definition was not constructed with
+     */
+    @Test
+    public void testHasFlagFalse()
+    {
+        final ColumnFlag flag = ColumnFlag.AutoIncrement;
+
+        final ConcreteColumnDefinition column = new ConcreteColumnDefinition("a1",
+                                                                             "INTEGER",
+                                                                             EnumSet.of(flag),
+                                                                             "column",
+                                                                             ColumnDefault.None,
+                                                                             "");
+        assertTrue("hasFlag() failed to return false for flags the name the column definition was not constructed with",
+                   !column.hasFlag(ColumnFlag.Unique));
+    }
+
+    /**
+     * getCheckExpression() should return the check expression the column definition was constructed with
+     */
+    @Test
+    public void getCheckExpression()
+    {
+        final String checkExpression = "foo";
+
+        final ConcreteColumnDefinition column = new ConcreteColumnDefinition("a1",
+                                                                             "INTEGER",
+                                                                             EnumSet.noneOf(ColumnFlag.class),
+                                                                             checkExpression,
+                                                                             ColumnDefault.None,
+                                                                             "");
+
+        assertEquals("getCheckExpression() failed to return the check expression the column definition was constructed with",
+                     checkExpression,
+                     column.getCheckExpression());
+    }
+
+    /**
+     * getDefaultValue() should return the default value the column definition was constructed with
+     */
+    @Test
+    public void getDefaultValue()
+    {
+        final ColumnDefault columnDefault = ColumnDefault.from("foo");
+
+        final ConcreteColumnDefinition column = new ConcreteColumnDefinition("a1",
+                                                                             "INTEGER",
+                                                                             EnumSet.noneOf(ColumnFlag.class),
+                                                                             "column",
+                                                                             columnDefault,
+                                                                             "");
+
+        assertEquals("getDefaultValue() failed to return the default value the column definition was constructed with",
+                     columnDefault,
+                     column.getDefaultValue());
+    }
+
+    /**
+     * getComment() should return the comment the column definition was constructed with
+     */
+    @Test
+    public void getComment()
+    {
+        final String comment = "comment";
+
+        final ConcreteColumnDefinition column = new ConcreteColumnDefinition("a1",
+                                                                             "INTEGER",
+                                                                             EnumSet.noneOf(ColumnFlag.class),
+                                                                             "column",
+                                                                             ColumnDefault.None,
+                                                                             comment);
+
+        assertEquals("getComment() failed to return the comment the column definition was constructed with",
+                     comment,
+                     column.getComment());
     }
 }

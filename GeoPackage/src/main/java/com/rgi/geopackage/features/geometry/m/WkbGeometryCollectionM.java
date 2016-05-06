@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.m;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.WellKnownBinaryFormatException;
 import com.rgi.geopackage.features.geometry.Geometry;
@@ -82,6 +83,28 @@ public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.geometries.equals((WkbGeometryCollectionM<?>)o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.geometries.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return WkbGeometryM.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode();
@@ -90,7 +113,7 @@ public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.GeometryCollection + "M";
+        return GeometryType.GeometryCollection.toString();
     }
 
     @Override
@@ -100,15 +123,15 @@ public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteBuffer for null
 
         final List<T> geometries = this.getGeometries();
 
-        byteBuffer.putInt(geometries.size());
+        byteOutputStream.write(geometries.size());
 
-        geometries.forEach(wkbGeometry -> wkbGeometry.writeWellKnownBinary(byteBuffer));
+        geometries.forEach(wkbGeometry -> wkbGeometry.writeWellKnownBinary(byteOutputStream));
     }
 
     @Override

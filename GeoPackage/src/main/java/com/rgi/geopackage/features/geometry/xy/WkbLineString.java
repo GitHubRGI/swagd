@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.xy;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.nio.ByteBuffer;
@@ -54,6 +55,28 @@ public class WkbLineString extends WkbCurve
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.linearString.equals(((WkbLineString)o).linearString);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.linearString.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return GeometryType.LineString.getCode();
@@ -78,10 +101,10 @@ public class WkbLineString extends WkbCurve
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
-        this.linearString.writeWellKnownBinary(byteBuffer);
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
+        this.linearString.writeWellKnownBinary(byteOutputStream);
     }
 
 

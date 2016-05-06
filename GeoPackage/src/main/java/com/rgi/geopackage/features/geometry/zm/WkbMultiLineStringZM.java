@@ -61,7 +61,7 @@ public class WkbMultiLineStringZM extends WkbMultiCurveZM<WkbLineStringZM>
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.MultiLineString + "ZM";
+        return GeometryType.MultiLineString.toString();
     }
 
     public List<WkbLineStringZM> getLineStrings()

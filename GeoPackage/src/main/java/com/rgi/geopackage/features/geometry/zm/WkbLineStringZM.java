@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.zm;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
@@ -55,6 +56,28 @@ public class WkbLineStringZM extends WkbCurveZM
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.linearString.equals(((WkbLineStringZM)o).linearString);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.linearString.hashCode();
+    }
+
+    @Override
     public long getTypeCode()
     {
         return GeometryTypeDimensionalityBase + GeometryType.LineString.getCode();
@@ -63,7 +86,7 @@ public class WkbLineStringZM extends WkbCurveZM
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.LineString + "ZM";
+        return GeometryType.LineString.toString();
     }
 
     @Override
@@ -85,10 +108,10 @@ public class WkbLineStringZM extends WkbCurveZM
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
-        this.linearString.writeWellKnownBinary(byteBuffer);
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
+        this.linearString.writeWellKnownBinary(byteOutputStream);
     }
 
     public static WkbLineStringZM readWellKnownBinary(final ByteBuffer byteBuffer)

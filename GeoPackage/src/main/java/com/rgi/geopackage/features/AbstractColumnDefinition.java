@@ -23,8 +23,9 @@
 
 package com.rgi.geopackage.features;
 
+import com.rgi.geopackage.utility.DatabaseUtility;
+
 import java.util.EnumSet;
-import java.util.regex.Pattern;
 
 /**
  * Object to capture a column's definition: name, type, and constraints
@@ -88,7 +89,7 @@ public abstract class AbstractColumnDefinition
                                        final ColumnDefault       defaultValue,
                                        final String              comment)
     {
-        AbstractColumnDefinition.validateColumnName(name);
+        DatabaseUtility.validateColumnName(name);
 
         if(type == null || type.isEmpty())
         {
@@ -103,7 +104,8 @@ public abstract class AbstractColumnDefinition
             throw new IllegalArgumentException("The default type may not be null. Use ColumnDefault.Null to specify a null value, or ColumnDefault.None to leave the default unspecified.");
         }
 
-        if(this.flags.contains(ColumnFlag.NotNull) &&
+        if( this.flags.contains(ColumnFlag.NotNull)    &&
+           !this.flags.contains(ColumnFlag.PrimaryKey) &&   // Ignore primary keys. They're always auto-increment, and can not use a default value
            (defaultValue.equals(ColumnDefault.None) ||
             defaultValue.equals(ColumnDefault.Null)))
         {
@@ -116,9 +118,9 @@ public abstract class AbstractColumnDefinition
         this.defaultValue    = defaultValue;
         this.comment         = comment;
 
-        if(this.comment.contains("\n"))
+        if(this.comment != null && this.comment.contains("\n"))
         {
-            throw new IllegalArgumentException("The comment my not contain any line break characters");
+            throw new IllegalArgumentException("The comment may not contain any line break characters");
         }
     }
 
@@ -160,27 +162,6 @@ public abstract class AbstractColumnDefinition
         return this.comment;
     }
 
-    public static void validateColumnName(final String columnName)
-    {
-        if(columnName == null || columnName.isEmpty())
-        {
-            throw new IllegalArgumentException("Column name may not be null or empty");
-        }
-
-        // TODO: unquoted column names that are the same as an SQL keyword
-        // (regardless of case, I believe) will also be an issue. A full list
-        // of reserved words can be found here:
-        // https://www.sqlite.org/lang_keywords.html
-        // By wrapping column names in double quotes, you can get away with
-        // a variety of strange names. This is *strongly* discouraged, but I'm
-        // not sure it's correct to explicitly forbid it.
-
-        if(!columnNamePattern.matcher(columnName).matches())
-        {
-            throw new IllegalArgumentException(String.format("The column '%s' must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers", columnName)); // This is just a best guess. SQLite doesn't actually have an EBNF diagram for "column-name"
-        }
-    }
-
     private final String              name;
     private final String              type;
     private final EnumSet<ColumnFlag> flags;
@@ -188,5 +169,4 @@ public abstract class AbstractColumnDefinition
     private final ColumnDefault       defaultValue;
     private final String              comment;
 
-    private static final Pattern columnNamePattern = Pattern.compile("^[_a-zA-Z]\\w*"); // This is just a best guess. SQLite doesn't actually have an EBNF diagram for "column-name"
 }

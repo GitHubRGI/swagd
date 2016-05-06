@@ -21,14 +21,12 @@
  * SOFTWARE.
  */
 
-package com.rgi.test.geopackage.features.geometry;
+package com.rgi.geopackage.features.geometry;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
-import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
 
 import static org.junit.Assert.assertEquals;
 
@@ -47,6 +45,18 @@ public class GeometryTest
         //noinspection AnonymousInnerClassMayBeStatic
         final Geometry geometry = new Geometry()
         {
+            @Override
+            public boolean equals(final Object o)
+            {
+                return false;
+            }
+
+            @Override
+            public int hashCode()
+            {
+                return 0;
+            }
+
             @Override
             public long getTypeCode()
             {
@@ -78,7 +88,7 @@ public class GeometryTest
             }
 
             @Override
-            public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+            public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
             {
 
             }

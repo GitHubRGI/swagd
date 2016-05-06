@@ -1,3 +1,26 @@
+/* The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Reinventing Geospatial, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package com.rgi.geopackage.features;
 
 import java.math.BigInteger;
@@ -9,6 +32,8 @@ import java.math.BigInteger;
  */
 public interface ColumnDefault
 {
+    String sqlLiteral();
+
     /**
      * Creates a constant expression.
      *
@@ -28,14 +53,7 @@ public interface ColumnDefault
     @SuppressWarnings("ReturnOfInnerClass") // Shouldn't matter from a static method - anonymous inner class has no access/reference to the parent interface
     static ColumnDefault expression(final String expression)
     {
-        return new ColumnDefault()
-               {
-                   @Override
-                   public String toString()
-                   {
-                       return String.format("(%s)", expression);
-                   }
-               };
+        return () -> String.format("(%s)", expression);
     }
 
     /**
@@ -48,14 +66,7 @@ public interface ColumnDefault
     @SuppressWarnings("ReturnOfInnerClass") // Shouldn't matter from a static method - anonymous inner class has no access/reference to the parent interface
     static ColumnDefault from(final int value)
     {
-        return new ColumnDefault()
-               {
-                   @Override
-                   public String toString()
-                   {
-                       return Integer.toString(value);
-                   }
-               };
+        return () -> Integer.toString(value);
     }
 
     /**
@@ -68,14 +79,7 @@ public interface ColumnDefault
     @SuppressWarnings("ReturnOfInnerClass") // Shouldn't matter from a static method - anonymous inner class has no access/reference to the parent interface
     static ColumnDefault from(final double value)
     {
-        return new ColumnDefault()
-               {
-                   @Override
-                   public String toString()
-                   {
-                       return Double.toString(value);
-                   }
-               };
+        return () -> Double.toString(value);
     }
 
     /**
@@ -90,16 +94,11 @@ public interface ColumnDefault
     @SuppressWarnings("ReturnOfInnerClass") // Shouldn't matter from a static method - anonymous inner class has no access/reference to the parent interface
     static ColumnDefault from(final String value)
     {
-        return new ColumnDefault()
-               {
-                   @Override
-                   public String toString()
-                   {
-                       // IntelliJ wanted to replace this statement with something I wasn't sure was functionally equivalent
-                       //noinspection DynamicRegexReplaceableByCompiledPattern
-                       return String.format("'%s'", value.replace("'", "''"));  // Escape single quotes with an additional single quote
-                   }
-               };
+        return () -> {
+            // IntelliJ wanted to replace this statement with something I wasn't sure was functionally equivalent
+            //noinspection DynamicRegexReplaceableByCompiledPattern
+            return String.format("'%s'", value.replace("'", "''"));  // Escape single quotes with an additional single quote
+        };
     }
 
     /**
@@ -112,17 +111,12 @@ public interface ColumnDefault
     @SuppressWarnings("ReturnOfInnerClass") // Shouldn't matter from a static method - anonymous inner class has no access/reference to the parent interface
     static ColumnDefault from(final byte[] value)
     {
-        return new ColumnDefault()
-               {
-                   @Override
-                   public String toString()
-                   {
-                       // This solution was found here:
-                       // https://stackoverflow.com/a/943963/16434
-                       final BigInteger bigInt = new BigInteger(1, value);
-                       return String.format("X'%0" + (value.length << 1) + "X'", bigInt); // SQLite blob literals are of the form X'<hex digits>'. See "Literal Values (Constants)" at https://www.sqlite.org/lang_expr.html
-                   }
-               };
+        return () -> {
+            // This solution was found here:
+            // https://stackoverflow.com/a/943963/16434
+            final BigInteger bigInt = new BigInteger(1, value);
+            return String.format("X'%0" + (value.length << 1) + "X'", bigInt); // SQLite blob literals are of the form X'<hex digits>'. See "Literal Values (Constants)" at https://www.sqlite.org/lang_expr.html
+        };
     }
 
     /**
@@ -130,28 +124,14 @@ public interface ColumnDefault
      * is used by SQLite
      */
     @SuppressWarnings("ConstantDeclaredInInterface")
-    ColumnDefault None = new ColumnDefault()
-                             {
-                                 @Override
-                                 public String toString()
-                                 {
-                                     return "";
-                                 }
-                             };
+    ColumnDefault None = () -> "";
 
     /**
      * Specifies the token NULL as the default value (which is what's used if
      * no value is specified)
      */
     @SuppressWarnings("ConstantDeclaredInInterface")
-    ColumnDefault Null = new ColumnDefault()
-                             {
-                                 @Override
-                                 public String toString()
-                                 {
-                                     return "NULL";
-                                 }
-                             };
+    ColumnDefault Null = () -> "NULL";
 
     /**
      * Specifies the token CURRENT_TIME. The time is current UTC time in the
@@ -159,28 +139,14 @@ public interface ColumnDefault
      * "https://www.sqlite.org/lang_createtable.html">here</a>.
      */
     @SuppressWarnings("ConstantDeclaredInInterface")
-    ColumnDefault CurrentTime = new ColumnDefault()
-                                {
-                                    @Override
-                                    public String toString()
-                                    {
-                                        return "CURRENT_TIME";
-                                    }
-                                };
+    ColumnDefault CurrentTime = () -> "CURRENT_TIME";
     /**
      * Specifies the token CURRENT_DATE. The date is the current UTC date in
      * the form "YYYY-MM-DD". See the heading "Column Definitions"
      * <a href="https://www.sqlite.org/lang_createtable.html">here</a>.
      */
     @SuppressWarnings("ConstantDeclaredInInterface")
-    ColumnDefault CurrentDate = new ColumnDefault()
-                                {
-                                    @Override
-                                    public String toString()
-                                    {
-                                        return "CURRENT_DATE";
-                                    }
-                                };
+    ColumnDefault CurrentDate = () -> "CURRENT_DATE";
     /**
      * Specifies the token CURRENT_TIMESTAMP. The date is the current UTC datetime
      * in the form "YYYY-MM-DD HH:MM:SS". See the heading "Column
@@ -188,12 +154,5 @@ public interface ColumnDefault
      * </a>.
      */
     @SuppressWarnings("ConstantDeclaredInInterface")
-    ColumnDefault CurrentTimestamp = new ColumnDefault()
-                                     {
-                                         @Override
-                                         public String toString()
-                                         {
-                                             return "CURRENT_TIMESTAMP";
-                                         }
-                                     };
+    ColumnDefault CurrentTimestamp = () -> "CURRENT_TIMESTAMP";
 }

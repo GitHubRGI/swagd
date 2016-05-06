@@ -29,18 +29,23 @@ import java.util.List;
 /**
  * @see "http://www.geopackage.org/spec/#gpb_format"
  *
+ * Binary type, the fifth bit of the GeoPackageBinary flags byte.
+ *
+ * 0 - Standard geometry type
+ * 1 - extended geometry type
+ *
  * @author LukeLambert
  *
  */
 public enum BinaryType
 {
-    Standard(0),
-    Extended(0b00100000); // TODO check to make sure I've got the endianness right
+    Standard((byte)0b00000000),
+    Extended((byte)0b00100000);
 
     /**
      * @return the bitMask
      */
-    public int getBitMask()
+    public byte getBitMask()
     {
         return this.bitMask;
     }
@@ -56,14 +61,14 @@ public enum BinaryType
                                                                               : Extended;
     }
 
-    BinaryType(final int bitMask)
+    BinaryType(final byte bitMask)
     {
         this.bitMask = bitMask;
     }
 
-    private final int bitMask;
+    private final byte bitMask;
 
-        // Standard geometry types
+    // Standard geometry types
     // http://www.geopackage.org/spec/#geometry_types
     private static final List<String> standardGeometryTypes = Arrays.asList("GEOMETRY",
                                                                             "POINT",

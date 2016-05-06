@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.xy;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 
 import java.nio.ByteBuffer;
@@ -52,6 +53,28 @@ public class WkbPoint extends WkbGeometry
         }
 
         this.coordinate = coordinate;
+    }
+
+    @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        return this.coordinate.equals(((WkbPoint)o).coordinate);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return this.coordinate.hashCode();
     }
 
     @Override
@@ -87,10 +110,10 @@ public class WkbPoint extends WkbGeometry
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
-        this.coordinate.writeWellKnownBinary(byteBuffer);
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
+        this.coordinate.writeWellKnownBinary(byteOutputStream);
     }
 
     public double getX()

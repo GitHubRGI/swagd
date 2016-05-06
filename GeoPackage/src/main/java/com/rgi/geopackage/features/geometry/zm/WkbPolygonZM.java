@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.features.geometry.zm;
 
+import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 
@@ -67,6 +68,33 @@ public class WkbPolygonZM extends WkbCurvePolygonZM
     }
 
     @Override
+    public boolean equals(final Object o)
+    {
+        if(this == o)
+        {
+            return true;
+        }
+
+        if(o == null || this.getClass() != o.getClass())
+        {
+            return false;
+        }
+
+        final WkbPolygonZM other = (WkbPolygonZM)o;
+
+        return this.exteriorRing.equals(other.exteriorRing) &&
+               this.interiorRings.equals(other.interiorRings);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = this.exteriorRing.hashCode();
+        result = 31 * result + this.interiorRings.hashCode();
+        return result;
+    }
+
+    @Override
     public long getTypeCode()
     {
         return GeometryTypeDimensionalityBase + GeometryType.Polygon.getCode();
@@ -75,7 +103,7 @@ public class WkbPolygonZM extends WkbCurvePolygonZM
     @Override
     public String getGeometryTypeName()
     {
-        return GeometryType.Polygon + "ZM";
+        return GeometryType.Polygon.toString();
     }
 
     @Override
@@ -97,19 +125,19 @@ public class WkbPolygonZM extends WkbCurvePolygonZM
     }
 
     @Override
-    public void writeWellKnownBinary(final ByteBuffer byteBuffer)
+    public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
-        this.writeWellKnownBinaryHeader(byteBuffer); // Checks byteBuffer for null
+        this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
 
         final int ringCount = this.interiorRings.size() + (this.exteriorRing.isEmpty() ? 0 : 1);
 
-        byteBuffer.putInt(ringCount);
+        byteOutputStream.write(ringCount);
 
         if(ringCount > 0)
         {
-            this.exteriorRing.writeWellKnownBinary(byteBuffer);
+            this.exteriorRing.writeWellKnownBinary(byteOutputStream);
 
-            this.interiorRings.forEach(linearRing -> linearRing.writeWellKnownBinary(byteBuffer));
+            this.interiorRings.forEach(linearRing -> linearRing.writeWellKnownBinary(byteOutputStream));
         }
     }
 

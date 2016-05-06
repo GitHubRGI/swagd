@@ -58,7 +58,7 @@ public class GeoPackageTiles
      * @param core
      *             Access to GeoPackage's "core" methods
      */
-    public GeoPackageTiles(final Connection databaseConnection, final GeoPackageCore core)
+    public GeoPackageTiles(final Connection databaseConnection, final GeoPackageCore core) throws SQLException
     {
         this.databaseConnection = databaseConnection;
         this.core               = core;
@@ -110,7 +110,7 @@ public class GeoPackageTiles
                               final BoundingBox            boundingBox,
                               final SpatialReferenceSystem spatialReferenceSystem) throws SQLException
     {
-        GeoPackageCore.validateNewContentTableName(tableName);
+        DatabaseUtility.validateTableName(tableName);
 
         if(boundingBox == null)
         {

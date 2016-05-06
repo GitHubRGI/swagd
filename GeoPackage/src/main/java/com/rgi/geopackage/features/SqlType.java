@@ -37,17 +37,68 @@ package com.rgi.geopackage.features;
  */
 public enum SqlType
 {
-    Boolean,    // A boolean value representing true or false
-    TinyInt,    // 1 byte, signed
-    SmallInt,   // 2 bytes, signed
-    MEDIUMINT,  // 4 bytes, signed
-    INT,        // 8 bytes, signed
-    INTEGER,    // 8 bytes, signed
-    FLOAT,      // 4 byte IEEE floating point number
-    DOUBLE,     // 8 byte IEEE floating point number
-    REAL,       // 8 byte IEEE floating point number
-    TEXT,       // Variable length string encoded in either UTF-8 or UTF-16
-    BLOB,       // Variable length binary data
-    DATE,       // ISO-8601 date string in the form YYYY-MM-DD encoded in either UTF-8 or UTF-16
-    DATETIME;   // ISO-8601 date/time string in the form YYYY-MM-DDTHH:MM:SS.SSSZ with T separator character and Z suffix for coordinated universal time (UTC) encoded in either UTF-8 or UTF-16
+    /**
+     * A boolean value representing true or false. Stored as SQLite INTEGER with value 0 for false or 1 for true
+     */
+    BOOLEAN,
+
+    /**
+     * 8-bit signed two’s complement integer. Stored as SQLite INTEGER with values in the range [-128, 127]
+     */
+    TINYINT,
+
+    /**
+     * 16-bit signed two’s complement integer. Stored as SQLite INTEGER with values in the range [-32768, 32767]
+     */
+    SMALLINT,
+
+    /**
+     * 32-bit signed two’s complement integer. Stored as SQLite INTEGER with values in the range [-2147483648, 2147483647]
+     */
+    MEDIUMINT,
+
+    /**
+     * 64-bit signed two’s complement integer. Stored as SQLite INTEGER with values in the range [-9223372036854775808, 9223372036854775807]
+     */
+    INT,
+
+    /**
+     * 64-bit signed two’s complement integer. Stored as SQLite INTEGER with values in the range [-9223372036854775808, 9223372036854775807]
+     */
+    INTEGER,
+
+    /**
+     * 32-bit IEEE floating point number. Stored as SQLite REAL limited to values that can be represented as a 4-byte IEEE floating point number
+     */
+    FLOAT,
+
+    /**
+     * 64-bit IEEE floating point number. Stored as SQLite REAL
+     */
+    DOUBLE,
+
+    /**
+     * 64-bit IEEE floating point number. Stored as SQLite REAL
+     */
+    REAL,
+
+    /**
+     * Variable length string encoded in either UTF-8 or UTF-16, determined by PRAGMA encoding; see {@link "http://www.sqlite.org/pragma.html#pragma_encoding"}.
+     */
+    TEXT,
+
+    /**
+     * Variable length binary data.
+     */
+    BLOB,
+
+    /**
+     * ISO-8601 date string in the form YYYY-MM-DD encoded in either UTF-8 or UTF-16. See TEXT. Stored as SQLite TEXT
+     */
+    DATE,
+
+    /**
+     * ISO-8601 date/time string in the form YYYY-MM-DDTHH:MM:SS.SSSZ with T separator character and Z suffix for coordinated universal time (UTC) encoded in either UTF-8 or UTF-16. See TEXT. Stored as SQLite TEXT
+     */
+    DATETIME
 }
