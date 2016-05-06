@@ -120,7 +120,7 @@ public abstract class AbstractColumnDefinition
 
         if(this.comment != null && this.comment.contains("\n"))
         {
-            throw new IllegalArgumentException("The comment my not contain any line break characters");
+            throw new IllegalArgumentException("The comment may not contain any line break characters");
         }
     }
 

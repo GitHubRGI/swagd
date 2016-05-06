@@ -866,6 +866,7 @@ public class GeoPackageFeatures
      * @param geometryTypeCode
      *             Code representation of the geometry type. Must be in the
      *             range 0 and 2^32 - 1 (range of a 32 bit unsigned integer)
+     *             inclusive
      * @param geometryFactory
      *             Callback that creates a geometry that corresponds to the
      *             geometry type code

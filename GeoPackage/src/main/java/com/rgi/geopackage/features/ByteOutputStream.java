@@ -32,11 +32,22 @@ import java.util.Objects;
  */
 public final class ByteOutputStream implements AutoCloseable
 {
+    /**
+     * Constructor
+     *
+     * Uses a default initial capacity of 32 bytes
+     */
     public ByteOutputStream()
     {
         this(DEFAULT_INITIAL_CAPACITY);
     }
 
+    /**
+     * Constructor
+     *
+     * @param capacity
+     *             Initial allocation byte size of the backing buffer
+     */
     public ByteOutputStream(final int capacity)
     {
         if(capacity < 0)
@@ -50,12 +61,21 @@ public final class ByteOutputStream implements AutoCloseable
         this.setByteOrder(DEFAULT_INITIAL_BYTE_ORDER);
     }
 
+    /**
+     * @return a copy of the backing buffer without any trailing unused bytes
+     */
     public byte[] array()
     {
         return this.position <= 0 ? EMPTY_ARRAY
                                   : Arrays.copyOfRange(this.buffer, 0, this.position);
     }
 
+    /**
+     * Writes a byte to the stream
+     *
+     * @param b
+     *             a byte
+     */
     public void write(final byte b)
     {
         this.checkCapacity(BYTE_BYTE_SIZE);
@@ -65,6 +85,12 @@ public final class ByteOutputStream implements AutoCloseable
         this.position += BYTE_BYTE_SIZE;
     }
 
+    /**
+     * Writes a 2 byte short to the stream using the proscribed byte order
+     *
+     * @param s
+     *             a short
+     */
     public void write(final short s)
     {
         this.checkCapacity(SHORT_BYTE_SIZE);
@@ -74,6 +100,12 @@ public final class ByteOutputStream implements AutoCloseable
         this.position += SHORT_BYTE_SIZE;
     }
 
+    /**
+     * Writes a 4 byte int to the stream using the proscribed byte order
+     *
+     * @param i
+     *             an int
+     */
     public void write(final int i)
     {
         this.checkCapacity(INT_BYTE_SIZE);
@@ -83,11 +115,23 @@ public final class ByteOutputStream implements AutoCloseable
         this.position += INT_BYTE_SIZE;
     }
 
+    /**
+     * Writes a 4 byte float to the stream using the proscribed byte order
+     *
+     * @param f
+     *             a float
+     */
     public void write(final float f)
     {
         this.write(Float.floatToRawIntBits(f));
     }
 
+    /**
+     * Writes an 8 byte long to the stream using the proscribed byte order
+     *
+     * @param l
+     *             a long
+     */
     public void write(final long l)
     {
         this.checkCapacity(LONG_BYTE_SIZE);
@@ -97,11 +141,23 @@ public final class ByteOutputStream implements AutoCloseable
         this.position += LONG_BYTE_SIZE;
     }
 
+    /**
+     * Writes an 8 byte double to the stream using the proscribed byte order
+     *
+     * @param d
+     *             a double
+     */
     public void write(final double d)
     {
         this.write(Double.doubleToLongBits(d));
     }
 
+    /**
+     * Writes a series of bytes to the stream
+     *
+     * @param bytes
+     *             a byte array
+     */
     public void write(final byte[] bytes)
     {
         if(bytes == null)

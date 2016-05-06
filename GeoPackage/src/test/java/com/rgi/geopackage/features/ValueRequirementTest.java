@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
 
 /**
  * @author Luke Lambert
@@ -75,47 +74,36 @@ public class ValueRequirementTest
     /**
      * Test fromInt() with a bad value
      */
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void fromIntBadValue()
     {
-        try
-        {
-            ValueRequirement.fromInt(-1);
-            fail("fromInt() should fail for values outside the range [0, 2]");
-        }
-        catch(final IllegalArgumentException ignored)
-        {
-            // ignored
-        }
+        ValueRequirement.fromInt(-1);
+    }
 
-        try
-        {
-            ValueRequirement.fromInt(3);
-            fail("fromInt() should fail for values outside the range [0, 2]");
-        }
-        catch(final IllegalArgumentException ignored)
-        {
-            // ignored
-        }
+    /**
+     * Test fromInt() with a bad value
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void fromIntBadValue2()
+    {
+        ValueRequirement.fromInt(3);
+    }
 
-        try
-        {
-            ValueRequirement.fromInt(Integer.MAX_VALUE);
-            fail("fromInt() should fail for values outside the range [0, 2]");
-        }
-        catch(final IllegalArgumentException ignored)
-        {
-            // ignored
-        }
+    /**
+     * Test fromInt() with a bad value
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void fromIntBadValue3()
+    {
+        ValueRequirement.fromInt(Integer.MAX_VALUE);
+    }
 
-        try
-        {
-            ValueRequirement.fromInt(Integer.MIN_VALUE);
-            fail("fromInt() should fail for values outside the range [0, 2]");
-        }
-        catch(final IllegalArgumentException ignored)
-        {
-            // ignored
-        }
+    /**
+     * Test fromInt() with a bad value
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void fromIntBadValue4()
+    {
+        ValueRequirement.fromInt(Integer.MIN_VALUE);
     }
 }

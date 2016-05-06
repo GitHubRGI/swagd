@@ -111,7 +111,7 @@ public class BinaryHeader
      *             Spatial reference system identifier for the geometry. Should
      *             match the identifier in the contents table.
      * @param envelopeContentsIndicator
-     *             Indicator of the envelop's contents (empty, not empty, and
+     *             Indicator of the envelope's contents (empty, not empty, and
      *             dimensionality)
      * @param envelope
      *             Geometry envelope. Size depends on the envelope contents
@@ -167,8 +167,7 @@ public class BinaryHeader
         final int envelopeContentsMask = (byte)(this.envelopeContentsIndicator.getCode() << 1);
 
         //noinspection NumericCastThatLosesPrecision
-        this.flags = (byte)(// 0                         |
-                            this.binaryType.getBitMask() |
+        this.flags = (byte)(this.binaryType.getBitMask() |
                             this.contents.getBitMask()   |
                             envelopeContentsMask         |
                             (byteOrder.equals(ByteOrder.BIG_ENDIAN) ? 0 : 1));
@@ -296,7 +295,7 @@ public class BinaryHeader
     }
 
     /**
-     * Constructors a header from the supplied arguments, and writes it to a
+     * Constructs a header from the supplied arguments, and writes it to a
      * byte buffer. Currently there's no way to skip writing the envelope.
      *
      * @param byteOutputStream

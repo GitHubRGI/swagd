@@ -89,12 +89,12 @@ public class FeatureSet extends Content
 
         if(primaryKeyColumnName == null || primaryKeyColumnName.isEmpty())
         {
-            throw new IllegalArgumentException("Primary key column name may not be null");
+            throw new IllegalArgumentException("Primary key column name may not be null or empty");
         }
 
         if(geometryColumnName == null || geometryColumnName.isEmpty())
         {
-            throw new IllegalArgumentException("Geometry key column name may not be null");
+            throw new IllegalArgumentException("Geometry key column name may not be null or empty");
         }
 
         this.primaryKeyColumnName = primaryKeyColumnName;
