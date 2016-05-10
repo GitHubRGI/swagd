@@ -1,4 +1,4 @@
-package com.rgi.geopackage.features.geometry.zm;
+package com.rgi.geopackage.features.geometry.z;
 
 /*
  * The MIT License (MIT)
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Luke Lambert
  */
-public class WkbPointZMTest
+public class WkbPointZTest
 {
     /**
      * Test the constructor
@@ -48,7 +48,7 @@ public class WkbPointZMTest
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     public void constructor()
     {
-        new WkbPointZM(0.0, 0.0, 0.0, 0.0);
+        new WkbPointZ(0.0, 0.0, 0.0);
     }
 
     /**
@@ -58,7 +58,7 @@ public class WkbPointZMTest
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     public void coordinateConstructor()
     {
-        new WkbPointZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0));
+        new WkbPointZ(new CoordinateZ(0.0, 0.0, 0.0));
     }
 
     /**
@@ -67,7 +67,8 @@ public class WkbPointZMTest
     @Test(expected = IllegalArgumentException.class)
     public void constructorNullCollection()
     {
-        new WkbPointZM(null);
+        //noinspection CastToConcreteClass
+        new WkbPointZ(null);
     }
 
     /**
@@ -76,8 +77,8 @@ public class WkbPointZMTest
     @Test(expected = IllegalArgumentException.class)
     public void constructorNullCoordinate()
     {
-        new WkbLineStringZM(Arrays.asList(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                          new CoordinateZM(0.0, 0.0, 0.0, 0.0),
+        new WkbLineStringZ(Arrays.asList(new CoordinateZ(0.0, 0.0, 0.0),
+                                          new CoordinateZ(0.0, 0.0, 0.0),
                                           null));
     }
 
@@ -87,7 +88,7 @@ public class WkbPointZMTest
     @Test
     public void testEquals()
     {
-        final WkbPointZM point = new WkbPointZM(0.0, 0.0, 0.0, 0.0);
+        final WkbPointZ point = new WkbPointZ(0.0, 0.0, 0.0);
 
         //noinspection EqualsWithItself,SimplifiableJUnitAssertion
         assertTrue("Equals failed on self reference",
@@ -101,7 +102,7 @@ public class WkbPointZMTest
     @SuppressWarnings("ObjectEqualsNull")
     public void testEqualsWithNull()
     {
-        final WkbPointZM point = new WkbPointZM(0.0, 0.0, 0.0, 0.0);
+        final WkbPointZ point = new WkbPointZ(0.0, 0.0, 0.0);
 
         //noinspection EqualsWithItself
         assertFalse("Equals should have failed on null comparison",
@@ -114,7 +115,7 @@ public class WkbPointZMTest
     @Test
     public void testEqualsWithDifferentObjectType()
     {
-        final WkbPointZM point = new WkbPointZM(0.0, 0.0, 0.0, 0.0);
+        final WkbPointZ point = new WkbPointZ(0.0, 0.0, 0.0);
 
         //noinspection EqualsWithItself,UnnecessaryBoxing,EqualsBetweenInconvertibleTypes
         assertFalse("Equals should fail on a different object type",
@@ -127,8 +128,8 @@ public class WkbPointZMTest
     @Test
     public void testEqualsTrue()
     {
-        final WkbPointZM point1 = new WkbPointZM(0.0, 0.0, 0.0, 0.0);
-        final WkbPointZM point2 = new WkbPointZM(0.0, 0.0, 0.0, 0.0);
+        final WkbPointZ point1 = new WkbPointZ(0.0, 0.0, 0.0);
+        final WkbPointZ point2 = new WkbPointZ(0.0, 0.0, 0.0);
 
         //noinspection SimplifiableJUnitAssertion
         assertTrue("Equals failed to return true",
@@ -141,10 +142,10 @@ public class WkbPointZMTest
     @Test
     public void testHashCode()
     {
-        final WkbPointZM point = new WkbPointZM(1.0, 1.0, 1.0, 1.0);
+        final WkbPointZ point = new WkbPointZ(1.0, 1.0, 1.0);
 
         assertEquals("Hash code failed",
-                     2080374784,
+                     32505856,
                      point.hashCode());
     }
 
@@ -155,13 +156,12 @@ public class WkbPointZMTest
     public void testIsEmpty()
     {
         assertFalse("isEmpty failed",
-                    new WkbPointZM(1.0, 1.0, 1.0, 1.0).isEmpty());
+                    new WkbPointZ(1.0, 1.0, 1.0).isEmpty());
 
         assertTrue("isEmpty failed",
-                   new WkbPointZM(Double.NaN,
-                                  Double.NaN,
-                                  Double.NaN,
-                                  Double.NaN).isEmpty());
+                   new WkbPointZ(Double.NaN,
+                                 Double.NaN,
+                                 Double.NaN).isEmpty());
     }
 
     /**
@@ -172,18 +172,17 @@ public class WkbPointZMTest
     {
         assertSame("getContents failed",
                    Contents.NotEmpty,
-                   new WkbPointZM(1.0, 1.0, 1.0, 1.0).getContents());
+                   new WkbPointZ(1.0, 1.0, 1.0).getContents());
 
         assertSame("getContents failed",
                    Contents.Empty,
-                   new WkbPointZM(Double.NaN,
-                                  Double.NaN,
-                                  Double.NaN,
-                                  Double.NaN).getContents());
+                   new WkbPointZ(Double.NaN,
+                                 Double.NaN,
+                                 Double.NaN).getContents());
     }
 
     /**
-     * Test createEnvelopeZM()
+     * Test createEnvelopeZ()
      */
     @Test
     public void createEnvelope()
@@ -191,10 +190,9 @@ public class WkbPointZMTest
         final double x = 1.0;
         final double y = 1.0;
         final double z = 1.0;
-        final double m = 1.0;
 
         @SuppressWarnings("CastToConcreteClass")
-        final EnvelopeZM envelope = (EnvelopeZM)new WkbPointZM(x, y, z, m).createEnvelope();
+        final EnvelopeZ envelope = (EnvelopeZ)new WkbPointZ(x, y, z).createEnvelope();
 
         assertEquals("createEnvelope failed",
                      x,
@@ -226,21 +224,10 @@ public class WkbPointZMTest
                      envelope.getMaximumZ(),
                      0.0);
 
-        assertEquals("createEnvelope failed",
-                     m,
-                     envelope.getMinimumM(),
-                     0.0);
-
-        assertEquals("createEnvelope failed",
-                     m,
-                     envelope.getMaximumM(),
-                     0.0);
-
         @SuppressWarnings("CastToConcreteClass")
-        final EnvelopeZM emptyEnvelope = (EnvelopeZM)new WkbPointZM(Double.NaN,
-                                                                    Double.NaN,
-                                                                    Double.NaN,
-                                                                    Double.NaN).createEnvelope();
+        final EnvelopeZ emptyEnvelope = (EnvelopeZ)new WkbPointZ(Double.NaN,
+                                                                 Double.NaN,
+                                                                 Double.NaN).createEnvelope();
 
         assertTrue("createemptyEnvelope failed",
                    Double.isNaN(emptyEnvelope.getMinimumX()));
@@ -259,26 +246,19 @@ public class WkbPointZMTest
 
         assertTrue("createemptyEnvelope failed",
                    Double.isNaN(emptyEnvelope.getMaximumZ()));
-
-        assertTrue("createEnvelope failed",
-                   Double.isNaN(emptyEnvelope.getMinimumM()));
-
-        assertTrue("createEnvelope failed",
-                   Double.isNaN(emptyEnvelope.getMaximumM()));
     }
 
     /**
-     * Test createEnvelopeZM()
+     * Test createEnvelopeZ()
      */
     @Test
-    public void createEnvelopeZM()
+    public void createEnvelopeZ()
     {
         final double x = 1.0;
         final double y = 1.0;
         final double z = 1.0;
-        final double m = 1.0;
 
-        final EnvelopeZM envelope = new WkbPointZM(x, y, z, m).createEnvelopeZM();
+        final EnvelopeZ envelope = new WkbPointZ(x, y, z).createEnvelopeZ();
 
         assertEquals("createEnvelope failed",
                      x,
@@ -310,20 +290,9 @@ public class WkbPointZMTest
                      envelope.getMaximumZ(),
                      0.0);
 
-        assertEquals("createEnvelope failed",
-                     m,
-                     envelope.getMinimumM(),
-                     0.0);
-
-        assertEquals("createEnvelope failed",
-                     m,
-                     envelope.getMaximumM(),
-                     0.0);
-
-        final EnvelopeZM emptyEnvelope = new WkbPointZM(Double.NaN,
-                                                        Double.NaN,
-                                                        Double.NaN,
-                                                        Double.NaN).createEnvelopeZM();
+        final EnvelopeZ emptyEnvelope = new WkbPointZ(Double.NaN,
+                                                      Double.NaN,
+                                                      Double.NaN).createEnvelopeZ();
 
         assertTrue("createemptyEnvelope failed",
                    Double.isNaN(emptyEnvelope.getMinimumX()));
@@ -342,12 +311,6 @@ public class WkbPointZMTest
 
         assertTrue("createemptyEnvelope failed",
                    Double.isNaN(emptyEnvelope.getMaximumZ()));
-
-        assertTrue("createEnvelope failed",
-                   Double.isNaN(emptyEnvelope.getMinimumM()));
-
-        assertTrue("createEnvelope failed",
-                   Double.isNaN(emptyEnvelope.getMaximumM()));
     }
 
     /**
@@ -361,14 +324,13 @@ public class WkbPointZMTest
             final double x = 1.0;
             final double y = 1.0;
             final double z = 1.0;
-            final double m = 1.0;
 
-            final WkbPointZM point = new WkbPointZM(x, y, z, m);
+            final WkbPointZ point = new WkbPointZ(x, y, z);
             point.writeWellKnownBinary(output);
 
             final ByteBuffer byteBuffer = ByteBuffer.wrap(output.array());
 
-            final WkbPointZM found = WkbPointZM.readWellKnownBinary(byteBuffer);
+            final WkbPointZ found = WkbPointZ.readWellKnownBinary(byteBuffer);
 
             assertEquals("writeWellKnownBinary failed",
                          point,
