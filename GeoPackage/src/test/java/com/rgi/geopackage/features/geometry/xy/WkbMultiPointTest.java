@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.geopackage.features.geometry.zm;
+package com.rgi.geopackage.features.geometry.xy;
 
 import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
@@ -30,16 +30,14 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
-import static com.rgi.geopackage.features.geometry.zm.WkbGeometryZM.GeometryTypeDimensionalityBase;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Luke Lambert
  */
-public class WkbMultiLineStringZMTest
+public class WkbMultiPointTest
 {
     /**
      * Test the ellipsis constructor
@@ -48,10 +46,10 @@ public class WkbMultiLineStringZMTest
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     public void ellipsisConstructor()
     {
-        new WkbMultiLineStringZM(new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                     new CoordinateZM(0.0, 0.0, 0.0, 0.0)),
-                                 new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                     new CoordinateZM(0.0, 0.0, 0.0, 0.0)));
+        new WkbMultiPoint(new WkbPoint(0.0, 0.0),
+                          new WkbPoint(0.0, 0.0),
+                          new WkbPoint(0.0, 0.0),
+                          new WkbPoint(0.0, 0.0));
     }
 
     /**
@@ -61,10 +59,10 @@ public class WkbMultiLineStringZMTest
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     public void collectionConstructor()
     {
-        new WkbMultiLineStringZM(Arrays.asList(new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                                   new CoordinateZM(0.0, 0.0, 0.0, 0.0)),
-                                               new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                                   new CoordinateZM(0.0, 0.0, 0.0, 0.0))));
+        new WkbMultiPoint(Arrays.asList(new WkbPoint(0.0, 0.0),
+                                        new WkbPoint(0.0, 0.0),
+                                        new WkbPoint(0.0, 0.0),
+                                        new WkbPoint(0.0, 0.0)));
     }
 
     /**
@@ -74,7 +72,7 @@ public class WkbMultiLineStringZMTest
     public void collectionConstructorWithNull()
     {
         //noinspection CastToConcreteClass
-        new WkbMultiLineStringZM((Collection<WkbLineStringZM>)null);
+        new WkbMultiPoint((WkbPoint)null);
     }
 
     /**
@@ -84,7 +82,7 @@ public class WkbMultiLineStringZMTest
     public void collectionConstructorWithNullGeometry()
     {
         //noinspection CastToConcreteClass
-        new WkbMultiLineStringZM(Arrays.asList((WkbLineStringZM)null));
+        new WkbMultiPoint(Arrays.asList((WkbPoint)null));
     }
 
     /**
@@ -94,8 +92,8 @@ public class WkbMultiLineStringZMTest
     public void getTypeCode()
     {
         assertEquals("getTypeCode() returned the wrong value",
-                     GeometryTypeDimensionalityBase + GeometryType.MultiLineString.getCode(),
-                     new WkbMultiLineStringZM().getTypeCode());
+                     GeometryType.MultiPoint.getCode(),
+                     new WkbMultiPoint().getTypeCode());
     }
 
     /**
@@ -105,8 +103,8 @@ public class WkbMultiLineStringZMTest
     public void getGeometryTypeName()
     {
         assertEquals("getGeometryTypeName() returned the wrong value",
-                     GeometryType.MultiLineString.toString(),
-                     new WkbMultiLineStringZM().getGeometryTypeName());
+                     GeometryType.MultiPoint.toString(),
+                     new WkbMultiPoint().getGeometryTypeName());
     }
 
     /**
@@ -115,14 +113,14 @@ public class WkbMultiLineStringZMTest
     @Test
     public void getLineStrings()
     {
-        final List<WkbLineStringZM> strings = Arrays.asList(new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                                                new CoordinateZM(0.0, 0.0, 0.0, 0.0)),
-                                                            new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                                                new CoordinateZM(0.0, 0.0, 0.0, 0.0)));
+        final List<WkbPoint> points = Arrays.asList(new WkbPoint(0.0, 0.0),
+                                                     new WkbPoint(0.0, 0.0),
+                                                     new WkbPoint(0.0, 0.0),
+                                                     new WkbPoint(0.0, 0.0));
 
         assertEquals("getLineStrings() returned the wrong value",
-                     strings,
-                     new WkbMultiLineStringZM(strings).getLineStrings());
+                     points,
+                     new WkbMultiPoint(points).getPoints());
     }
 
     /**
@@ -131,19 +129,19 @@ public class WkbMultiLineStringZMTest
     @Test
     public void writeReadWellKnownBinary()
     {
-        final WkbMultiLineStringZM multiLineString = new WkbMultiLineStringZM(Arrays.asList(new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                                                                                new CoordinateZM(0.0, 0.0, 0.0, 0.0)),
-                                                                                            new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                                                                                new CoordinateZM(0.0, 0.0, 0.0, 0.0))));
+        final WkbMultiPoint points = new WkbMultiPoint(new WkbPoint(0.0, 0.0),
+                                                         new WkbPoint(0.0, 0.0),
+                                                         new WkbPoint(0.0, 0.0),
+                                                         new WkbPoint(0.0, 0.0));
 
         try(final ByteOutputStream output = new ByteOutputStream())
         {
-            multiLineString.writeWellKnownBinary(output);
+            points.writeWellKnownBinary(output);
 
-            final WkbMultiLineStringZM read = WkbMultiLineStringZM.readWellKnownBinary(ByteBuffer.wrap(output.array()));
+            final WkbMultiPoint read = WkbMultiPoint.readWellKnownBinary(ByteBuffer.wrap(output.array()));
 
             assertEquals("error in well known binary (WKB) reading/writing",
-                         multiLineString,
+                         points,
                          read);
         }
     }
