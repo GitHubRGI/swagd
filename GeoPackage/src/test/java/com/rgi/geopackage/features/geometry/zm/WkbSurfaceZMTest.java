@@ -25,15 +25,9 @@
 package com.rgi.geopackage.features.geometry.zm;
 
 /**
- * The base type for all 2-dimensional geometry types. A 2-dimensional geometry
- * is a geometry that has an area.
- *
- * @see "http://www.geopackage.org/spec/#sfsql_intro"
- *
  * @author Luke Lambert
- *
  */
-public abstract class WkbSurfaceZMTest extends WkbGeometryZMTest
+public class WkbSurfaceZMTest
 {
 
 }

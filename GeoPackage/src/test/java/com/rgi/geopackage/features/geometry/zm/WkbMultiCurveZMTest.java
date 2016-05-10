@@ -24,8 +24,6 @@
 
 package com.rgi.geopackage.features.geometry.zm;
 
-import java.util.Collection;
-
 /**
  * @author Luke Lambert
  */

@@ -29,6 +29,7 @@ import com.rgi.geopackage.features.geometry.xy.Envelope;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A Curve that connects two or more points in space.
@@ -40,14 +41,26 @@ import java.util.Collection;
  */
 public class WkbLineStringM extends WkbCurveM
 {
-    public WkbLineStringM(final CoordinateM... points)
+    /**
+     * Constructor
+     *
+     * @param coordinates
+     *             Array of coordinates
+     */
+    public WkbLineStringM(final CoordinateM... coordinates)
     {
-        this(new LinearRingM(points));
+        this(new LinearRingM(coordinates));
     }
 
-    public WkbLineStringM(final Collection<CoordinateM> points)
+    /**
+     * Constructor
+     *
+     * @param coordinates
+     *             Collection of coordinates
+     */
+    public WkbLineStringM(final Collection<CoordinateM> coordinates)
     {
-        this(new LinearRingM(points));
+        this(new LinearRingM(coordinates));
     }
 
     private WkbLineStringM(final LinearRingM linearString)
@@ -56,19 +69,19 @@ public class WkbLineStringM extends WkbCurveM
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.linearString.equals(((WkbLineStringM)o).linearString);
+        return this.linearString.equals(((WkbLineStringM)obj).linearString);
     }
 
     @Override
@@ -114,6 +127,21 @@ public class WkbLineStringM extends WkbCurveM
         this.linearString.writeWellKnownBinary(byteOutputStream);
     }
 
+    /**
+     * @return a {@link List} of coordinates
+     */
+    public List<CoordinateM> getCoordinates()
+    {
+        return this.linearString.getCoordinates();
+    }
+
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbLineStringM
+     */
     public static WkbLineStringM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.LineString.getCode());

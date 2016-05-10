@@ -19,7 +19,15 @@ public abstract class WkbGeometryZ extends Geometry
         return false;
     }
 
+    /**
+     * Creates an envelope with x, y, and z components
+     *
+     * @return an envelope with x, y, and z components
+     */
     public abstract EnvelopeZ createEnvelopeZ();
 
+    /**
+     * Base type value for all geometries that extend this type
+     */
     public static final long GeometryTypeDimensionalityBase = 1000;
 }

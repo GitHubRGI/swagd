@@ -26,10 +26,10 @@ package com.rgi.geopackage.features.geometry.z;
 import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
-import com.rgi.geopackage.features.geometry.xy.WkbLineString;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A Curve that connects two or more points in space.
@@ -41,14 +41,26 @@ import java.util.Collection;
  */
 public class WkbLineStringZ extends WkbCurveZ
 {
-    public WkbLineStringZ(final CoordinateZ... points)
+    /**
+     * Constructor
+     *
+     * @param coordinates
+     *             Array of coordinates
+     */
+    public WkbLineStringZ(final CoordinateZ... coordinates)
     {
-        this(new LinearRingZ(points));
+        this(new LinearRingZ(coordinates));
     }
 
-    public WkbLineStringZ(final Collection<CoordinateZ> points)
+    /**
+     * Constructor
+     *
+     * @param coordinates
+     *             Collection of coordinates
+     */
+    public WkbLineStringZ(final Collection<CoordinateZ> coordinates)
     {
-        this(new LinearRingZ(points));
+        this(new LinearRingZ(coordinates));
     }
 
     private WkbLineStringZ(final LinearRingZ linearString)
@@ -57,19 +69,19 @@ public class WkbLineStringZ extends WkbCurveZ
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.linearString.equals(((WkbLineStringZ)o).linearString);
+        return this.linearString.equals(((WkbLineStringZ)obj).linearString);
     }
 
     @Override
@@ -115,6 +127,21 @@ public class WkbLineStringZ extends WkbCurveZ
         this.linearString.writeWellKnownBinary(byteOutputStream);
     }
 
+    /**
+     * @return a {@link List} of coordinates
+     */
+    public List<CoordinateZ> getCoordinates()
+    {
+        return this.linearString.getCoordinates();
+    }
+
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbLineStringZ
+     */
     public static WkbLineStringZ readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.LineString.getCode());

@@ -1,5 +1,3 @@
-package com.rgi.geopackage.features.geometry.zm;
-
 /*
  * The MIT License (MIT)
  *
@@ -24,16 +22,17 @@ package com.rgi.geopackage.features.geometry.zm;
  * SOFTWARE.
  */
 
+package com.rgi.geopackage.features.geometry.xy;
+
 import com.rgi.geopackage.features.ByteOutputStream;
-import com.rgi.geopackage.features.geometry.xy.Envelope;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Luke Lambert
  */
-public class WkbGeometryZMTest
+public class WkbGeometryTest
 {
     /**
      * Test hasZ()
@@ -41,8 +40,8 @@ public class WkbGeometryZMTest
     @Test
     public void testHasZ()
     {
-        assertTrue("hasZ should have returned true",
-                   new MyWkbGeometryZM().hasZ());
+        assertFalse("hasZ should have returned false",
+                    new MyWkbGeometry().hasZ());
     }
 
     /**
@@ -51,11 +50,11 @@ public class WkbGeometryZMTest
     @Test
     public void testHasM()
     {
-        assertTrue("hasZ should have returned true",
-                   new MyWkbGeometryZM().hasM());
+        assertFalse("hasZ should have returned false",
+                   new MyWkbGeometry().hasM());
     }
 
-    private static class MyWkbGeometryZM extends WkbGeometryZM
+    private static class MyWkbGeometry extends WkbGeometry
     {
         @Override
         public boolean equals(final Object obj)
@@ -95,12 +94,6 @@ public class WkbGeometryZMTest
 
         @Override
         public Envelope createEnvelope()
-        {
-            return null;
-        }
-
-        @Override
-        public EnvelopeZM createEnvelopeZM()
         {
             return null;
         }

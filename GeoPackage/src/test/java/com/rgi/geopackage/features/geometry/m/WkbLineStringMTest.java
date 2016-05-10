@@ -1,5 +1,3 @@
-package com.rgi.geopackage.features.geometry.zm;
-
 /*
  * The MIT License (MIT)
  *
@@ -24,6 +22,8 @@ package com.rgi.geopackage.features.geometry.zm;
  * SOFTWARE.
  */
 
+package com.rgi.geopackage.features.geometry.m;
+
 import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.GeometryType;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Luke Lambert
  */
-public class WkbLineStringZMTest
+public class WkbLineStringMTest
 {
     /**
      * Test the ellipsis constructor
@@ -49,9 +49,9 @@ public class WkbLineStringZMTest
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     public void ellipsisConstructor()
     {
-        new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                            new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                            new CoordinateZM(0.0, 0.0, 0.0, 0.0));
+        new WkbLineStringM(new CoordinateM(0.0, 0.0, 0.0),
+                           new CoordinateM(0.0, 0.0, 0.0),
+                           new CoordinateM(0.0, 0.0, 0.0));
     }
 
     /**
@@ -60,7 +60,7 @@ public class WkbLineStringZMTest
     @Test(expected = IllegalArgumentException.class)
     public void constructorNullCollection()
     {
-        new WkbLineStringZM((Collection<CoordinateZM>)null);
+        new WkbLineStringM((Collection<CoordinateM>)null);
     }
 
     /**
@@ -69,9 +69,9 @@ public class WkbLineStringZMTest
     @Test(expected = IllegalArgumentException.class)
     public void constructorNullCoordinate()
     {
-        new WkbLineStringZM(Arrays.asList(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                          new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                          null));
+        new WkbLineStringM(Arrays.asList(new CoordinateM(0.0, 0.0, 0.0),
+                                         new CoordinateM(0.0, 0.0, 0.0),
+                                         null));
     }
 
     /**
@@ -80,9 +80,9 @@ public class WkbLineStringZMTest
     @Test
     public void testEqualsSameObject()
     {
-        final WkbLineStringZM ring = new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                         new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                         new CoordinateZM(0.0, 0.0, 0.0, 0.0));
+        final WkbLineStringM ring = new WkbLineStringM(new CoordinateM(0.0, 0.0, 0.0),
+                                                       new CoordinateM(0.0, 0.0, 0.0),
+                                                       new CoordinateM(0.0, 0.0, 0.0));
 
         //noinspection EqualsWithItself,SimplifiableJUnitAssertion
         assertTrue("equals returned false for testing an object against itself",
@@ -95,9 +95,9 @@ public class WkbLineStringZMTest
     @Test
     public void testEqualsWithNull()
     {
-        final WkbLineStringZM ring = new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                         new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                         new CoordinateZM(0.0, 0.0, 0.0, 0.0));
+        final WkbLineStringM ring = new WkbLineStringM(new CoordinateM(0.0, 0.0, 0.0),
+                                                       new CoordinateM(0.0, 0.0, 0.0),
+                                                       new CoordinateM(0.0, 0.0, 0.0));
 
         //noinspection SimplifiableJUnitAssertion,ObjectEqualsNull
         assertFalse("equals returned true for testing against null",
@@ -110,9 +110,9 @@ public class WkbLineStringZMTest
     @Test
     public void testEqualsWithDifferentType()
     {
-        final WkbLineStringZM ring = new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                         new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                         new CoordinateZM(0.0, 0.0, 0.0, 0.0));
+        final WkbLineStringM ring = new WkbLineStringM(new CoordinateM(0.0, 0.0, 0.0),
+                                                       new CoordinateM(0.0, 0.0, 0.0),
+                                                       new CoordinateM(0.0, 0.0, 0.0));
 
         //noinspection UnnecessaryBoxing,EqualsBetweenInconvertibleTypes
         assertFalse("equals returned true for testing with an inconvertible type",
@@ -125,13 +125,13 @@ public class WkbLineStringZMTest
     @Test
     public void testEquals()
     {
-        final WkbLineStringZM ring1 = new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                          new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                          new CoordinateZM(0.0, 0.0, 0.0, 0.0));
+        final WkbLineStringM ring1 = new WkbLineStringM(new CoordinateM(0.0, 0.0, 0.0),
+                                                        new CoordinateM(0.0, 0.0, 0.0),
+                                                        new CoordinateM(0.0, 0.0, 0.0));
 
-        final WkbLineStringZM ring2 = new WkbLineStringZM(new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                          new CoordinateZM(0.0, 0.0, 0.0, 0.0),
-                                                          new CoordinateZM(0.0, 0.0, 0.0, 0.0));
+        final WkbLineStringM ring2 = new WkbLineStringM(new CoordinateM(0.0, 0.0, 0.0),
+                                                        new CoordinateM(0.0, 0.0, 0.0),
+                                                        new CoordinateM(0.0, 0.0, 0.0));
 
         assertEquals("equals returned false for testing equivalent objects",
                      ring1,
@@ -146,9 +146,9 @@ public class WkbLineStringZMTest
     {
         assertEquals("hashCode returned the wrong value",
                      778531935,
-                     new WkbLineStringZM(new CoordinateZM(1.0, 0.0, 3.0, 31.0),
-                                         new CoordinateZM(1.0, 0.0, 3.0, 31.0),
-                                         new CoordinateZM(1.0, 0.0, 3.0, 31.0)).hashCode());
+                     new WkbLineStringM(new CoordinateM(1.0, 3.0, 31.0),
+                                        new CoordinateM(1.0, 3.0, 31.0),
+                                        new CoordinateM(1.0, 3.0, 31.0)).hashCode());
     }
 
     /**
@@ -157,13 +157,13 @@ public class WkbLineStringZMTest
     @Test
     public void getCoordinates()
     {
-        final List<CoordinateZM> coordinates = Arrays.asList(new CoordinateZM(1.0, 0.0, 3.0, 31.0),
-                                                             new CoordinateZM(1.0, 0.0, 3.0, 31.0),
-                                                             new CoordinateZM(1.0, 0.0, 3.0, 31.0));
+        final List<CoordinateM> coordinates = Arrays.asList(new CoordinateM(1.0, 3.0, 31.0),
+                                                            new CoordinateM(1.0, 3.0, 31.0),
+                                                            new CoordinateM(1.0, 3.0, 31.0));
 
         assertEquals("getCoordinates return the wrong value",
                      coordinates,
-                     new WkbLineStringZM(coordinates).getCoordinates());
+                     new WkbLineStringM(coordinates).getCoordinates());
     }
 
     /**
@@ -173,16 +173,16 @@ public class WkbLineStringZMTest
     public void testIsEmpty()
     {
         assertTrue("isEmpty() should have returned true",
-                   new WkbLineStringZM().isEmpty());
+                   new WkbLineStringM().isEmpty());
     }
 
     /**
-     * Test createEnvelopeZM()
+     * Test createEnvelopeM()
      */
     @Test
-    public void createEnvelopeZM()
+    public void createEnvelopeM()
     {
-        final EnvelopeZM emptyEnvelope = new WkbLineStringZM().createEnvelopeZM();
+        final EnvelopeM emptyEnvelope = new WkbLineStringM().createEnvelopeM();
 
         assertTrue("envelope minimum x value is wrong",
                    Double.isNaN(emptyEnvelope.getMinimumX()));
@@ -191,9 +191,6 @@ public class WkbLineStringZMTest
                    Double.isNaN(emptyEnvelope.getMinimumY()));
 
         assertTrue("envelope minimum z value is wrong",
-                   Double.isNaN(emptyEnvelope.getMinimumZ()));
-
-        assertTrue("envelope minimum m value is wrong",
                    Double.isNaN(emptyEnvelope.getMinimumM()));
 
         assertTrue("envelope maximum x value is wrong",
@@ -203,16 +200,13 @@ public class WkbLineStringZMTest
                    Double.isNaN(emptyEnvelope.getMaximumY()));
 
         assertTrue("envelope maximum z value is wrong",
-                   Double.isNaN(emptyEnvelope.getMaximumZ()));
-
-        assertTrue("envelope maximum m value is wrong",
                    Double.isNaN(emptyEnvelope.getMaximumM()));
 
         final double min = 0.0;
         final double max = 1.0;
 
-        final EnvelopeZM envelope = new WkbLineStringZM(new CoordinateZM(min, min, min, min),
-                                                        new CoordinateZM(max, max, max, max)).createEnvelopeZM();
+        final EnvelopeM envelope = new WkbLineStringM(new CoordinateM(min, min, min),
+                                                      new CoordinateM(max, max, max)).createEnvelopeM();
 
         assertEquals("combine() picked the wrong minimum x value",
                      min,
@@ -225,11 +219,6 @@ public class WkbLineStringZMTest
                      0.0);
 
         assertEquals("combine() picked the wrong minimum z value",
-                     min,
-                     envelope.getMinimumZ(),
-                     0.0);
-
-        assertEquals("combine() picked the wrong minimum m value",
                      min,
                      envelope.getMinimumM(),
                      0.0);
@@ -246,11 +235,6 @@ public class WkbLineStringZMTest
 
         assertEquals("combine() picked the wrong maximum z value",
                      max,
-                     envelope.getMaximumZ(),
-                     0.0);
-
-        assertEquals("combine() picked the wrong maximum m value",
-                     max,
                      envelope.getMaximumM(),
                      0.0);
     }
@@ -261,15 +245,15 @@ public class WkbLineStringZMTest
     @Test
     public void writeReadWellKnownBinary()
     {
-        final WkbLineStringZM ring = new WkbLineStringZM(new CoordinateZM(1.0, 0.0, 3.0, 31.0),
-                                                         new CoordinateZM(1.0, 0.0, 3.0, 31.0),
-                                                         new CoordinateZM(1.0, 0.0, 3.0, 31.0));
+        final WkbLineStringM ring = new WkbLineStringM(new CoordinateM(1.0, 3.0, 31.0),
+                                                         new CoordinateM(1.0, 3.0, 31.0),
+                                                         new CoordinateM(1.0, 3.0, 31.0));
 
         try(final ByteOutputStream output = new ByteOutputStream())
         {
             ring.writeWellKnownBinary(output);
 
-            final WkbLineStringZM foundRing = WkbLineStringZM.readWellKnownBinary(ByteBuffer.wrap(output.array()));
+            final WkbLineStringM foundRing = WkbLineStringM.readWellKnownBinary(ByteBuffer.wrap(output.array()));
 
             assertEquals("error in well known binary (WKB) reading/writing",
                          ring,
@@ -283,7 +267,7 @@ public class WkbLineStringZMTest
     @Test(expected = IllegalArgumentException.class)
     public void writeWellKnownBinaryWithNull()
     {
-        new WkbLineStringZM().writeWellKnownBinary(null);
+        new WkbLineStringM().writeWellKnownBinary(null);
 
     }
 
@@ -293,7 +277,7 @@ public class WkbLineStringZMTest
     @Test(expected = IllegalArgumentException.class)
     public void readWellKnownBinaryWithNull()
     {
-        WkbLineStringZM.readWellKnownBinary(null);
+        WkbLineStringM.readWellKnownBinary(null);
 
     }
 
@@ -305,7 +289,7 @@ public class WkbLineStringZMTest
     {
         assertEquals("getGeometryTypeName returned the wrong value",
                      GeometryType.LineString.toString(),
-                     new WkbLineStringZM().getGeometryTypeName());
+                     new WkbLineStringM().getGeometryTypeName());
     }
 
     /**
@@ -315,7 +299,7 @@ public class WkbLineStringZMTest
     public void createEnvelope()
     {
         @SuppressWarnings("CastToConcreteClass")
-        final EnvelopeZM emptyEnvelope = (EnvelopeZM)new WkbLineStringZM().createEnvelope();
+        final EnvelopeM emptyEnvelope = (EnvelopeM)new WkbLineStringM().createEnvelope();
 
         assertTrue("envelope minimum x value is wrong",
                    Double.isNaN(emptyEnvelope.getMinimumX()));
@@ -324,9 +308,6 @@ public class WkbLineStringZMTest
                    Double.isNaN(emptyEnvelope.getMinimumY()));
 
         assertTrue("envelope minimum z value is wrong",
-                   Double.isNaN(emptyEnvelope.getMinimumZ()));
-
-        assertTrue("envelope minimum m value is wrong",
                    Double.isNaN(emptyEnvelope.getMinimumM()));
 
         assertTrue("envelope maximum x value is wrong",
@@ -336,16 +317,13 @@ public class WkbLineStringZMTest
                    Double.isNaN(emptyEnvelope.getMaximumY()));
 
         assertTrue("envelope maximum z value is wrong",
-                   Double.isNaN(emptyEnvelope.getMaximumZ()));
-
-        assertTrue("envelope maximum m value is wrong",
                    Double.isNaN(emptyEnvelope.getMaximumM()));
 
         final double min = 0.0;
         final double max = 1.0;
 
-        final EnvelopeZM envelope = new WkbLineStringZM(new CoordinateZM(min, min, min, min),
-                                                        new CoordinateZM(max, max, max, max)).createEnvelopeZM();
+        final EnvelopeM envelope = new WkbLineStringM(new CoordinateM(min, min, min),
+                                                      new CoordinateM(max, max, max)).createEnvelopeM();
 
         assertEquals("combine() picked the wrong minimum x value",
                      min,
@@ -358,11 +336,6 @@ public class WkbLineStringZMTest
                      0.0);
 
         assertEquals("combine() picked the wrong minimum z value",
-                     min,
-                     envelope.getMinimumZ(),
-                     0.0);
-
-        assertEquals("combine() picked the wrong minimum m value",
                      min,
                      envelope.getMinimumM(),
                      0.0);
@@ -378,11 +351,6 @@ public class WkbLineStringZMTest
                      0.0);
 
         assertEquals("combine() picked the wrong maximum z value",
-                     max,
-                     envelope.getMaximumZ(),
-                     0.0);
-
-        assertEquals("combine() picked the wrong maximum m value",
                      max,
                      envelope.getMaximumM(),
                      0.0);
