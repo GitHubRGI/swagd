@@ -58,15 +58,28 @@ import java.util.Objects;
  *
  * @author Luke Lambert
  *
+ * @param <T> Specific WkbGeometryZM type
  */
 public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
 {
+    /**
+     * Constructor
+     *
+     * @param geometries
+     *             Array of geometries
+     */
     @SafeVarargs
     public WkbGeometryCollectionM(final T... geometries)
     {
         this(Arrays.asList(geometries));
     }
 
+    /**
+     * Constructor
+     *
+     * @param geometries
+     *             Collection of geometries
+     */
     public WkbGeometryCollectionM(final Collection<T> geometries)
     {
         if(geometries == null)
@@ -83,19 +96,19 @@ public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.geometries.equals((WkbGeometryCollectionM<?>)o);
+        return this.geometries.equals(((WkbGeometryCollectionM<?>)obj).geometries);
     }
 
     @Override
@@ -143,6 +156,7 @@ public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
     @Override
     public EnvelopeM createEnvelopeM()
     {
+        //noinspection OptionalGetWithoutIsPresent
         return this.geometries.isEmpty() ? EnvelopeM.Empty
                                          : this.geometries
                                                .stream()
@@ -157,6 +171,17 @@ public class WkbGeometryCollectionM<T extends WkbGeometryM> extends WkbGeometryM
         return Collections.unmodifiableList(this.geometries);
     }
 
+    /**
+     * Assumes the {@link ByteBuffer}'s byte order has been properly set
+     *
+     * @param geometryFactory
+     *             factory to create contained geometries
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbGeometryCollectionM
+     * @throws WellKnownBinaryFormatException
+     *             if a contained geometry is malformed
+     */
     public static WkbGeometryCollectionM<WkbGeometryM> readWellKnownBinary(final GeometryFactory geometryFactory,
                                                                            final ByteBuffer      byteBuffer) throws WellKnownBinaryFormatException
     {

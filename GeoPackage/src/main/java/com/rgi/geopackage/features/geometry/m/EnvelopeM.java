@@ -31,6 +31,22 @@ import com.rgi.geopackage.features.geometry.xy.Envelope;
  */
 public final class EnvelopeM extends Envelope
 {
+    /**
+     * Constructor
+     *
+     * @param minimumX
+     *             Minimum (inclusive) x value
+     * @param minimumY
+     *             Minimum (inclusive) y value
+     * @param minimumM
+     *             Minimum (inclusive) m value
+     * @param maximumX
+     *             Maximum (inclusive) x value
+     * @param maximumY
+     *             Maximum (inclusive) y value
+     * @param maximumM
+     *             Maximum (inclusive) m value
+     */
     public EnvelopeM(final double minimumX,
                      final double minimumY,
                      final double minimumM,
@@ -52,7 +68,7 @@ public final class EnvelopeM extends Envelope
      * minimum x, maximum x, minimum y, maximum y, minimum m, maximum m
      * @see <a href="http://www.geopackage.org/spec/#flags_layout">GeoPackage spec, Table 6. bit layout of GeoPackageBinary flags byte</a>
      *
-     * @return
+     * @return An array of doubles in the order: minimum x, maximum x, minimum y, maximum y, minimum m, maximum m
      */
     @Override
     public double[] toArray()
@@ -98,6 +114,16 @@ public final class EnvelopeM extends Envelope
                               : EnvelopeContentsIndicator.Xym;
     }
 
+    /**
+     * Combines two envelopes
+     *
+     * @param first
+     *             The first envelope
+     * @param second
+     *             The second envelope
+     * @return an envelope that minimally includes the entirety of the
+     *             input envelopes
+     */
     public static EnvelopeM combine(final EnvelopeM first,
                                     final EnvelopeM second)
     {
@@ -109,6 +135,9 @@ public final class EnvelopeM extends Envelope
                              nanMaximum(first.maximumM,      second.maximumM));
     }
 
+    /**
+     * Empty envelope
+     */
     public static final EnvelopeM Empty = new EnvelopeM(Double.NaN,
                                                         Double.NaN,
                                                         Double.NaN,

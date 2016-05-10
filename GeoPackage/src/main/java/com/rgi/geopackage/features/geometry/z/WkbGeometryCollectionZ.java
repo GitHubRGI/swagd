@@ -29,7 +29,6 @@ import com.rgi.geopackage.features.WellKnownBinaryFormatException;
 import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.features.geometry.GeometryFactory;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
-import com.rgi.geopackage.features.geometry.xy.WkbGeometry;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -59,15 +58,28 @@ import java.util.Objects;
  *
  * @author Luke Lambert
  *
+ * @param <T> Specific WkbGeometryZ type
  */
 public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
 {
+    /**
+     * Constructor
+     *
+     * @param geometries
+     *             Array of geometries
+     */
     @SafeVarargs
     public WkbGeometryCollectionZ(final T... geometries)
     {
         this(Arrays.asList(geometries));
     }
 
+    /**
+     * Constructor
+     *
+     * @param geometries
+     *             Collection of geometries
+     */
     public WkbGeometryCollectionZ(final Collection<T> geometries)
     {
         if(geometries == null)
@@ -84,19 +96,19 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.geometries.equals((WkbGeometryCollectionZ<?>)o);
+        return this.geometries.equals(((WkbGeometryCollectionZ<?>)obj).geometries);
     }
 
     @Override
@@ -144,6 +156,7 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
     @Override
     public EnvelopeZ createEnvelopeZ()
     {
+        //noinspection OptionalGetWithoutIsPresent
         return this.geometries.isEmpty() ? EnvelopeZ.Empty
                                          : this.geometries
                                                .stream()
@@ -158,6 +171,17 @@ public class WkbGeometryCollectionZ<T extends WkbGeometryZ> extends WkbGeometryZ
         return Collections.unmodifiableList(this.geometries);
     }
 
+    /**
+     * Assumes the {@link ByteBuffer}'s byte order has been properly set
+     *
+     * @param geometryFactory
+     *             factory to create contained geometries
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbGeometryCollectionZ
+     * @throws WellKnownBinaryFormatException
+     *             if a contained geometry is malformed
+     */
     public static WkbGeometryCollectionZ<WkbGeometryZ> readWellKnownBinary(final GeometryFactory geometryFactory,
                                                                            final ByteBuffer      byteBuffer) throws WellKnownBinaryFormatException
     {

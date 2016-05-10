@@ -39,11 +39,23 @@ import java.util.Objects;
  */
 public class LinearRingZ
 {
+    /**
+     * Constructor
+     *
+     * @param coordinates
+     *             List of coordinates
+     */
     public LinearRingZ(final CoordinateZ... coordinates)
     {
         this(Arrays.asList(coordinates));
     }
 
+    /**
+     * Constructor
+     *
+     * @param coordinates
+     *             collection of coordinates
+     */
     public LinearRingZ(final Collection<CoordinateZ> coordinates)
     {
         if(coordinates == null)
@@ -60,19 +72,19 @@ public class LinearRingZ
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.coordinates.equals((LinearRingZ)o);
+        return this.coordinates.equals(((LinearRingZ)obj).coordinates);
     }
 
     @Override
@@ -91,8 +103,14 @@ public class LinearRingZ
         return this.coordinates.isEmpty();
     }
 
+    /**
+     * Constructs an envelope that encompasses every point in this ring
+     *
+     * @return an envelope
+     */
     public EnvelopeZ createEnvelope()
     {
+        //noinspection OptionalGetWithoutIsPresent
         return this.coordinates.isEmpty() ? EnvelopeZ.Empty
                                           : this.coordinates
                                                 .stream()
@@ -105,6 +123,7 @@ public class LinearRingZ
      * Assumes the ByteOutputStream's byte order has been properly set
      *
      * @param byteOutputStream
+     *             output stream
      */
     public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
@@ -119,10 +138,11 @@ public class LinearRingZ
     }
 
     /**
-     * Assumes the bytebuffer's byte order has been properly set
+     * Assumes the ByteOutputStream's byte order has been properly set
      *
      * @param byteBuffer
-     * @return
+     *             buffer to be read from
+     * @return a new LinearRingZ
      */
     public static LinearRingZ readWellKnownBinary(final ByteBuffer byteBuffer)
     {

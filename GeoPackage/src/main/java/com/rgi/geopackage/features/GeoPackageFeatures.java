@@ -1048,7 +1048,6 @@ public class GeoPackageFeatures
         {
             throw new WellKnownBinaryFormatException(bufferUnderflowException);
         }
-
     }
 
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier)

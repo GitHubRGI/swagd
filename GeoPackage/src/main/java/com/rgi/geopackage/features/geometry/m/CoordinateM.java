@@ -31,8 +31,19 @@ import com.rgi.geopackage.features.Contents;
  *
  * @author Luke Lambert
  */
+@SuppressWarnings("InstanceVariableNamingConvention")
 public class CoordinateM
 {
+    /**
+     * Constructor
+     *
+     * @param x
+     *             x component
+     * @param y
+     *             y component
+     * @param m
+     *             m component
+     */
     public CoordinateM(final double x,
                        final double y,
                        final double m)
@@ -43,19 +54,19 @@ public class CoordinateM
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        final CoordinateM other = (CoordinateM)o;
+        final CoordinateM other = (CoordinateM) obj;
 
         return Double.compare(other.x, this.x) == 0 &&
                Double.compare(other.y, this.y) == 0 &&
@@ -78,7 +89,7 @@ public class CoordinateM
     @Override
     public String toString()
     {
-        return String.format("(%f, %f, %fm)",
+        return String.format("(%f, %f, %f m)",
                              this.x,
                              this.y,
                              this.m);
@@ -114,6 +125,11 @@ public class CoordinateM
                                       : Contents.NotEmpty;
     }
 
+    /**
+     * Creates a new envelope object encompassing the entire geometry
+     *
+     * @return a four component envelope
+     */
     public EnvelopeM createEnvelope()
     {
         return new EnvelopeM(this.x,
@@ -122,6 +138,12 @@ public class CoordinateM
                              this.m);
     }
 
+    /**
+     * Writes the bytes of the geometry to the output stream
+     *
+     * @param byteOutputStream
+     *             output stream
+     */
     public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
         byteOutputStream.write(this.x);

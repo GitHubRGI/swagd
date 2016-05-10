@@ -24,7 +24,6 @@
 package com.rgi.geopackage.features.geometry.zm;
 
 import com.rgi.geopackage.features.ByteOutputStream;
-import com.rgi.geopackage.features.geometry.m.CoordinateM;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -40,11 +39,23 @@ import java.util.Objects;
  */
 public class LinearRingZM
 {
+    /**
+     * Constructor
+     *
+     * @param coordinates
+     *             List of coordinates
+     */
     public LinearRingZM(final CoordinateZM... coordinates)
     {
         this(Arrays.asList(coordinates));
     }
 
+    /**
+     * Constructor
+     *
+     * @param coordinates
+     *             collection of coordinates
+     */
     public LinearRingZM(final Collection<CoordinateZM> coordinates)
     {
         if(coordinates == null)
@@ -61,19 +72,19 @@ public class LinearRingZM
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.coordinates.equals((LinearRingZM)o);
+        return this.coordinates.equals(((LinearRingZM)obj).coordinates);
     }
 
     @Override
@@ -92,8 +103,14 @@ public class LinearRingZM
         return this.coordinates.isEmpty();
     }
 
+    /**
+     * Constructs an envelope that encompasses every point in this ring
+     *
+     * @return an envelope
+     */
     public EnvelopeZM createEnvelope()
     {
+        //noinspection OptionalGetWithoutIsPresent
         return this.coordinates.isEmpty() ? EnvelopeZM.Empty
                                           : this.coordinates
                                                 .stream()
@@ -106,6 +123,7 @@ public class LinearRingZM
      * Assumes the ByteOutputStream's byte order has been properly set
      *
      * @param byteOutputStream
+     *             output stream
      */
     public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
@@ -120,10 +138,11 @@ public class LinearRingZM
     }
 
     /**
-     * Assumes the bytebuffer's byte order has been properly set
+     * Assumes the {@link ByteBuffer}'s byte order has been properly set
      *
      * @param byteBuffer
-     * @return
+     *             buffer to be read from
+     * @return a new LinearRingZM
      */
     public static LinearRingZM readWellKnownBinary(final ByteBuffer byteBuffer)
     {

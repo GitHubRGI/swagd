@@ -31,6 +31,26 @@ import com.rgi.geopackage.features.geometry.xy.Envelope;
  */
 public final class EnvelopeZM extends Envelope
 {
+    /**
+     * Constructor
+     *
+     * @param minimumX
+     *             Minimum (inclusive) x value
+     * @param minimumY
+     *             Minimum (inclusive) y value
+     * @param minimumZ
+     *             Minimum (inclusive) z value
+     * @param minimumM
+     *             Minimum (inclusive) m value
+     * @param maximumX
+     *             Maximum (inclusive) x value
+     * @param maximumY
+     *             Maximum (inclusive) y value
+     * @param maximumZ
+     *             Maximum (inclusive) z value
+     * @param maximumM
+     *             Maximum (inclusive) m value
+     */
     public EnvelopeZM(final double minimumX,
                       final double minimumY,
                       final double minimumZ,
@@ -56,7 +76,7 @@ public final class EnvelopeZM extends Envelope
      * minimum x, maximum x, minimum y, maximum y, minimum z, maximum z, minimum m, maximum m
      * @see <a href="http://www.geopackage.org/spec/#flags_layout">GeoPackage spec, Table 6. bit layout of GeoPackageBinary flags byte</a>
      *
-     * @return
+     * @return An array of doubles in the order: minimum x, maximum x, minimum y, maximum y, minimum z, maximum z, minimum m, maximum m
      */
     @Override
     public double[] toArray()
@@ -122,6 +142,16 @@ public final class EnvelopeZM extends Envelope
                               : EnvelopeContentsIndicator.Xyzm;
     }
 
+    /**
+     * Combines two envelopes
+     *
+     * @param first
+     *             The first envelope
+     * @param second
+     *             The second envelope
+     * @return an envelope that minimally includes the entirety of the
+     *             input envelopes
+     */
     public static EnvelopeZM combine(final EnvelopeZM first,
                                      final EnvelopeZM second)
     {
@@ -135,6 +165,9 @@ public final class EnvelopeZM extends Envelope
                               nanMaximum(first.maximumM,      second.maximumM));
     }
 
+    /**
+     * Empty envelope
+     */
     public static final EnvelopeZM Empty = new EnvelopeZM(Double.NaN,
                                                           Double.NaN,
                                                           Double.NaN,
