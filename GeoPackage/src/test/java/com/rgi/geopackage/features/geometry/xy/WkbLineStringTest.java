@@ -145,7 +145,7 @@ public class WkbLineStringTest
     public void testHashCode()
     {
         assertEquals("hashCode returned the wrong value",
-                     778531935,
+                     -1235782561,
                      new WkbLineString(new Coordinate(3.0, 31.0),
                                        new Coordinate(3.0, 31.0),
                                        new Coordinate(3.0, 31.0)).hashCode());
