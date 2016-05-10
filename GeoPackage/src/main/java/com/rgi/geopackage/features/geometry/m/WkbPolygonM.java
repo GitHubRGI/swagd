@@ -46,6 +46,14 @@ import java.util.List;
  */
 public class WkbPolygonM extends WkbCurvePolygonM
 {
+    /**
+     * Constructor
+     *
+     * @param exteriorRing
+     *             external hull of the polygon
+     * @param interiorRings
+     *             'holes' in the polygon
+     */
     public WkbPolygonM(final LinearRingM exteriorRing,
                        final LinearRingM... interiorRings)
     {
@@ -53,6 +61,14 @@ public class WkbPolygonM extends WkbCurvePolygonM
              Arrays.asList(interiorRings));
     }
 
+    /**
+     * Constructor
+     *
+     * @param exteriorRing
+     *             external hull of the polygon
+     * @param interiorRings
+     *             'holes' in the polygon
+     */
     public WkbPolygonM(final LinearRingM exteriorRing,
                        final Collection<LinearRingM> interiorRings)
     {
@@ -68,19 +84,19 @@ public class WkbPolygonM extends WkbCurvePolygonM
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        final WkbPolygonM other = (WkbPolygonM)o;
+        final WkbPolygonM other = (WkbPolygonM) obj;
 
         return this.exteriorRing.equals(other.exteriorRing) &&
                this.interiorRings.equals(other.interiorRings);
@@ -151,6 +167,13 @@ public class WkbPolygonM extends WkbCurvePolygonM
         return Collections.unmodifiableList(this.interiorRings);
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbPolygonM
+     */
     public static WkbPolygonM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.Polygon.getCode());

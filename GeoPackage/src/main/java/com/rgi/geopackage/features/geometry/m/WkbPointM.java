@@ -39,6 +39,16 @@ import java.nio.ByteBuffer;
  */
 public class WkbPointM extends WkbGeometryM
 {
+    /**
+     * Constructor
+     *
+     * @param x
+     *             x component
+     * @param y
+     *             y component
+     * @param m
+     *             m component
+     */
     public WkbPointM(final double x,
                      final double y,
                      final double m)
@@ -48,6 +58,12 @@ public class WkbPointM extends WkbGeometryM
                              m));
     }
 
+    /**
+     * Constructor
+     *
+     * @param coordinate
+     *             coordinate to copy
+     */
     public WkbPointM(final CoordinateM coordinate)
     {
         if(coordinate == null)
@@ -55,23 +71,25 @@ public class WkbPointM extends WkbGeometryM
             throw new IllegalArgumentException("Coordinate may not be null");
         }
 
-        this.coordinate = coordinate;
+        this.coordinate = new CoordinateM(coordinate.getX(),
+                                          coordinate.getY(),
+                                          coordinate.getM());
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.coordinate.equals(((WkbPointM)o).coordinate);
+        return this.coordinate.equals(((WkbPointM) obj).coordinate);
     }
 
     @Override
@@ -110,6 +128,13 @@ public class WkbPointM extends WkbGeometryM
         return this.coordinate.createEnvelope();
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbPointM
+     */
     public static WkbPointM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.Point.getCode());

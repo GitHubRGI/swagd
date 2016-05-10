@@ -33,10 +33,17 @@ import java.util.Collection;
  *
  * @author Luke Lambert
  *
+ * @param <T> {@link WkbSurfaceZ} subclass
  */
 @SuppressWarnings("AbstractClassExtendsConcreteClass")
 public abstract class WkbMultiSurfaceZ<T extends WkbSurfaceZ> extends WkbGeometryCollectionZ<T>
 {
+    /**
+     * Constructor
+     *
+     * @param surfaces
+     *             Collection of surfaces
+     */
     protected WkbMultiSurfaceZ(final Collection<T> surfaces)
     {
         super(surfaces);

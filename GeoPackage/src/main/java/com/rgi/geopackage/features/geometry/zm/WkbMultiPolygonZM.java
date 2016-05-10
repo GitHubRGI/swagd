@@ -42,11 +42,23 @@ import java.util.List;
  */
 public class WkbMultiPolygonZM extends WkbMultiSurfaceZM<WkbPolygonZM>
 {
+    /**
+     * Constructor
+     *
+     * @param polygons
+     *             Array of polygons
+     */
     public WkbMultiPolygonZM(final WkbPolygonZM... polygons)
     {
         this(Arrays.asList(polygons));
     }
 
+    /**
+     * Constructor
+     *
+     * @param polygons
+     *             Collection of polygons
+     */
     public WkbMultiPolygonZM(final Collection<WkbPolygonZM> polygons)
     {
         super(polygons);
@@ -69,6 +81,13 @@ public class WkbMultiPolygonZM extends WkbMultiSurfaceZM<WkbPolygonZM>
         return this.getGeometries();
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbMultiPolygonZM
+     */
     public static WkbMultiPolygonZM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.MultiPolygon.getCode());

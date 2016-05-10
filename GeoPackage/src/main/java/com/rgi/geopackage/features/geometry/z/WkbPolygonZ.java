@@ -46,6 +46,14 @@ import java.util.List;
  */
 public class WkbPolygonZ extends WkbCurvePolygonZ
 {
+    /**
+     * Constructor
+     *
+     * @param exteriorRing
+     *             external hull of the polygon
+     * @param interiorRings
+     *             'holes' in the polygon
+     */
     public WkbPolygonZ(final LinearRingZ    exteriorRing,
                        final LinearRingZ... interiorRings)
     {
@@ -53,6 +61,14 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
              Arrays.asList(interiorRings));
     }
 
+    /**
+     * Constructor
+     *
+     * @param exteriorRing
+     *             external hull of the polygon
+     * @param interiorRings
+     *             'holes' in the polygon
+     */
     public WkbPolygonZ(final LinearRingZ             exteriorRing,
                        final Collection<LinearRingZ> interiorRings)
     {
@@ -68,19 +84,19 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        final WkbPolygonZ other = (WkbPolygonZ)o;
+        final WkbPolygonZ other = (WkbPolygonZ) obj;
 
         return this.exteriorRing.equals(other.exteriorRing) &&
                this.interiorRings.equals(other.interiorRings);
@@ -151,6 +167,13 @@ public class WkbPolygonZ extends WkbCurvePolygonZ
         return Collections.unmodifiableList(this.interiorRings);
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbPolygonZ
+     */
     public static WkbPolygonZ readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.Polygon.getCode());

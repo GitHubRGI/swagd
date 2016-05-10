@@ -39,17 +39,35 @@ import java.nio.ByteBuffer;
  */
 public class WkbPointZM extends WkbGeometryZM
 {
+    /**
+     * Constructor
+     *
+     * @param x
+     *             x component
+     * @param y
+     *             y component
+     * @param z
+     *             z component
+     * @param m
+     *             m component
+     */
     public WkbPointZM(final double x,
                       final double y,
                       final double z,
                       final double m)
     {
-        this(new CoordinateZM(x,
-                              y,
-                              z,
-                              m));
+        this.coordinate = new CoordinateZM(x,
+                                           y,
+                                           z,
+                                           m);
     }
 
+    /**
+     * Constructor
+     *
+     * @param coordinate
+     *             coordinate to copy
+     */
     public WkbPointZM(final CoordinateZM coordinate)
     {
         if(coordinate == null)
@@ -57,23 +75,26 @@ public class WkbPointZM extends WkbGeometryZM
             throw new IllegalArgumentException("Coordinate may not be null");
         }
 
-        this.coordinate = coordinate;
+        this.coordinate = new CoordinateZM(coordinate.getX(),
+                                           coordinate.getY(),
+                                           coordinate.getZ(),
+                                           coordinate.getM());
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.coordinate.equals(((WkbPointZM)o).coordinate);
+        return this.coordinate.equals(((WkbPointZM) obj).coordinate);
     }
 
     @Override
@@ -119,6 +140,13 @@ public class WkbPointZM extends WkbGeometryZM
         this.coordinate.writeWellKnownBinary(byteOutputStream);
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbPointZM
+     */
     public static WkbPointZM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.Point.getCode());

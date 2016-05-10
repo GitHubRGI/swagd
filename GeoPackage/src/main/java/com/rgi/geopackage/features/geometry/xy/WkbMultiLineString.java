@@ -42,11 +42,23 @@ import java.util.List;
  */
 public class WkbMultiLineString extends WkbMultiCurve<WkbLineString>
 {
+    /**
+     * Constructor
+     *
+     * @param lineStrings
+     *             Array of line strings
+     */
     public WkbMultiLineString(final WkbLineString... lineStrings)
     {
         this(Arrays.asList(lineStrings));
     }
 
+    /**
+     * Constructor
+     *
+     * @param lineStrings
+     *             Collection of line strings
+     */
     public WkbMultiLineString(final Collection<WkbLineString> lineStrings)
     {
         super(lineStrings);
@@ -69,6 +81,13 @@ public class WkbMultiLineString extends WkbMultiCurve<WkbLineString>
         return this.getGeometries();
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbMultiLineString
+     */
     public static WkbMultiLineString readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryType.MultiLineString.getCode());

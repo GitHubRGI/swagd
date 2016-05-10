@@ -42,11 +42,23 @@ import java.util.List;
  */
 public class WkbMultiPointZM extends WkbGeometryCollectionZM<WkbPointZM>
 {
+    /**
+     * Constructor
+     *
+     * @param points
+     *             Array of points
+     */
     public WkbMultiPointZM(final WkbPointZM... points)
     {
         this(Arrays.asList(points));
     }
 
+    /**
+     * Constructor
+     *
+     * @param points
+     *             Collection of points
+     */
     public WkbMultiPointZM(final Collection<WkbPointZM> points)
     {
         super(points);
@@ -69,6 +81,13 @@ public class WkbMultiPointZM extends WkbGeometryCollectionZM<WkbPointZM>
         return this.getGeometries();
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbMultiPointZM
+     */
     public static WkbMultiPointZM readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryTypeDimensionalityBase + GeometryType.MultiPoint.getCode());
