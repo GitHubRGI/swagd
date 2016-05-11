@@ -31,6 +31,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Luke Lambert
@@ -183,6 +184,43 @@ public final class EnvelopeTest
                      Math.max(envelope1.getMaximumY(),
                               envelope2.getMaximumY()),
                      combined.getMaximumY(),
+                     0.0);
+    }
+
+    /**
+     * Test nanMinimum/nanMaximum
+     */
+    @Test
+    public void nanMinMax()
+    {
+        assertTrue("nanMinimum returned the wrong value",
+                   Double.isNaN(Envelope.nanMinimum(Double.NaN, Double.NaN)));
+
+        final double minimum = 1.0;
+
+        assertEquals("nanMinimum returned the wrong value",
+                     minimum,
+                     Envelope.nanMinimum(minimum, Double.NaN),
+                     0.0);
+
+        assertEquals("nanMinimum returned the wrong value",
+                     minimum,
+                     Envelope.nanMinimum(Double.NaN, minimum),
+                     0.0);
+
+        assertTrue("nanMaximum returned the wrong value",
+                   Double.isNaN(Envelope.nanMaximum(Double.NaN, Double.NaN)));
+
+        final double maximum = 1.0;
+
+        assertEquals("nanMaximum returned the wrong value",
+                     maximum,
+                     Envelope.nanMaximum(maximum, Double.NaN),
+                     0.0);
+
+        assertEquals("nanMaximum returned the wrong value",
+                     maximum,
+                     Envelope.nanMaximum(Double.NaN, maximum),
                      0.0);
     }
 }

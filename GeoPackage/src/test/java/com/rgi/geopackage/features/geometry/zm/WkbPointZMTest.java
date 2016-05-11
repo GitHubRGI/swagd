@@ -26,11 +26,13 @@ package com.rgi.geopackage.features.geometry.zm;
 
 import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
+import com.rgi.geopackage.features.GeometryType;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static com.rgi.geopackage.features.geometry.zm.WkbGeometryZM.GeometryTypeDimensionalityBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -374,5 +376,62 @@ public class WkbPointZMTest
                          point,
                          found);
         }
+    }
+
+    /**
+     * Test accessors
+     */
+    @Test
+    public void accessors()
+    {
+        final double x = 0.0;
+        final double y = 0.0;
+        final double z = 0.0;
+        final double m = 0.0;
+
+        final WkbPointZM point = new WkbPointZM(x, y, z, m);
+
+        assertEquals("getX() returned the wrong value",
+                     x,
+                     point.getX(),
+                     0.0);
+
+        assertEquals("getY() returned the wrong value",
+                     y,
+                     point.getY(),
+                     0.0);
+
+        assertEquals("getZ() returned the wrong value",
+                     z,
+                     point.getZ(),
+                     0.0);
+
+        assertEquals("getM() returned the wrong value",
+                     m,
+                     point.getM(),
+                     0.0);
+    }
+
+    /**
+     * Test getTypeCode()
+     */
+    @Test
+    public void getTypeCode()
+    {
+        assertEquals("getTypeCode() returned the wrong value",
+                     GeometryTypeDimensionalityBase + GeometryType.Point.getCode(),
+                     new WkbPointZM(0.0, 0.0, 0.0, 0.0).getTypeCode());
+    }
+
+
+    /**
+     * Test getGeometryTypeName()
+     */
+    @Test
+    public void getGeometryTypeName()
+    {
+        assertEquals("getGeometryTypeName() returned the wrong value",
+                     GeometryType.Point.toString(),
+                     new WkbPointZM(0.0, 0.0, 0.0, 0.0).getGeometryTypeName());
     }
 }

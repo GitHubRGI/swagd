@@ -26,11 +26,13 @@ package com.rgi.geopackage.features.geometry.m;
 
 import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
+import com.rgi.geopackage.features.GeometryType;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static com.rgi.geopackage.features.geometry.m.WkbGeometryM.GeometryTypeDimensionalityBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -336,5 +338,56 @@ public class WkbPointMTest
                          point,
                          found);
         }
+    }
+
+    /**
+     * Test accessors
+     */
+    @Test
+    public void accessors()
+    {
+        final double x = 0.0;
+        final double y = 0.0;
+        final double m = 0.0;
+
+        final WkbPointM point = new WkbPointM(x, y, m);
+
+        assertEquals("getX() returned the wrong value",
+                     x,
+                     point.getX(),
+                     0.0);
+
+        assertEquals("getY() returned the wrong value",
+                     y,
+                     point.getY(),
+                     0.0);
+
+        assertEquals("getM() returned the wrong value",
+                     m,
+                     point.getM(),
+                     0.0);
+    }
+
+    /**
+     * Test getTypeCode()
+     */
+    @Test
+    public void getTypeCode()
+    {
+        assertEquals("getTypeCode() returned the wrong value",
+                     GeometryTypeDimensionalityBase + GeometryType.Point.getCode(),
+                     new WkbPointM(0.0, 0.0, 0.0).getTypeCode());
+    }
+
+
+    /**
+     * Test getGeometryTypeName()
+     */
+    @Test
+    public void getGeometryTypeName()
+    {
+        assertEquals("getGeometryTypeName() returned the wrong value",
+                     GeometryType.Point.toString(),
+                     new WkbPointM(0.0, 0.0, 0.0).getGeometryTypeName());
     }
 }

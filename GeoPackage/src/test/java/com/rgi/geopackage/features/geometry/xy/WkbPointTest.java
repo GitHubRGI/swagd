@@ -26,6 +26,7 @@ package com.rgi.geopackage.features.geometry.xy;
 
 import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
+import com.rgi.geopackage.features.GeometryType;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
@@ -248,5 +249,50 @@ public class WkbPointTest
                          point,
                          found);
         }
+    }
+
+    /**
+     * Test accessors
+     */
+    @Test
+    public void accessors()
+    {
+        final double x = 0.0;
+        final double y = 0.0;
+
+        final WkbPoint point = new WkbPoint(x, y);
+
+        assertEquals("getX() returned the wrong value",
+                     x,
+                     point.getX(),
+                     0.0);
+
+        assertEquals("getY() returned the wrong value",
+                     y,
+                     point.getY(),
+                     0.0);
+    }
+
+    /**
+     * Test getTypeCode()
+     */
+    @Test
+    public void getTypeCode()
+    {
+        assertEquals("getTypeCode() returned the wrong value",
+                     GeometryType.Point.getCode(),
+                     new WkbPoint(0.0, 0.0).getTypeCode());
+    }
+
+
+    /**
+     * Test getGeometryTypeName()
+     */
+    @Test
+    public void getGeometryTypeName()
+    {
+        assertEquals("getGeometryTypeName() returned the wrong value",
+                     GeometryType.Point.toString(),
+                     new WkbPoint(0.0, 0.0).getGeometryTypeName());
     }
 }

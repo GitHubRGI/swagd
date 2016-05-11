@@ -157,7 +157,7 @@ public class Envelope
      *             double value
      * @return the minimum of two values
      */
-    protected static double nanMinimum(final double first, final double second)
+    public static double nanMinimum(final double first, final double second)
     {
         if(Double.isNaN(first) && Double.isNaN(second))
         {
@@ -187,7 +187,7 @@ public class Envelope
      *             double value
      * @return the maximum of two values
      */
-    protected static double nanMaximum(final double first, final double second)
+    public static double nanMaximum(final double first, final double second)
     {
         if(Double.isNaN(first) && Double.isNaN(second))
         {

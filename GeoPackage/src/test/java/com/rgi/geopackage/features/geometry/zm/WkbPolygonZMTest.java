@@ -26,10 +26,12 @@ package com.rgi.geopackage.features.geometry.zm;
 
 import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
+import com.rgi.geopackage.features.GeometryType;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -412,17 +414,69 @@ public class WkbPolygonZMTest
     {
         try(final ByteOutputStream output = new ByteOutputStream())
         {
-            final double x = 1.0;
-            final double y = 1.0;
-            final double z = 1.0;
-            final double m = 1.0;
-
             final WkbPolygonZM polygon = new WkbPolygonZM(new LinearRingZM(new CoordinateZM(1.0, 0.0, 0.0, 0.0),
                                                                            new CoordinateZM(0.0, 1.0, 0.0, 0.0),
                                                                            new CoordinateZM(1.0, 1.0, 0.0, 0.0)),
                                                           new LinearRingZM(new CoordinateZM(0.5, 0.0, 0.0, 0.0),
                                                                            new CoordinateZM(0.0, 0.5, 0.0, 0.0),
                                                                            new CoordinateZM(0.5, 0.5, 0.0, 0.0)));
+            polygon.writeWellKnownBinary(output);
+
+            final ByteBuffer byteBuffer = ByteBuffer.wrap(output.array());
+
+            final WkbPolygonZM found = WkbPolygonZM.readWellKnownBinary(byteBuffer);
+
+            assertEquals("writeWellKnownBinary failed",
+                         polygon,
+                         found);
+        }
+    }
+
+    /**
+     * Test getGeometryTypeName()
+     */
+    @Test
+    public void getGeometryTypeName()
+    {
+        assertEquals("getGeometryTypeName() returned the wrong value",
+                     GeometryType.Polygon.toString(),
+                     new WkbPolygonZM(new LinearRingZM()).getGeometryTypeName());
+    }
+
+    /**
+     * Test rings
+     */
+    @Test
+    public void rings()
+    {
+        final LinearRingZM exteriorRing = new LinearRingZM(new CoordinateZM(1.0, 0.0, 0.0, 0.0),
+                                                           new CoordinateZM(0.0, 1.0, 0.0, 0.0),
+                                                           new CoordinateZM(1.0, 1.0, 0.0, 0.0));
+
+        final Collection<LinearRingZM> interiorRing = Arrays.asList(new LinearRingZM(new CoordinateZM(0.5, 0.0, 0.0, 0.0),
+                                                                                     new CoordinateZM(0.0, 0.5, 0.0, 0.0),
+                                                                                     new CoordinateZM(0.5, 0.5, 0.0, 0.0)));
+
+        final WkbPolygonZM polygon = new WkbPolygonZM(exteriorRing, interiorRing);
+
+        assertEquals("getExteriorRing() returned the wrong value",
+                     exteriorRing,
+                     polygon.getExteriorRing());
+
+        assertEquals("getInteriorRings() returned the wrong value",
+                     interiorRing,
+                     polygon.getInteriorRings());
+    }
+
+    /**
+     * Test writeWellKnownBinary with no rings
+     */
+    @Test
+    public void writeWellKnownTextNoRings()
+    {
+        try(final ByteOutputStream output = new ByteOutputStream())
+        {
+            final WkbPolygonZM polygon = new WkbPolygonZM(new LinearRingZM());
             polygon.writeWellKnownBinary(output);
 
             final ByteBuffer byteBuffer = ByteBuffer.wrap(output.array());
