@@ -1001,12 +1001,7 @@ public class GeoPackageFeatures
     {
         try
         {
-            if(wkbByteBuffer == null)
-            {
-                throw new IllegalArgumentException("Well known binary byte buffer may not be null");
-            }
-
-            if(wkbByteBuffer.limit() < 5)
+            if(wkbByteBuffer.limit()-wkbByteBuffer.position() < 5)
             {
                 throw new WellKnownBinaryFormatException("Well known binary buffer must contain at least 5 bytes - the first being the byte order indicator, followed by a 4 byte unsigned integer describing the geometry type.");
             }
@@ -1048,7 +1043,6 @@ public class GeoPackageFeatures
         {
             throw new WellKnownBinaryFormatException(bufferUnderflowException);
         }
-
     }
 
     private static byte[] createBlob(final Geometry geometry, final int spatialReferenceSystemIdentifier)
@@ -1074,11 +1068,6 @@ public class GeoPackageFeatures
     {
         final ValueRequirement zRequirement = geometryColumn.getZRequirement();
         final ValueRequirement mRequirement = geometryColumn.getMRequirement();
-
-        if(geometry == null)
-        {
-            throw new IllegalArgumentException("Geometry may not be null");
-        }
 
         final boolean hasZ = geometry.hasZ();
         final boolean hasM = geometry.hasM();

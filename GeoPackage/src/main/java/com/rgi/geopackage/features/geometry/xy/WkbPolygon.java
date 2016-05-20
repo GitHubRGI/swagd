@@ -45,6 +45,14 @@ import java.util.List;
  */
 public class WkbPolygon extends WkbCurvePolygon
 {
+    /**
+     * Constructor
+     *
+     * @param exteriorRing
+     *             external hull of the polygon
+     * @param interiorRings
+     *             'holes' in the polygon
+     */
     public WkbPolygon(final LinearRing    exteriorRing,
                       final LinearRing... interiorRings)
     {
@@ -52,6 +60,14 @@ public class WkbPolygon extends WkbCurvePolygon
              Arrays.asList(interiorRings));
     }
 
+    /**
+     * Constructor
+     *
+     * @param exteriorRing
+     *             external hull of the polygon
+     * @param interiorRings
+     *             'holes' in the polygon
+     */
     public WkbPolygon(final LinearRing             exteriorRing,
                       final Collection<LinearRing> interiorRings)
     {
@@ -68,19 +84,19 @@ public class WkbPolygon extends WkbCurvePolygon
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        final WkbPolygon other = (WkbPolygon)o;
+        final WkbPolygon other = (WkbPolygon) obj;
 
         return this.exteriorRing.equals(other.exteriorRing) &&
                this.interiorRings.equals(other.interiorRings);
@@ -145,6 +161,13 @@ public class WkbPolygon extends WkbCurvePolygon
         return Collections.unmodifiableList(this.interiorRings);
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbPolygon
+     */
     public static WkbPolygon readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryType.Polygon.getCode());

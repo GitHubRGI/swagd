@@ -33,10 +33,17 @@ import java.util.Collection;
  *
  * @author Luke Lambert
  *
+ * @param <T> {@link WkbCurveZ} subclass
  */
 @SuppressWarnings("AbstractClassExtendsConcreteClass")
 public abstract class WkbMultiCurveZ<T extends WkbCurveZ> extends WkbGeometryCollectionZ<T>
 {
+    /**
+     * Constructor
+     *
+     * @param curves
+     *             Collection of curves
+     */
     protected WkbMultiCurveZ(final Collection<T> curves)
     {
         super(curves);

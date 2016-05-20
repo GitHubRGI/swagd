@@ -28,6 +28,8 @@ import com.rgi.geopackage.features.Contents;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
 import org.junit.Test;
 
+import java.nio.ByteBuffer;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -42,66 +44,88 @@ public class GeometryTest
     @Test
     public void getContents()
     {
-        //noinspection AnonymousInnerClassMayBeStatic
-        final Geometry geometry = new Geometry()
-        {
-            @Override
-            public boolean equals(final Object o)
-            {
-                return false;
-            }
-
-            @Override
-            public int hashCode()
-            {
-                return 0;
-            }
-
-            @Override
-            public long getTypeCode()
-            {
-                return 0;
-            }
-
-            @Override
-            public String getGeometryTypeName()
-            {
-                return null;
-            }
-
-            @Override
-            public boolean hasZ()
-            {
-                return false;
-            }
-
-            @Override
-            public boolean hasM()
-            {
-                return false;
-            }
-
-            @Override
-            public boolean isEmpty()
-            {
-                return true;
-            }
-
-            @Override
-            public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
-            {
-
-            }
-
-            @Override
-            public Envelope createEnvelope()
-            {
-                return null;
-            }
-        };
+        final Geometry geometry = new MyGeometry();
 
         assertEquals("Empty geometry must report Contents.Empty for getContents",
                      Contents.Empty,
                      geometry.getContents());
+    }
+
+    /**
+     * Test readWellKnownBinaryHeader() when the {@link ByteBuffer} contains an unexpected type code
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void readEwellKnownBinaryHeaderWithUnexpectedTypeCode()
+    {
+        final ByteBuffer byteBuffer = ByteBuffer.allocate(5);
+
+        byteBuffer.put((byte)0);  // Use big endian
+        byteBuffer.putInt(1);     // Geometry type 1
+
+        byteBuffer.position(0);
+
+        MyGeometry.readHeader(byteBuffer, 2L);
+    }
+
+    private static class MyGeometry extends Geometry
+    {
+        @Override
+        public boolean equals(final Object obj)
+        {
+            return false;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+
+        @Override
+        public long getTypeCode()
+        {
+            return 0;
+        }
+
+        @Override
+        public String getGeometryTypeName()
+        {
+            return null;
+        }
+
+        @Override
+        public boolean hasZ()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean hasM()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return true;
+        }
+
+        @Override
+        public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
+        {
+
+        }
+
+        @Override
+        public Envelope createEnvelope()
+        {
+            return null;
+        }
+
+        public static void readHeader(final ByteBuffer byteBuffer, final long typeCode)
+        {
+            readWellKnownBinaryHeader(byteBuffer, typeCode);
+        }
     }
 }

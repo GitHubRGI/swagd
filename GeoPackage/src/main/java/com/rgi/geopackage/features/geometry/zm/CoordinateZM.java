@@ -26,15 +26,26 @@ package com.rgi.geopackage.features.geometry.zm;
 import com.rgi.geopackage.features.ByteOutputStream;
 import com.rgi.geopackage.features.Contents;
 
-import java.nio.ByteBuffer;
-
 /**
  * Proxy for member coordinates in GeoPackage geometries
  *
  * @author Luke Lambert
  */
+@SuppressWarnings("InstanceVariableNamingConvention")
 public class CoordinateZM
 {
+    /**
+     * Constructor
+     *
+     * @param x
+     *             x component
+     * @param y
+     *             y component
+     * @param z
+     *             z component
+     * @param m
+     *             m component
+     */
     public CoordinateZM(final double x,
                         final double y,
                         final double z,
@@ -47,19 +58,19 @@ public class CoordinateZM
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        final CoordinateZM other = (CoordinateZM)o;
+        final CoordinateZM other = (CoordinateZM)obj;
 
         return Double.compare(other.x, this.x) == 0 &&
                Double.compare(other.y, this.y) == 0 &&
@@ -129,20 +140,34 @@ public class CoordinateZM
                                     : Contents.NotEmpty;
     }
 
+    /**
+     * Creates a new envelope object encompassing the entire geometry
+     *
+     * @return a four component envelope
+     */
     public EnvelopeZM createEnvelope()
     {
-        if(this.getContents() == Contents.Empty)
+        if(this.isEmpty())
         {
             return EnvelopeZM.Empty;
         }
 
         return new EnvelopeZM(this.x,
-                              this.y, this.z, this.m, this.x,
+                              this.y,
+                              this.z,
+                              this.m,
+                              this.x,
                               this.y,
                               this.z,
                               this.m);
     }
 
+    /**
+     * Writes the bytes of the geometry to the output stream
+     *
+     * @param byteOutputStream
+     *             output stream
+     */
     public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
         byteOutputStream.write(this.x);

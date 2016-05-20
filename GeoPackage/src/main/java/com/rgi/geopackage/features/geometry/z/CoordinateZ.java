@@ -31,8 +31,19 @@ import com.rgi.geopackage.features.Contents;
  *
  * @author Luke Lambert
  */
+@SuppressWarnings("InstanceVariableNamingConvention")
 public class CoordinateZ
 {
+    /**
+     * Constructor
+     *
+     * @param x
+     *             x component
+     * @param y
+     *             y component
+     * @param z
+     *             z component
+     */
     public CoordinateZ(final double x,
                        final double y,
                        final double z)
@@ -43,19 +54,19 @@ public class CoordinateZ
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        final CoordinateZ other = (CoordinateZ)o;
+        final CoordinateZ other = (CoordinateZ) obj;
 
         return Double.compare(other.x, this.x) == 0 &&
                Double.compare(other.y, this.y) == 0 &&
@@ -113,6 +124,11 @@ public class CoordinateZ
                                     : Contents.NotEmpty;
     }
 
+    /**
+     * Creates a new envelope object encompassing the entire geometry
+     *
+     * @return a four component envelope
+     */
     public EnvelopeZ createEnvelope()
     {
         if(this.getContents() == Contents.Empty)
@@ -126,6 +142,12 @@ public class CoordinateZ
                              this.z);
     }
 
+    /**
+     * Writes the bytes of the geometry to the output stream
+     *
+     * @param byteOutputStream
+     *             output stream
+     */
     public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
     {
         byteOutputStream.write(this.x);

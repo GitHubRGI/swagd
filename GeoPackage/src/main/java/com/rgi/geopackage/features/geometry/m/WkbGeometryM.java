@@ -1,7 +1,6 @@
 package com.rgi.geopackage.features.geometry.m;
 
 import com.rgi.geopackage.features.geometry.Geometry;
-import com.rgi.geopackage.features.geometry.z.EnvelopeZ;
 
 /**
  * @author Luke Lambert
@@ -20,7 +19,15 @@ public abstract class WkbGeometryM extends Geometry
         return true;
     }
 
+    /**
+     * Creates an envelope with x, y, and m components
+     *
+     * @return an envelope with x, y, and m components
+     */
     public abstract EnvelopeM createEnvelopeM();
 
+    /**
+     * Base type value for all geometries that extend this type
+     */
     public static final long GeometryTypeDimensionalityBase = 2000;
 }

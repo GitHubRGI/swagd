@@ -31,8 +31,26 @@ import com.rgi.geopackage.features.EnvelopeContentsIndicator;
  */
 public final class EnvelopeZ extends Envelope
 {
+    /**
+     * Constructor
+     *
+     * @param minimumX
+     *             Minimum (inclusive) x value
+     * @param minimumY
+     *             Minimum (inclusive) y value
+     * @param minimumZ
+     *             Minimum (inclusive) z value
+     * @param maximumX
+     *             Maximum (inclusive) x value
+     * @param maximumY
+     *             Maximum (inclusive) y value
+     * @param maximumZ
+     *             Maximum (inclusive) z value
+     */
     public EnvelopeZ(final double minimumX,
-                     final double minimumY, final double minimumZ, final double maximumX,
+                     final double minimumY,
+                     final double minimumZ,
+                     final double maximumX,
                      final double maximumY,
                      final double maximumZ)
     {
@@ -50,7 +68,7 @@ public final class EnvelopeZ extends Envelope
      * minimum x, maximum x, minimum y, maximum y, minimum z, maximum z
      * @see <a href="http://www.geopackage.org/spec/#flags_layout">GeoPackage spec, Table 6. bit layout of GeoPackageBinary flags byte</a>
      *
-     * @return
+     * @return An array of doubles in the order: minimum x, maximum x, minimum y, maximum y, minimum z, maximum z
      */
     @Override
     public double[] toArray()
@@ -96,6 +114,16 @@ public final class EnvelopeZ extends Envelope
                               : EnvelopeContentsIndicator.Xyz;
     }
 
+    /**
+     * Combines two envelopes
+     *
+     * @param first
+     *             The first envelope
+     * @param second
+     *             The second envelope
+     * @return an envelope that minimally includes the entirety of the
+     *             input envelopes
+     */
     public static EnvelopeZ combine(final EnvelopeZ first,
                                     final EnvelopeZ second)
     {
@@ -107,6 +135,9 @@ public final class EnvelopeZ extends Envelope
                              nanMaximum(first.maximumZ,      second.maximumZ));
     }
 
+    /**
+     * Empty envelope
+     */
     public static final EnvelopeZ Empty = new EnvelopeZ(Double.NaN,
                                                         Double.NaN,
                                                         Double.NaN,

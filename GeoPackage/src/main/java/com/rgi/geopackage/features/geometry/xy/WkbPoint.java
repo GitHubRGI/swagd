@@ -39,12 +39,26 @@ import java.nio.ByteBuffer;
  */
 public class WkbPoint extends WkbGeometry
 {
+    /**
+     * Constructor
+     *
+     * @param x
+     *             x component
+     * @param y
+     *             y component
+     */
     public WkbPoint(final double x,
                     final double y)
     {
-        this(new Coordinate(x, y));
+        this.coordinate = new Coordinate(x, y);
     }
 
+    /**
+     * Constructor
+     *
+     * @param coordinate
+     *             coordinate to copy
+     */
     public WkbPoint(final Coordinate coordinate)
     {
         if(coordinate == null)
@@ -52,23 +66,24 @@ public class WkbPoint extends WkbGeometry
             throw new IllegalArgumentException("Coordinate may not be null");
         }
 
-        this.coordinate = coordinate;
+        this.coordinate = new Coordinate(coordinate.getX(),
+                                         coordinate.getY());
     }
 
     @Override
-    public boolean equals(final Object o)
+    public boolean equals(final Object obj)
     {
-        if(this == o)
+        if(this == obj)
         {
             return true;
         }
 
-        if(o == null || this.getClass() != o.getClass())
+        if(obj == null || this.getClass() != obj.getClass())
         {
             return false;
         }
 
-        return this.coordinate.equals(((WkbPoint)o).coordinate);
+        return this.coordinate.equals(((WkbPoint) obj).coordinate);
     }
 
     @Override
@@ -101,6 +116,13 @@ public class WkbPoint extends WkbGeometry
         return this.coordinate.createEnvelope();
     }
 
+    /**
+     * Assumes the ByteOutputStream's byte order has been properly set
+     *
+     * @param byteBuffer
+     *             buffer to be read from
+     * @return a new WkbPoint
+     */
     public static WkbPoint readWellKnownBinary(final ByteBuffer byteBuffer)
     {
         readWellKnownBinaryHeader(byteBuffer, GeometryType.Point.getCode());

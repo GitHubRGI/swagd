@@ -45,7 +45,7 @@ public abstract class Geometry
      *
      * @return
      */
-    public abstract boolean equals(final Object o);
+    public abstract boolean equals(final Object obj);
     public abstract int     hashCode();
     public abstract long    getTypeCode();
     public abstract String  getGeometryTypeName();

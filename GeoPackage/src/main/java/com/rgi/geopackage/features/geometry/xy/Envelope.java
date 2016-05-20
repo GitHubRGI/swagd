@@ -30,6 +30,18 @@ import com.rgi.geopackage.features.EnvelopeContentsIndicator;
  */
 public class Envelope
 {
+    /**
+     * Constructor
+     *
+     * @param minimumX
+     *             Minimum (inclusive) x value
+     * @param minimumY
+     *             Minimum (inclusive) y value
+     * @param maximumX
+     *             Maximum (inclusive) x value
+     * @param maximumY
+     *             Maximum (inclusive) y value
+     */
     public Envelope(final double minimumX,
                     final double minimumY,
                     final double maximumX,
@@ -46,7 +58,7 @@ public class Envelope
      * minimum x, maximum x, minimum y, maximum y
      * @see <a href="http://www.geopackage.org/spec/#flags_layout">GeoPackage spec, Table 6. bit layout of GeoPackageBinary flags byte</a>
      *
-     * @return
+     * @return An array of doubles in the order: minimum x, maximum x, minimum y, maximum y
      */
     public double[] toArray()
     {
@@ -78,11 +90,17 @@ public class Envelope
         return this.maximumY;
     }
 
+    /**
+     * @return indicates whether or not this Envelope has a Z component
+     */
     public boolean hasZ()
     {
         return false;
     }
 
+    /**
+     * @return indicates whether or not this Envelope has a M component
+     */
     public boolean hasM()
     {
         return false;
@@ -102,6 +120,16 @@ public class Envelope
                               : EnvelopeContentsIndicator.Xy;
     }
 
+    /**
+     * Combines two envelopes
+     *
+     * @param first
+     *             The first envelope
+     * @param second
+     *             The second envelope
+     * @return an envelope that minimally includes the entirety of the
+     *             input envelopes
+     */
     public static Envelope combine(final Envelope first,
                                    final Envelope second)
     {
@@ -111,12 +139,25 @@ public class Envelope
                             nanMaximum(first.maximumY, second.maximumY));
     }
 
+    /**
+     * Empty envelope
+     */
     public static final Envelope Empty = new Envelope(Double.NaN,
                                                       Double.NaN,
                                                       Double.NaN,
                                                       Double.NaN);
 
-    protected static double nanMinimum(final double first, final double second)
+    /**
+     * Gets the minimum of two doubles. If both values are NaN, the result is
+     * NaN. One component is NaN, the other value is returned as the minimum.
+     *
+     * @param first
+     *             double value
+     * @param second
+     *             double value
+     * @return the minimum of two values
+     */
+    public static double nanMinimum(final double first, final double second)
     {
         if(Double.isNaN(first) && Double.isNaN(second))
         {
@@ -136,7 +177,17 @@ public class Envelope
         return Double.min(first, second);
     }
 
-    protected static double nanMaximum(final double first, final double second)
+    /**
+     * Gets the maximum of two doubles. If both values are NaN, the result is
+     * NaN. One component is NaN, the other value is returned as the maximum.
+     *
+     * @param first
+     *             double value
+     * @param second
+     *             double value
+     * @return the maximum of two values
+     */
+    public static double nanMaximum(final double first, final double second)
     {
         if(Double.isNaN(first) && Double.isNaN(second))
         {

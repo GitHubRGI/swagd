@@ -25,6 +25,7 @@ package com.rgi.geopackage.features;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
+import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.TestUtility;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -32,7 +33,10 @@ import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.features.geometry.xy.Coordinate;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
+import com.rgi.geopackage.features.geometry.xy.WkbGeometry;
+import com.rgi.geopackage.features.geometry.xy.WkbGeometryCollection;
 import com.rgi.geopackage.features.geometry.xy.WkbLineString;
+import com.rgi.geopackage.features.geometry.xy.WkbMultiPoint;
 import com.rgi.geopackage.features.geometry.xy.WkbPoint;
 import com.rgi.geopackage.features.geometry.zm.WkbPointZM;
 import com.rgi.geopackage.verification.ConformanceException;
@@ -43,6 +47,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1058,63 +1063,7 @@ public class GeoPackageFeaturesTest
 
             final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
 
-            @SuppressWarnings("AnonymousInnerClassMayBeStatic")
-            final Geometry geometry = new Geometry()
-                                      {
-                                          @Override
-                                          public boolean equals(final Object o)
-                                          {
-                                              return false;
-                                          }
-
-                                          @Override
-                                          public int hashCode()
-                                          {
-                                              return 0;
-                                          }
-
-                                          @Override
-                                          public long getTypeCode()
-                                          {
-                                              return 999999;
-                                          }
-
-                                          @Override
-                                          public String getGeometryTypeName()
-                                          {
-                                              return "POINT";   // intentionally wrong to force BinaryType.Standard
-                                          }
-
-                                          @Override
-                                          public boolean hasZ()
-                                          {
-                                              return false;
-                                          }
-
-                                          @Override
-                                          public boolean hasM()
-                                          {
-                                              return false;
-                                          }
-
-                                          @Override
-                                          public boolean isEmpty()
-                                          {
-                                              return false;
-                                          }
-
-                                          @Override
-                                          public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
-                                          {
-                                              this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
-                                          }
-
-                                          @Override
-                                          public Envelope createEnvelope()
-                                          {
-                                              return Envelope.Empty;
-                                          }
-                                      };
+            final Geometry geometry = new UnrecognizedGeometry();
 
             final int featureId = gpkg.features()
                                       .addFeature(geometryColumn,
@@ -1150,63 +1099,7 @@ public class GeoPackageFeaturesTest
 
             final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
 
-            @SuppressWarnings("AnonymousInnerClassMayBeStatic")
-            final Geometry geometry = new Geometry()
-                                      {
-                                          @Override
-                                          public boolean equals(final Object o)
-                                          {
-                                              return false;
-                                          }
-
-                                          @Override
-                                          public int hashCode()
-                                          {
-                                              return 0;
-                                          }
-
-                                          @Override
-                                          public long getTypeCode()
-                                          {
-                                              return 999999;
-                                          }
-
-                                          @Override
-                                          public String getGeometryTypeName()
-                                          {
-                                              return "FOO";   // intentionally wrong to force BinaryType.Standard
-                                          }
-
-                                          @Override
-                                          public boolean hasZ()
-                                          {
-                                              return false;
-                                          }
-
-                                          @Override
-                                          public boolean hasM()
-                                          {
-                                              return false;
-                                          }
-
-                                          @Override
-                                          public boolean isEmpty()
-                                          {
-                                              return false;
-                                          }
-
-                                          @Override
-                                          public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
-                                          {
-                                              this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
-                                          }
-
-                                          @Override
-                                          public Envelope createEnvelope()
-                                          {
-                                              return Envelope.Empty;
-                                          }
-                                      };
+            final Geometry geometry = new UnrecognizedGeometry2();
 
             final int featureId = gpkg.features()
                                       .addFeature(geometryColumn,
@@ -1570,7 +1463,7 @@ public class GeoPackageFeaturesTest
     }
 
     /**
-     * Test registerGeometryFactory() with an out of rangegeometry type code
+     * Test registerGeometryFactory() with an out of range geometry type code
      */
     @Test(expected = IllegalArgumentException.class)
     public void registerGeometryFactoryOutOfRangeGeometryCode() throws IOException, ConformanceException, SQLException, ClassNotFoundException
@@ -1590,6 +1483,267 @@ public class GeoPackageFeaturesTest
         try(final GeoPackage gpkg = new GeoPackage(TestUtility.getRandomFile()))
         {
             gpkg.features().registerGeometryFactory(0, null);
+        }
+    }
+
+    /**
+     * Test createGeometry() for a bad WKB header (too few bytes)
+     */
+    @Test(expected = WellKnownBinaryFormatException.class)
+    public void createGeometryBadWellKnownBinaryHeader() throws IOException, ConformanceException, SQLException, ClassNotFoundException, WellKnownBinaryFormatException
+    {
+        final int featureId;
+
+        final String tableName = "mytable";
+        final String geometryColumnName = "geometry";
+        final String identifierColumnName = "id";
+
+        final File file = TestUtility.getRandomFile();
+
+        try(final GeoPackage gpkg = new GeoPackage(file))
+        {
+            final FeatureSet featureSet = gpkg.features()
+                                              .addFeatureSet(tableName,
+                                                             "identifier",
+                                                             "description",
+                                                             new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                             gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
+                                                             identifierColumnName,
+                                                             new GeometryColumnDefinition(geometryColumnName,
+                                                                                          GeometryType.Point.toString(),
+                                                                                          ValueRequirement.Prohibited,
+                                                                                          ValueRequirement.Prohibited,
+                                                                                          "comment"));
+
+            final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
+
+            featureId = gpkg.features()
+                            .addFeature(geometryColumn,
+                                        new WkbPoint(0.0, 0.0),
+                                        Collections.emptyList(),
+                                        Collections.emptyList()).getIdentifier();
+        }
+
+        try(final ByteOutputStream stream = new ByteOutputStream())
+        {
+            final WkbGeometryCollection<WkbGeometry> dummyGeometryCollection = new WkbGeometryCollection<>();
+
+            BinaryHeader.writeBytes(stream,
+                                    dummyGeometryCollection,
+                                    -1);
+
+            stream.write((byte)0);    // byte order
+            //noinspection NumericCastThatLosesPrecision
+            stream.write((int)dummyGeometryCollection.getTypeCode()); // geometry type code
+
+            stream.write(1); // intentionally misrepresent the number of points this collection contains
+
+            stream.write((byte)0);  // write one extra byte of garbage
+
+            //noinspection CallToDriverManagerGetConnection
+            try(final Connection connection = DriverManager.getConnection("jdbc:sqlite:" + file.toURI()))
+            {
+                JdbcUtility.update(connection,
+                                   String.format("UPDATE %s SET %s = ? WHERE %s = ?",
+                                                 tableName,
+                                                 geometryColumnName,
+                                                 identifierColumnName),
+                                   preparedStatement -> { preparedStatement.setBytes(1, stream.array());
+                                                          preparedStatement.setInt  (2, featureId);
+                                                        });
+            }
+        }
+
+        try(final GeoPackage gpkg = new GeoPackage(file, GeoPackage.OpenMode.Open))
+        {
+            final FeatureSet featureSet = gpkg.features().getFeatureSet(tableName);
+
+            gpkg.features().getFeatures(featureSet);
+        }
+    }
+
+    /**
+     * Test createGeometry() for buffer underflow on bad WKB data
+     */
+    @Test(expected = WellKnownBinaryFormatException.class)
+    public void createGeometryBufferUnderflow() throws IOException, ConformanceException, SQLException, ClassNotFoundException, WellKnownBinaryFormatException
+    {
+        final int featureId;
+
+        final String tableName = "mytable";
+        final String geometryColumnName = "geometry";
+        final String identifierColumnName = "id";
+
+        final File file = TestUtility.getRandomFile();
+
+        try(final GeoPackage gpkg = new GeoPackage(file))
+        {
+            final FeatureSet featureSet = gpkg.features()
+                                              .addFeatureSet(tableName,
+                                                             "identifier",
+                                                             "description",
+                                                             new BoundingBox(0.0, 0.0, 0.0, 0.0),
+                                                             gpkg.core().getSpatialReferenceSystem("EPSG", 4326),
+                                                             identifierColumnName,
+                                                             new GeometryColumnDefinition(geometryColumnName,
+                                                                                          GeometryType.Point.toString(),
+                                                                                          ValueRequirement.Prohibited,
+                                                                                          ValueRequirement.Prohibited,
+                                                                                          "comment"));
+
+            final GeometryColumn geometryColumn = gpkg.features().getGeometryColumn(featureSet);
+
+            featureId = gpkg.features()
+                            .addFeature(geometryColumn,
+                                        new WkbPoint(0.0, 0.0),
+                                        Collections.emptyList(),
+                                        Collections.emptyList()).getIdentifier();
+        }
+
+        try(final ByteOutputStream stream = new ByteOutputStream())
+        {
+            final WkbMultiPoint dummyGeometryCollection = new WkbMultiPoint();
+
+            BinaryHeader.writeBytes(stream,
+                                    dummyGeometryCollection,
+                                    -1);
+
+            stream.write((byte)0);    // byte order
+            //noinspection NumericCastThatLosesPrecision
+            stream.write((int)dummyGeometryCollection.getTypeCode()); // geometry type code
+
+            stream.write(10); // intentionally misrepresent the number of points this collection contains
+
+            //noinspection CallToDriverManagerGetConnection
+            try(final Connection connection = DriverManager.getConnection("jdbc:sqlite:" + file.toURI()))
+            {
+                JdbcUtility.update(connection,
+                                   String.format("UPDATE %s SET %s = ? WHERE %s = ?",
+                                                 tableName,
+                                                 geometryColumnName,
+                                                 identifierColumnName),
+                                   preparedStatement -> { preparedStatement.setBytes(1, stream.array());
+                                                          preparedStatement.setInt  (2, featureId);
+                                                        });
+            }
+        }
+
+        try(final GeoPackage gpkg = new GeoPackage(file, GeoPackage.OpenMode.Open))
+        {
+            final FeatureSet featureSet = gpkg.features().getFeatureSet(tableName);
+
+            gpkg.features().getFeatures(featureSet);
+        }
+    }
+
+    private static class BaseInnerGeometry extends Geometry
+    {
+        @Override
+        public boolean equals(final Object obj)
+        {
+            return false;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+
+        @Override
+        public long getTypeCode()
+        {
+            return 0;
+        }
+
+        @Override
+        public String getGeometryTypeName()
+        {
+            return null;
+        }
+
+        @Override
+        public boolean hasZ()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean hasM()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return false;
+        }
+
+        @Override
+        public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
+        {
+
+        }
+
+        @Override
+        public Envelope createEnvelope()
+        {
+            return null;
+        }
+    }
+
+    private static class UnrecognizedGeometry extends BaseInnerGeometry
+    {
+        @Override
+        public long getTypeCode()
+        {
+            return 999999;
+        }
+
+        @Override
+        public String getGeometryTypeName()
+        {
+            return "POINT";   // intentionally wrong to force BinaryType.Standard
+        }
+
+        @Override
+        public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
+        {
+            this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
+        }
+
+        @Override
+        public Envelope createEnvelope()
+        {
+            return Envelope.Empty;
+        }
+    }
+
+    private static class UnrecognizedGeometry2 extends BaseInnerGeometry
+    {
+        @Override
+        public long getTypeCode()
+        {
+            return 999999;
+        }
+
+        @Override
+        public String getGeometryTypeName()
+        {
+            return "FOO";   // intentionally wrong to force BinaryType.Standard
+        }
+
+        @Override
+        public void writeWellKnownBinary(final ByteOutputStream byteOutputStream)
+        {
+            this.writeWellKnownBinaryHeader(byteOutputStream); // Checks byteOutputStream for null
+        }
+
+        @Override
+        public Envelope createEnvelope()
+        {
+            return Envelope.Empty;
         }
     }
 }
