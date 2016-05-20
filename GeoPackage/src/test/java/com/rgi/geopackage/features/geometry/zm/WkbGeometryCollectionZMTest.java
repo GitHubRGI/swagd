@@ -54,7 +54,7 @@ public class WkbGeometryCollectionZMTest
     @BeforeClass
     public static void setUp()
     {
-        GEOMETRY_FACTORIES.put(GeometryType.Point             .getCode(), WkbPoint::readWellKnownBinary);
+        GEOMETRY_FACTORIES.put(GeometryType.Point.getCode(), WkbPoint::readWellKnownBinary);
         GEOMETRY_FACTORIES.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WkbGeometryCollectionZM.readWellKnownBinary(WkbGeometryCollectionZMTest::createGeometry, byteBuffer));
     }
 
