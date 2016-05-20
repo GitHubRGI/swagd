@@ -24,15 +24,16 @@
 package com.rgi.geopackage.features;
 
 import com.rgi.common.Pair;
-import com.rgi.common.util.functional.ThrowingFunction;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.core.GeoPackageCore;
+import com.rgi.geopackage.features.geometry.Geometry;
 import com.rgi.geopackage.verification.AssertionError;
 import com.rgi.geopackage.verification.Requirement;
 import com.rgi.geopackage.verification.Severity;
 import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.geopackage.verification.Verifier;
 
+import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -80,9 +81,10 @@ public class FeaturesVerifier extends Verifier
      * user data table or view.
      * </blockquote>
      *
-     * <a href="http://www.geopackage.org/spec/_data_20">Verify that the
-     * gpkg_contents table_name value table exists, and is apparently a feature
-     * table for every row with a data_type column value of "features"</a>
+     * Verify that the gpkg_contents table_name value table exists, and is
+     * apparently a feature table for every row with a data_type column value
+     * of "features".
+     * (<a href="http://www.geopackage.org/spec/_data_20">ref</a>)
      *
      * This test is only an attempt to satisfy the requirement. It's based on
      * the logic found in the Annex A: Conformance / Abstract Test Suite, but
@@ -102,6 +104,8 @@ public class FeaturesVerifier extends Verifier
      *     </li>
      * </ol>
      *
+     * @throws AssertionError
+     *             throws if the GeoPackage fails to meet the requirement
      */
     @Requirement(reference = "Requirement 18",
                  text      = "The gpkg_contents table SHALL contain a row with a lowercase data_type column value of \"features\" for each vector features user data table or view.")
@@ -131,9 +135,9 @@ public class FeaturesVerifier extends Verifier
      * </a>.
      * </blockquote>
      *
-     * <a href="http://www.geopackage.org/spec/#_data_21">Verify that
-     * geometries stored in feature table geometry columns are encoded in the
-     * StandardGeoPackageBinary format.</a>
+     * Verify that geometries stored in feature table geometry columns are
+     * encoded in the StandardGeoPackageBinary format.
+     * (<a href="http://www.geopackage.org/spec/#_data_21">ref</a>)
      *
      * @throws AssertionError
      *             throws if the GeoPackage fails to meet the requirement
@@ -209,12 +213,72 @@ public class FeaturesVerifier extends Verifier
      * Codes (Core)</a> in the GeoPackageBinary geometry encoding format.
      * </blockquote>
      *
+     * Verify that existing basic simple feature geometries are stored in valid
+     * GeoPackageBinary format encodings.
+     *
+     * Verify that all basic simple feature geometry types and options are
+     * stored in valid GeoPackageBinary format encodings.
+     * (<a href="http://www.geopackage.org/spec/#_data_22">ref</a>)
+     *
+     * @throws AssertionError
+     *             throws if the GeoPackage fails to meet the requirement
+     * @throws SQLException
+     *             if there is a database error
      */
     @Requirement(reference = "Requirement 20",
                  text      = "A GeoPackage SHALL store feature table geometries with the basic simple feature geometry types (Geometry, Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon, GeomCollection) in Geometry Types (Normative) Geometry Type Codes (Core) in the GeoPackageBinary geometry encoding format.")
-    public void requirement20()
+    public void requirement20() throws AssertionError, SQLException
     {
+        assertTrue("Test skipped when verification level is not set to " + VerificationLevel.Full.name(),
+                   this.verificationLevel == VerificationLevel.Full,
+                   Severity.Skipped);
 
+        final List<Pair<String, String>> featureTables = JdbcUtility.select(this.getSqliteConnection(),
+                                                                            "SELECT table_name, column_name  FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features');",
+                                                                            null,
+                                                                            resultSet -> Pair.of(resultSet.getString("table_name"),
+                                                                                                 resultSet.getString("column_name")));
+
+        final Map<String, List<Integer>> tablesWithBadGeometries = new HashMap<>();
+
+        for(final Pair<String, String> tableColumnPair : featureTables)
+        {
+            final String tableName            = tableColumnPair.getLeft();
+            final String geometryColumnName   = tableColumnPair.getRight();
+            final String primaryKeyColumnName = this.getPrimaryKeyColumnName(tableName);
+
+            if(primaryKeyColumnName != null)
+            {
+                final String featureQuery = String.format("SELECT %s, %s FROM %s",
+                                                          primaryKeyColumnName,
+                                                          geometryColumnName,
+                                                          tableName);
+
+                final List<Integer> badGeometries = JdbcUtility.filterSelect(this.getSqliteConnection(),
+                                                                             featureQuery,
+                                                                             null,
+                                                                             resultSet -> !this.isValidGeometry(resultSet.getBytes(geometryColumnName)),    // The restrictions here match: http://www.geopackage.org/spec/#_data_22
+                                                                             resultSet -> resultSet.getInt(primaryKeyColumnName));
+
+                if(!badGeometries.isEmpty())
+                {
+                    tablesWithBadGeometries.put(tableName, badGeometries);
+                }
+            }
+        }
+
+        assertTrue(String.format("The following feature table(s) have geometries not correctly encoded in the StandardGeoPackageBinary format:\n%s",
+                                 tablesWithBadGeometries.entrySet()
+                                                        .stream()
+                                                        .map(entrySet -> String.format("%s: %s",
+                                                                                       entrySet.getKey(),
+                                                                                       entrySet.getValue()
+                                                                                               .stream()
+                                                                                               .map(Object::toString)
+                                                                                               .collect(Collectors.joining(", "))))
+                                                        .collect(Collectors.joining("\n"))),
+                   tablesWithBadGeometries.isEmpty(),
+                   Severity.Warning);
     }
 
     /**
@@ -225,8 +289,10 @@ public class FeaturesVerifier extends Verifier
      * </blockquote>
      *
      *
-     * <a href="http://www.geopackage.org/spec/XX"></a>
+     * (<a href="http://www.geopackage.org/spec/#XX">ref</a>)
      *
+     * @throws AssertionError
+     *             throws if the GeoPackage fails to meet the requirement
      */
     @Requirement(reference = "Requirement XX",
                  text      = "")
@@ -248,7 +314,7 @@ public class FeaturesVerifier extends Verifier
                    binaryHeader.getBinaryType() == BinaryType.Standard &&
                    !(binaryHeader.getContents()                  == Contents.Empty                       &&
                      binaryHeader.getEnvelopeContentsIndicator() != EnvelopeContentsIndicator.NoEnvelope &&
-                     !Arrays.stream(binaryHeader.getEnvelope()).allMatch(Double::isNaN));
+                     !Arrays.stream(binaryHeader.getEnvelopeArray()).allMatch(Double::isNaN));
         }
         catch(final Throwable ignored)
         {
@@ -304,44 +370,48 @@ public class FeaturesVerifier extends Verifier
         return null;
     }
 
-//    private boolean canParseGeometry(final byte[] geoPackageBinaryBlob)
-//    {
-//        try
-//        {
-//            this.parseGeometry(geoPackageBinaryBlob);
-//            return true;
-//        }
-//        catch(final Throwable ignored)
-//        {
-//            return false;
-//        }
-//    }
+    private boolean isValidGeometry(final byte[] geoPackageBinaryBlob)
+    {
+        try
+        {
+            final BinaryHeader binaryHeader = new BinaryHeader(geoPackageBinaryBlob);
 
-//    private void parseGeometry(final byte[] geoPackageBinaryBlob) throws WellKnownBinaryFormatException
-//    {
-//        final BinaryHeader binaryHeader = new BinaryHeader(geoPackageBinaryBlob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
-//
-//        if(binaryHeader.getBinaryType() == BinaryType.Standard)
-//        {
-//            final int headerByteLength = binaryHeader.getByteSize();
-//
-//            this.wellKnownBinaryFactory
-//                .createGeometry(ByteBuffer.wrap(geoPackageBinaryBlob,
-//                                                headerByteLength,
-//                                                geoPackageBinaryBlob.length - headerByteLength)
-//                                          .asReadOnlyBuffer());  // Minor insurance that geometry extension implementations can't change the buffer
-//        }
-//
-//        // else, this is an extended binary type. The next 4 bytes are the "extension_code"
-//        // http://www.geopackage.org/spec/#_requirement-70
-//        // "... This extension_code SHOULD identify the implementer of the
-//        // extension and/or the particular geometry type extension, and SHOULD
-//        // be unique."
-//
-//        // TODO: read the 4 byte extension code, and look it up in a mapping of known extensions codes/parsers (to be registered by extension implementors)
-//
-//        throw new WellKnownBinaryFormatException("Extensions of GeoPackageBinary geometry encoding are not currently supported");
-//    }
+            final Geometry geometry = this.createGeometry(geoPackageBinaryBlob);   // correctly encoded per ISO 13249-3 clause 5.1.46
+
+            return binaryHeader.getEnvelopeContentsIndicator() != EnvelopeContentsIndicator.NoEnvelope ||
+                   binaryHeader.getEnvelope().equals(geometry.createEnvelope());
+        }
+        catch(final Throwable ignored)
+        {
+            return false;
+        }
+    }
+
+    private Geometry createGeometry(final byte[] geoPackageBinaryBlob) throws WellKnownBinaryFormatException
+    {
+        final BinaryHeader binaryHeader = new BinaryHeader(geoPackageBinaryBlob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
+
+        if(binaryHeader.getBinaryType() == BinaryType.Standard)
+        {
+            final int headerByteLength = binaryHeader.getByteSize();
+
+            return this.wellKnownBinaryFactory
+                       .createGeometry(ByteBuffer.wrap(geoPackageBinaryBlob,
+                                                       headerByteLength,
+                                                       geoPackageBinaryBlob.length - headerByteLength)
+                                                 .asReadOnlyBuffer());  // Minor insurance that geometry extension implementations can't change the buffer
+        }
+
+        // else, this is an extended binary type. The next 4 bytes are the "extension_code"
+        // http://www.geopackage.org/spec/#_requirement-70
+        // "... This extension_code SHOULD identify the implementer of the
+        // extension and/or the particular geometry type extension, and SHOULD
+        // be unique."
+
+        // TODO: read the 4 byte extension code, and look it up in a mapping of known extensions codes/parsers (to be registered by extension implementors)
+
+        throw new WellKnownBinaryFormatException("Extensions of GeoPackageBinary geometry encoding are not currently supported");
+    }
 
     private final Collection<String>     contentsFeatureTableNames;
     private final WellKnownBinaryFactory wellKnownBinaryFactory = new WellKnownBinaryFactory();
