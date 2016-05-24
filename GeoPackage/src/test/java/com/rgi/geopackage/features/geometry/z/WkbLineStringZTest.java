@@ -246,8 +246,8 @@ public class WkbLineStringZTest
     public void writeReadWellKnownBinary()
     {
         final WkbLineStringZ ring = new WkbLineStringZ(new CoordinateZ(1.0, 3.0, 31.0),
-                                                         new CoordinateZ(1.0, 3.0, 31.0),
-                                                         new CoordinateZ(1.0, 3.0, 31.0));
+                                                       new CoordinateZ(1.0, 3.0, 31.0),
+                                                       new CoordinateZ(1.0, 3.0, 31.0));
 
         try(final ByteOutputStream output = new ByteOutputStream())
         {

@@ -80,8 +80,8 @@ public class WkbPointZTest
     public void constructorNullCoordinate()
     {
         new WkbLineStringZ(Arrays.asList(new CoordinateZ(0.0, 0.0, 0.0),
-                                          new CoordinateZ(0.0, 0.0, 0.0),
-                                          null));
+                                         new CoordinateZ(0.0, 0.0, 0.0),
+                                         null));
     }
 
     /**

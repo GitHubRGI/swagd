@@ -381,11 +381,11 @@ public class WkbPolygonZTest
         try(final ByteOutputStream output = new ByteOutputStream())
         {
             final WkbPolygonZ polygon = new WkbPolygonZ(new LinearRingZ(new CoordinateZ(1.0, 0.0, 0.0),
-                                                                           new CoordinateZ(0.0, 1.0, 0.0),
-                                                                           new CoordinateZ(1.0, 1.0, 0.0)),
+                                                                        new CoordinateZ(0.0, 1.0, 0.0),
+                                                                        new CoordinateZ(1.0, 1.0, 0.0)),
                                                           new LinearRingZ(new CoordinateZ(0.5, 0.0, 0.0),
-                                                                           new CoordinateZ(0.0, 0.5, 0.0),
-                                                                           new CoordinateZ(0.5, 0.5, 0.0)));
+                                                                          new CoordinateZ(0.0, 0.5, 0.0),
+                                                                          new CoordinateZ(0.5, 0.5, 0.0)));
             polygon.writeWellKnownBinary(output);
 
             final ByteBuffer byteBuffer = ByteBuffer.wrap(output.array());
