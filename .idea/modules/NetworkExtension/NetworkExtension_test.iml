@@ -10,6 +10,15 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="NetworkExtension_main" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/xerces/xercesImpl/2.4.0/xercesImpl-2.4.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="module" module-name="Common_main" />
     <orderEntry type="module" module-name="GeoPackage_main" />
     <orderEntry type="library" name="Gradle: org.xerial:sqlite-jdbc:3.8.7" level="project" />
@@ -29,7 +38,6 @@
     <orderEntry type="library" name="Gradle: jakarta-regexp:jakarta-regexp:1.4" level="project" />
     <orderEntry type="library" name="Gradle: ant:ant:1.6.5" level="project" />
     <orderEntry type="library" name="Gradle: regexp:regexp:1.2" level="project" />
-    <orderEntry type="library" name="Gradle: xerces:xercesImpl:2.4.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: log4j:log4j:1.2.17" level="project" />
   </component>
   <component name="TestModuleProperties" production-module="NetworkExtension_main" />

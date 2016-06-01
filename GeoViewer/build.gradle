@@ -13,5 +13,12 @@ dependencies
 cobertura
 {
     // Ignore JMapViewer jar
-    coverageExcludes = ['.*org.openstreetmap.*']
+    coverageExcludes = 
+    [ '.*org.openstreetmap.*'
+    , '.*com.rgi.view.RadioButtonTree*'
+    , '.*com.rgi.view.JMapTree*'
+    , '.*com.rgi.view.MapViewWindow*'
+    , '.*com.rgi.view.TileStoreRadioButton*'
+    , '.*com.rgi.view.TileStoreTileSource*'
+    ]
 }

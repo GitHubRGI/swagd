@@ -7,7 +7,6 @@ include ':GeoViewer'
 include ':NetworkExtension'
 include ':Packager'
 include ':RGISuite'
-include ':VerifierTool'
 
 project(':Common').projectDir = "$rootDir/Common" as File
 project(':DataStore').projectDir = "$rootDir/DataStore" as File
@@ -17,4 +16,3 @@ project(':GeoViewer').projectDir = "$rootDir/GeoViewer" as File
 project(':NetworkExtension').projectDir = "$rootDir/NetworkExtension" as File
 project(':Packager').projectDir = "$rootDir/Packager" as File
 project(':RGISuite').projectDir = "$rootDir/RGISuite" as File
-project(':VerifierTool').projectDir = "$rootDir/VerifierTool" as File
