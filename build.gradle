@@ -50,6 +50,7 @@ def files = subprojects.collect{new File(it.projectDir, '/build/cobertura/cobert
 cobertura
 {
     coverageFormats = ['xml', 'html']
+    coverageIgnoreTrivial = true
     coverageSourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
     coverageMergeDatafiles = files
 }
