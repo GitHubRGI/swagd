@@ -8,6 +8,7 @@ include ':NetworkExtension'
 include ':Packager'
 include ':RGISuite'
 include ':VerifierTool'
+include ':RoutingExtension'
 
 project(':Common').projectDir = "$rootDir/Common" as File
 project(':DataStore').projectDir = "$rootDir/DataStore" as File
@@ -18,3 +19,4 @@ project(':NetworkExtension').projectDir = "$rootDir/NetworkExtension" as File
 project(':Packager').projectDir = "$rootDir/Packager" as File
 project(':RGISuite').projectDir = "$rootDir/RGISuite" as File
 project(':VerifierTool').projectDir = "$rootDir/VerifierTool" as File
+project(':RoutingExtension').projectDir = "$rootDir/RoutingExtension" as File

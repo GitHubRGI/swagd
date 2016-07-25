@@ -1,0 +1,12 @@
+group = 'RoutingExtension'
+description = 'GeoPackage routing extension project'
+
+dependencies
+{
+    compile project(':NetworkExtension')
+}
+
+cobertura
+{
+
+}
