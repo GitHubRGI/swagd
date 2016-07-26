@@ -20,36 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-//@formatter:off
 package com.rgi.g2t;
-
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.zip.DataFormatException;
-
-import javax.imageio.ImageIO;
-import javax.naming.OperationNotSupportedException;
-
-import org.gdal.gdal.Band;
-import org.gdal.gdal.ColorTable;
-import org.gdal.gdal.Dataset;
-import org.gdal.gdal.gdal;
-import org.junit.Test;
-
-
-import utility.GdalUtility;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -65,14 +36,38 @@ import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
 import com.rgi.store.tiles.TileHandle;
 import com.rgi.store.tiles.TileStoreException;
+import org.gdal.gdal.Band;
+import org.gdal.gdal.ColorTable;
+import org.gdal.gdal.Dataset;
+import org.gdal.gdal.gdal;
+import org.junit.Test;
+import utility.GdalUtility;
 import utility.TestUtility;
+
+import javax.imageio.ImageIO;
+import javax.naming.OperationNotSupportedException;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.zip.DataFormatException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
  * @author Mary Carome
  *
  */
-@SuppressWarnings("MagicNumber")
+@SuppressWarnings({"MagicNumber", "JavaDoc"})
 public class RawImageTileReaderTest
 {
     // Tiff used for testing
@@ -81,7 +76,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileReader constructor
      */
-    @SuppressWarnings("static-method")
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentException1() throws TileStoreException
     {
@@ -100,7 +94,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileReader constructor
      */
-    @SuppressWarnings("static-method")
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentException2() throws TileStoreException
     {
@@ -120,7 +113,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileReader constructor
      */
-    @SuppressWarnings("static-method")
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentException3() throws TileStoreException
     {
@@ -134,7 +126,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileReader constructor
      */
-    @SuppressWarnings("static-method")
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentException4() throws TileStoreException
     {
@@ -155,7 +146,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileReader constructor
      */
-    @SuppressWarnings("static-method")
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentException5() throws TileStoreException
     {
@@ -176,7 +166,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileReader constructor
      */
-    @SuppressWarnings("static-method")
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentException6() throws TileStoreException
     {
@@ -202,7 +191,6 @@ public class RawImageTileReaderTest
      * Tests constructor properly sets up the RawImageTileReader
      * @throws TileStoreException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testConstructor() throws TileStoreException
     {
@@ -218,7 +206,6 @@ public class RawImageTileReaderTest
     /**
      * Tests the getBoundsMethod
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetBounds() throws TileStoreException, DataFormatException
     {
@@ -259,7 +246,6 @@ public class RawImageTileReaderTest
     /**
      * Test count tiles
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testCountTiles() throws TileStoreException, DataFormatException
     {
@@ -305,7 +291,6 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetByteSize() throws TileStoreException
     {
@@ -322,7 +307,6 @@ public class RawImageTileReaderTest
     /**
      * Tests that getTile(int, int, int) throws an Exception
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetTile1()
     {
@@ -343,7 +327,6 @@ public class RawImageTileReaderTest
     /**
      * Tests that getTile(int, int, int) throws an Exception
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetTile2()
     {
@@ -367,7 +350,6 @@ public class RawImageTileReaderTest
      * @throws TileStoreException
      * @throws DataFormatException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetZoomLevels() throws TileStoreException, DataFormatException
     {
@@ -406,7 +388,6 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testStream1() throws TileStoreException
     {
@@ -425,7 +406,6 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testStream2() throws TileStoreException
     {
@@ -433,12 +413,12 @@ public class RawImageTileReaderTest
         try(final RawImageTileReader reader = new RawImageTileReader(this.rawData, tileSize, Color.BLACK))
         {
             final AtomicLong count = new AtomicLong(0);
-            reader.getZoomLevels().stream().forEach(zoom -> {
+            reader.getZoomLevels().forEach(zoom ->
+            {
                 try
                 {
                     count.addAndGet(reader.stream(zoom).count());
-                }
-                catch(TileStoreException e)
+                } catch(final TileStoreException e)
                 {
                     throw new RuntimeException(e);
                 }
@@ -454,7 +434,6 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetCoordinateReferenceSystem() throws TileStoreException
     {
@@ -473,7 +452,6 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetImageDimensions() throws TileStoreException
     {
@@ -492,7 +470,6 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testTileScheme() throws TileStoreException
     {
@@ -511,7 +488,6 @@ public class RawImageTileReaderTest
      *
      * @throws TileStoreException
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetTileOrigin() throws TileStoreException
     {
@@ -528,7 +504,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileHandle getMatrix
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetMatrix()throws TileStoreException, DataFormatException
     {
@@ -562,7 +537,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileHandle getCrsCoordinate
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetCrsCoordinate1() throws TileStoreException, DataFormatException
     {
@@ -605,7 +579,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileHandle getCrsCoordinate(TileOrigin)
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testTileGetCrsCoordinate() throws TileStoreException, DataFormatException
     {
@@ -648,7 +621,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileHandle getBounds
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testTileGetBounds()throws TileStoreException, DataFormatException
     {
@@ -690,7 +662,6 @@ public class RawImageTileReaderTest
      * Tests RawImageTileHandle getImage when
      * the image needs to be read from the raw data
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetImage1() throws TileStoreException, DataFormatException, IOException, URISyntaxException
     {
@@ -707,7 +678,7 @@ public class RawImageTileReaderTest
             final BufferedImage image = ImageIO.read(testTile);
 
             assertTrue("RawImageTileHandle method getImage did not return the correct image.",
-                       bufferedImagesEqual(image, handle.getImage()));
+                       areEqual(image, handle.getImage()));
         }
     }
 
@@ -715,7 +686,6 @@ public class RawImageTileReaderTest
      * Tests RawImageTileHandle getImage when
      * the image needs to be read from cached tiles
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testGetImage2() throws TileStoreException, DataFormatException, IOException, URISyntaxException
     {
@@ -757,7 +727,7 @@ public class RawImageTileReaderTest
             final BufferedImage image = ImageIO.read(testTile);
 
            assertTrue("RawImageTileHandle method getImage did not return the correct image.",
-                      bufferedImagesEqual(image, handle.getImage()));
+                      areEqual(image, handle.getImage()));
         }
         finally
         {
@@ -768,7 +738,6 @@ public class RawImageTileReaderTest
     /**
      * Tests RawImageTileHandle toString method
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testToString() throws TileStoreException, DataFormatException, IOException
     {
@@ -799,7 +768,7 @@ public class RawImageTileReaderTest
      * @param img2 the second buffered image
      * @return true if the two BufferedImages are equal
      */
-    private static boolean bufferedImagesEqual(final BufferedImage img1, final BufferedImage img2)
+    private static boolean areEqual(final BufferedImage img1, final BufferedImage img2)
     {
         if(img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight())
         {
