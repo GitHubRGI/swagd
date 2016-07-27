@@ -24,57 +24,47 @@
 
 package com.rgi.store.routingnetworks;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
- * @author Luke Lambert
+ * Exception specific to tile store readers and writers
+ *
+ * @author Steven D. Lander
  *
  */
-public class Edge
+@SuppressWarnings("serial")
+public class RoutingNetworkStoreException extends Exception
 {
     /**
      * Constructor
      *
-     * @param identifier  Unique identifier
-     * @param fromNode    The origin node of an edge
-     * @param toNode      The destination node of an edge
-     * @param attributes  List of other attributes associated with the node
+     * @param message
+     *             The exception message as a String when a TileStoreException is thrown
      */
-    public Edge(final int          identifier,
-                final int          fromNode,
-                final int          toNode,
-                final List<Object> attributes)
+    public RoutingNetworkStoreException(final String message)
     {
-        this.identifier = identifier;
-        this.from       = fromNode;
-        this.to         = toNode;
-        this.attributes = new ArrayList<>(attributes);
+        super(message);
     }
 
-    public int getIdentifier()
+    /**
+     * Constructor
+     *
+     * @param cause
+     *             The Throwable object that indicates the cause of the TileStoreException
+     */
+    public RoutingNetworkStoreException(final Throwable cause)
     {
-        return this.identifier;
+        super(cause);
     }
 
-    public int getFrom()
+    /**
+     * Constructor
+     *
+     * @param message
+     *             The Exception message as a String when a TileStoreException is thrown
+     * @param cause
+     *             The Throwable object that indicates the cause of the TileStoreException
+     */
+    public RoutingNetworkStoreException(final String message, final Throwable cause)
     {
-        return this.from;
+        super(message, cause);
     }
-
-    public int getTo()
-    {
-        return this.to;
-    }
-
-    public List<Object> getAttributes()
-    {
-        return Collections.unmodifiableList(this.attributes);
-    }
-
-    private final int          identifier;
-    private final int          from;
-    private final int          to;
-    private final List<Object> attributes;
 }

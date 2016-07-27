@@ -24,6 +24,7 @@
 
 package com.rgi.store.routingnetworks;
 
+import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 
@@ -35,13 +36,17 @@ import java.util.List;
  */
 public interface RoutingNetworkStoreReader
 {
-    List<Pair<String, Type>> getNodeAttributes();
+    List<Pair<String, Type>> getNodeAttributeDescriptions();
 
-    List<Pair<String, Type>> getEdgeAttributes();
+    List<Pair<String, Type>> getEdgeAttributeDescriptions();
 
     List<Node> getNodes();
 
     List<Edge> getEdges();
 
     CoordinateReferenceSystem getCoordinateReferenceSystem();
+
+    BoundingBox getBounds();
+
+    String getDescription();
 }

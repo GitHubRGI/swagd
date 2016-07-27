@@ -24,11 +24,13 @@
 
 package com.rgi.routingnetworks;
 
+import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
+import com.rgi.store.routingnetworks.osm.OsmXmlRoutingNetworkStoreWriter;
 import org.junit.Test;
 
 import java.io.File;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Luke.Lambert
@@ -36,13 +38,25 @@ import static org.junit.Assert.assertTrue;
 public class DemRoutingNetworkStoreReaderTest
 {
     @Test
-    public void testConstructor()
+    public void testConstructor() throws RoutingNetworkStoreException
     {
-        new DemRoutingNetworkStoreReader(new File("C:/Users/corp/Desktop/dataFromMatt/wgs84Dems/dem_40cm_a2_westpoint_maincampus_tile2.tif"),
-                                         1,
-                                         15.0,
-                                         null,
-                                         20.0);
+        final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(new File("C:/Users/corp/Desktop/dataFromMatt/wgs84Dems/dem_40cm_a2_westpoint_maincampus_tile2.tif"),
+                                                                                         1,
+                                                                                         15.0,
+                                                                                         null,
+                                                                                         20.0,
+                                                                                         0.0);
+
+        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(new File("foo.osm.xml"),
+                                                                                            networkReader.getBounds(),
+                                                                                            networkReader.getDescription(),
+                                                                                            networkReader.getCoordinateReferenceSystem());
+
+        networkWriter.write(networkReader.getNodes(),
+                            networkReader.getEdges(),
+                            networkReader.getNodeAttributeDescriptions(),
+                            networkReader.getEdgeAttributeDescriptions());
+
 
     }
 }

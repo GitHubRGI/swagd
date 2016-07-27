@@ -24,57 +24,19 @@
 
 package com.rgi.store.routingnetworks;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import com.rgi.common.Pair;
+
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
  * @author Luke Lambert
- *
  */
-public class Edge
+@FunctionalInterface
+public interface RoutingNetworkStoreWriter
 {
-    /**
-     * Constructor
-     *
-     * @param identifier  Unique identifier
-     * @param fromNode    The origin node of an edge
-     * @param toNode      The destination node of an edge
-     * @param attributes  List of other attributes associated with the node
-     */
-    public Edge(final int          identifier,
-                final int          fromNode,
-                final int          toNode,
-                final List<Object> attributes)
-    {
-        this.identifier = identifier;
-        this.from       = fromNode;
-        this.to         = toNode;
-        this.attributes = new ArrayList<>(attributes);
-    }
-
-    public int getIdentifier()
-    {
-        return this.identifier;
-    }
-
-    public int getFrom()
-    {
-        return this.from;
-    }
-
-    public int getTo()
-    {
-        return this.to;
-    }
-
-    public List<Object> getAttributes()
-    {
-        return Collections.unmodifiableList(this.attributes);
-    }
-
-    private final int          identifier;
-    private final int          from;
-    private final int          to;
-    private final List<Object> attributes;
+    void write(final List<Node>               nodes,
+               final List<Edge>               edges,
+               final List<Pair<String, Type>> nodeAttributeDescriptions,
+               final List<Pair<String, Type>> edgeAttributeDescriptions) throws RoutingNetworkStoreException;
 }

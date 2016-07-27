@@ -24,6 +24,7 @@
 
 package com.rgi.store.routingnetworks;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,17 +39,20 @@ public class Node
      * @param identifier  Unique node identifier
      * @param longitude   X part of the node's coordinate
      * @param latitude    Y part of the node's coordinate
+     * @param elevation   Z part of the node's coordinate
      * @param attributes  List of other attributes associated with the node
      */
     public Node(final int          identifier,
                 final double       longitude,
                 final double       latitude,
+                final Double       elevation,
                 final List<Object> attributes)
     {
         this.identifier = identifier;
         this.longitude  = longitude;
         this.latitude   = latitude;
-        this.attributes = attributes;
+        this.elevation  = elevation;
+        this.attributes = new ArrayList<>(attributes);
     }
 
     public int getIdentifier()
@@ -66,6 +70,11 @@ public class Node
         return this.latitude;
     }
 
+    public Double getElevation()
+    {
+        return this.elevation;
+    }
+
     public List<Object> getAttributes()
     {
         return Collections.unmodifiableList(this.attributes);
@@ -74,5 +83,6 @@ public class Node
     private final int          identifier;
     private final double       longitude;
     private final double       latitude;
+    private final Double       elevation;
     private final List<Object> attributes;
 }

@@ -24,6 +24,7 @@
 
 package com.rgi.routingnetworks;
 
+import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.store.routingnetworks.Edge;
@@ -34,25 +35,34 @@ import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.ogr.DataSource;
 import org.gdal.ogr.Feature;
+import org.gdal.ogr.Geometry;
 import org.gdal.ogr.Layer;
 import org.gdal.ogr.ogr;
+import org.gdal.ogr.ogrConstants;
+import org.gdal.osr.SpatialReference;
 import utility.GdalError;
 import utility.GdalUtility;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Luke Lambert
  */
-public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader, AutoCloseable
+public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 {
     public DemRoutingNetworkStoreReader(final File   file,
                                         final int    rasterBand,
                                         final double contourInterval,
                                         final Double noDataValue,
-                                        final double simplificationTolerance)
+                                        final double simplificationTolerance,
+                                        final double triangulationTolerance)
     {
         final Dataset dataset = GdalUtility.open(file);
 
@@ -62,6 +72,8 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader, 
             throw new IllegalArgumentException("Input raster image has no georeference.");
         }
 
+        final SpatialReference spatialReference = new SpatialReference(dataset.GetProjection());
+
         this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(dataset));
 
         if(this.coordinateReferenceSystem  == null)
@@ -69,9 +81,10 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader, 
             throw new IllegalArgumentException("Image file is not in a recognized coordinate reference system");
         }
 
-        this.dataSource = ogr.GetDriverByName("Memory").CreateDataSource("foo"); // todo change name
+        final DataSource dataSource = ogr.GetDriverByName("Memory").CreateDataSource("data source");
 
-        final Layer outputLayer = this.dataSource.CreateLayer("bar"); // todo change name
+        final Layer outputLayer = dataSource.CreateLayer("contours",
+                                                         spatialReference);
 
         // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
         final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
@@ -90,47 +103,103 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader, 
             throw new RuntimeException(new GdalError().getMessage());
         }
 
+        final Geometry pointCollection = new Geometry(ogrConstants.wkbMultiPoint);//pointCollectionFeature.GetGeometryRef();
+
         for(Feature feature = outputLayer.GetNextFeature(); feature != null; feature = outputLayer.GetNextFeature())
         {
+            final Geometry originalGeometry = feature.GetGeometryRef();
+
             // http://gdal.org/java/org/gdal/ogr/Geometry.html#SimplifyPreserveTopology(double) ->
             // This function is built on the GEOS library, check it for the definition of the geometry operation. If OGR is built without the GEOS library, this function will always fail, issuing a CPLE_NotSupported error.
             // http://geos.refractions.net/ro/doxygen_docs/html/classgeos_1_1simplify_1_1TopologyPreservingSimplifier.html ->
             // All vertices in the simplified geometry will be within this distance of the original geometry. The tolerance value must be non-negative. A tolerance value of zero is effectively a no-op.
-            feature.SetGeometry(feature.GetGeometryRef()
-                                       .SimplifyPreserveTopology(simplificationTolerance)); // https://gis.stackexchange.com/questions/102254/ogr-simplifypreservetopology-does-not-keep-the-topology
-                                                                                            // Topology preserving means in practice that parts of the multilinestring meet after simplification, polygons
-                                                                                            // do not have self-intersections, inner rings in polygons stay inside outer rings, etc. Especially for polygon
-                                                                                            // layers this method does not prevent gaps, overlaps, and slivers from appearing, even though this is the
-                                                                                            // general belief. I would say that the method has a misleading name which makes users to believe that it saves
-                                                                                            // the topology for the whole layer. However, the name and behaviour is the same in PostGIS and in JTS
-                                                                                            // http://www.tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/simplify/TopologyPreservingSimplifier.html
+            final Geometry simplifiedGeometry = originalGeometry.SimplifyPreserveTopology(simplificationTolerance); // https://gis.stackexchange.com/questions/102254/ogr-simplifypreservetopology-does-not-keep-the-topology
+                                                                                                                    // Topology preserving means in practice that parts of the multilinestring meet after simplification, polygons
+                                                                                                                    // do not have self-intersections, inner rings in polygons stay inside outer rings, etc. Especially for polygon
+                                                                                                                    // layers this method does not prevent gaps, overlaps, and slivers from appearing, even though this is the
+                                                                                                                    // general belief. I would say that the method has a misleading name which makes users to believe that it saves
+                                                                                                                    // the topology for the whole layer. However, the name and behaviour is the same in PostGIS and in JTS
+                                                                                                                    // http://www.tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/simplify/TopologyPreservingSimplifier.html
 
-            //feature.GetGeometryRef().DelaunayTriangulation()
+            final int pointCount = simplifiedGeometry.GetPointCount();
+
+            for(int x = 0; x < pointCount; ++x)
+            {
+                final double[] point = simplifiedGeometry.GetPoint(x);
+
+                final Geometry pointGeometry = new Geometry(ogrConstants.wkbPoint);
+                pointGeometry.AddPoint(point[0],
+                                       point[1],
+                                       point[2]);
+
+                pointCollection.AddGeometry(pointGeometry);
+            }
         }
+
+        dataSource.delete();
+
+        // http://www.gdal.org/classOGRGeometry.html#ab7d3c3e5b033ca6bbb470016e7661da7
+        final Geometry triangulation = pointCollection.DelaunayTriangulation(triangulationTolerance, // double tolerance - optional snapping tolerance to use for improved robustness
+                                                                             1);                     // int    onlyEdges - if TRUE, will return a MULTILINESTRING, otherwise it will return a GEOMETRYCOLLECTION containing triangular POLYGONs
+        final double[] envelope = new double[4]; // minX, maxX, minY, maxY
+
+        triangulation.GetEnvelope(envelope);
+
+        this.bounds = new BoundingBox(envelope[0],
+                                      envelope[2],
+                                      envelope[1],
+                                      envelope[3]);
+
+        final int lineStringCount = triangulation.GetGeometryCount();
+        for(int x = 0; x < lineStringCount; ++x)
+        {
+            final Geometry edge = triangulation.GetGeometryRef(x);    // a line string that represents an edge in the Delaunay triangulation
+
+            final Node node0 = this.getNode(edge.GetPoint(0));
+            final Node node1 = this.getNode(edge.GetPoint(1));
+
+            this.edges.add(new Edge(this.edges.size(),
+                                    node0.getIdentifier(),
+                                    node1.getIdentifier(),
+                                    Arrays.asList("footway")));
+
+            // TODO is OSM data is treated as bidirectional?
+//            // Add an edge with the to/from swapped so that
+//            this.edges.add(new Edge(this.edges.size(),
+//                                    node1.getIdentifier(),
+//                                    node0.getIdentifier(),
+//                                    Collections.emptyList()));
+        }
+
+        this.description = String.format("Elevation model routing network generated from source data %s, band %d. %d nodes and %d edges",
+                                         file.getName(),
+                                         rasterBand,
+                                         this.nodes.size(),
+                                         this.edges.size());
     }
 
     @Override
-    public List<Pair<String, Type>> getNodeAttributes()
+    public List<Pair<String, Type>> getNodeAttributeDescriptions()
     {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
-    public List<Pair<String, Type>> getEdgeAttributes()
+    public List<Pair<String, Type>> getEdgeAttributeDescriptions()
     {
-        return null;
+        return Arrays.asList(Pair.of("highway", String.class));
     }
 
     @Override
     public List<Node> getNodes()
     {
-        return null;
+        return Collections.unmodifiableList(this.nodes);
     }
 
     @Override
     public List<Edge> getEdges()
     {
-        return null;
+        return Collections.unmodifiableList(this.edges);
     }
 
     @Override
@@ -139,15 +208,61 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader, 
         return this.coordinateReferenceSystem;
     }
 
-    private final CoordinateReferenceSystem coordinateReferenceSystem;
-
     @Override
-    public void close()
+    public BoundingBox getBounds()
     {
-        this.dataSource.delete();
+        return this.bounds;
     }
 
-    private final DataSource dataSource;
+    @Override
+    public String getDescription()
+    {
+        return this.description;
+    }
+
+    private final CoordinateReferenceSystem coordinateReferenceSystem;
+
+    private Node getNode(final double[] coordinate)
+    {
+        final int coordinateHash = Arrays.hashCode(coordinate);
+
+        final double longitude = coordinate[0];
+        final double latitude  = coordinate[1];
+        final double elevation = coordinate[2];
+
+        if(this.nodeMap.containsKey(coordinateHash))
+        {
+            final Node node = this.nodeMap.get(coordinateHash);
+
+            //noinspection FloatingPointEquality
+            if(longitude != node.getLongitude() ||
+               latitude  != node.getLatitude()  ||
+               elevation != node.getElevation())
+            {
+                throw new RuntimeException("Error in building a network: hash collision detected between coordinates");
+            }
+
+            return node;
+        }
+
+        final Node node = new Node(this.nodes.size(),
+                                   longitude,
+                                   latitude,
+                                   elevation,
+                                   Collections.emptyList());
+
+        this.nodes.add(node);
+        this.nodeMap.put(coordinateHash, node);
+
+        return node;
+    }
+
+    private final List<Node>         nodes   = new LinkedList<>();
+    private final List<Edge>         edges   = new LinkedList<>();
+    private final Map<Integer, Node> nodeMap = new HashMap<>();
+    private final BoundingBox        bounds;
+    private final String             description;
+
 
     // from ogr2ogr.java - https://searchcode.com/codesearch/view/18938479/
 //    private static class ScaledProgress extends ProgressCallback
