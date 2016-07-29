@@ -29,6 +29,7 @@ import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.Node;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
@@ -51,6 +52,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 
 /**
  * @author Luke Lambert
@@ -62,7 +65,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                         final double contourInterval,
                                         final Double noDataValue,
                                         final double simplificationTolerance,
-                                        final double triangulationTolerance)
+                                        final double triangulationTolerance) throws RoutingNetworkStoreException
     {
         final Dataset dataset = GdalUtility.open(file);
 
@@ -151,12 +154,20 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                       envelope[3]);
 
         final int lineStringCount = triangulation.GetGeometryCount();
+
         for(int x = 0; x < lineStringCount; ++x)
         {
-            final Geometry edge = triangulation.GetGeometryRef(x);    // a line string that represents an edge in the Delaunay triangulation
+            final Geometry edge = triangulation.GetGeometryRef(x);    // Aline string that represents an edge in the Delaunay triangulation
 
             final Node node0 = this.getNode(edge.GetPoint(0));
             final Node node1 = this.getNode(edge.GetPoint(1));
+
+            //noinspection FloatingPointEquality
+            if(node0.getLongitude() == node1.getLongitude() &&
+               node0.getLatitude()  == node1.getLatitude())
+            {
+                throw new RoutingNetworkStoreException("Attempting to add an edge with a cartesian distance of 0");
+            }
 
             this.edges.add(new Edge(this.edges.size(),
                                     node0.getIdentifier(),
@@ -171,11 +182,15 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 //                                    Collections.emptyList()));
         }
 
-        this.description = String.format("Elevation model routing network generated from source data %s, band %d. %d nodes and %d edges",
+        this.description = String.format("Elevation model routing network generated from source data %s, band %d. Contains %d nodes and %d edges. Created with parameters, contour interval: %s, pixel no data value: %s, contour simplification tolerance: %s, triangulation tolerance: %s.",
                                          file.getName(),
                                          rasterBand,
                                          this.nodes.size(),
-                                         this.edges.size());
+                                         this.edges.size(),
+                                         contourInterval,
+                                         noDataValue,
+                                         simplificationTolerance,
+                                         triangulationTolerance);
     }
 
     @Override
@@ -220,6 +235,12 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         return this.description;
     }
 
+    @Override
+    public boolean isBidirectional()
+    {
+        return true;
+    }
+
     private final CoordinateReferenceSystem coordinateReferenceSystem;
 
     private Node getNode(final double[] coordinate)
@@ -228,21 +249,13 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 
         final double longitude = coordinate[0];
         final double latitude  = coordinate[1];
-        final double elevation = coordinate[2];
+        final Double elevation = coordinate.length > 2 ? coordinate[2] : null;
 
-        if(this.nodeMap.containsKey(coordinateHash))
+        final String key = Double.toString(longitude) + '_' + Double.toString(latitude) + '_' + (elevation != null ? Double.toString(coordinate[2]) : "");
+
+        if(this.nodeMap.containsKey(key))
         {
-            final Node node = this.nodeMap.get(coordinateHash);
-
-            //noinspection FloatingPointEquality
-            if(longitude != node.getLongitude() ||
-               latitude  != node.getLatitude()  ||
-               elevation != node.getElevation())
-            {
-                throw new RuntimeException("Error in building a network: hash collision detected between coordinates");
-            }
-
-            return node;
+            return this.nodeMap.get(key);
         }
 
         final Node node = new Node(this.nodes.size(),
@@ -252,16 +265,16 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                    Collections.emptyList());
 
         this.nodes.add(node);
-        this.nodeMap.put(coordinateHash, node);
+        this.nodeMap.put(key, node);
 
         return node;
     }
 
-    private final List<Node>         nodes   = new LinkedList<>();
-    private final List<Edge>         edges   = new LinkedList<>();
-    private final Map<Integer, Node> nodeMap = new HashMap<>();
-    private final BoundingBox        bounds;
-    private final String             description;
+    private final List<Node>        nodes   = new LinkedList<>();
+    private final List<Edge>        edges   = new LinkedList<>();
+    private final Map<String, Node> nodeMap = new TreeMap<>();
+    private final BoundingBox       bounds;
+    private final String            description;
 
 
     // from ogr2ogr.java - https://searchcode.com/codesearch/view/18938479/

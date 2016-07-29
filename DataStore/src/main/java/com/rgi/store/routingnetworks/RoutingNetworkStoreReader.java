@@ -49,4 +49,6 @@ public interface RoutingNetworkStoreReader
     BoundingBox getBounds();
 
     String getDescription();
+
+    boolean isBidirectional();
 }

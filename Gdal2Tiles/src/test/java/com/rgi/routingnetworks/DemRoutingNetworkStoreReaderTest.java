@@ -42,12 +42,12 @@ public class DemRoutingNetworkStoreReaderTest
     {
         final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(new File("C:/Users/corp/Desktop/dataFromMatt/wgs84Dems/dem_40cm_a2_westpoint_maincampus_tile2.tif"),
                                                                                          1,
-                                                                                         15.0,
+                                                                                         5.0,
                                                                                          null,
                                                                                          20.0,
                                                                                          0.0);
 
-        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(new File("foo.osm.xml"),
+        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(new File("westpoint_maincampus_tile2.osm.xml"),
                                                                                             networkReader.getBounds(),
                                                                                             networkReader.getDescription(),
                                                                                             networkReader.getCoordinateReferenceSystem());

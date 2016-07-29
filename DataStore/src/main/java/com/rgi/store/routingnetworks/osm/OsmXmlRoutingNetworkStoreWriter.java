@@ -110,7 +110,7 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
 
     private static void writeOsmXmlHeader(final Writer writer) throws IOException
     {
-        writer.write(String.format("<?xml version=\"%s\" encoding=\"%s\">\n",
+        writer.write(String.format("<?xml version=\"%s\" encoding=\"%s\"?>\n",
                                    XML_VERSION,
                                    ENCODING.name()));
 
@@ -130,10 +130,10 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
                                     final BoundingBox bounds) throws IOException
     {
         // TODO convert these values to EPSG:4326!
-        writer.write(String.format("  <bounds minlon=\"%f\"" +
-                                            " minlat=\"%f\"" +
-                                            " maxlon=\"%f\"" +
-                                            " maxlat=\"%f\"/>",
+        writer.write(String.format("  <bounds minlon=\"%s\"" +
+                                            " minlat=\"%s\"" +
+                                            " maxlon=\"%s\"" +
+                                            " maxlat=\"%s\"/>",
                                    bounds.getMinimumX(),
                                    bounds.getMinimumY(),
                                    bounds.getMaximumX(),
@@ -146,15 +146,15 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
     {
         // TODO convert these values to EPSG:4326!
         writer.write(String.format("  <node id=\"%d\"" +
-                                          " lon=\"%f\"" +
-                                          " lat=\"%f\"",
+                                          " lon=\"%s\"" +
+                                          " lat=\"%s\"",
                                    node.getIdentifier(),
                                    node.getLongitude(),
                                    node.getLatitude()));
 
         if(node.getElevation() != null)
         {
-            writer.write(String.format(" z=\"%f\"",
+            writer.write(String.format(" z=\"%s\"",
                                        node.getElevation()));
         }
 
@@ -183,10 +183,10 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
         writer.write(String.format("  <way id=\"%d\">\n",
                                    edge.getIdentifier()));
 
-        writer.write(String.format("    <nd ref=\"%d\">\n",
+        writer.write(String.format("    <nd ref=\"%d\"/>\n",
                                    edge.getFrom()));
 
-        writer.write(String.format("    <nd ref=\"%d\">\n",
+        writer.write(String.format("    <nd ref=\"%d\"/>\n",
                                    edge.getTo()));
 
         final List<Object> attributes = edge.getAttributes();
