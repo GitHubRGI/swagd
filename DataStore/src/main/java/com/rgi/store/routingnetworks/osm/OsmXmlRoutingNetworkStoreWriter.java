@@ -49,7 +49,7 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
     public OsmXmlRoutingNetworkStoreWriter(final File                      osmXmlFile,
                                            final BoundingBox               bounds,
                                            final String                    description,
-                                           final CoordinateReferenceSystem coordinateReferenceSystem)
+                                           final CoordinateReferenceSystem coordinateReferenceSystem)   // TODO move to write()?
     {
         this.osmXmlFile                = osmXmlFile;
         this.bounds                    = bounds;
@@ -154,7 +154,7 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
 
         if(node.getElevation() != null)
         {
-            writer.write(String.format(" z=\"%s\"",
+            writer.write(String.format(" ele=\"%s\"",
                                        node.getElevation()));
         }
 
@@ -208,6 +208,22 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
     private static void writeOsmXmlFooter(final Writer writer) throws IOException
     {
         writer.write("</osm>");
+    }
+
+    private static double distance(final double fromLatitude, final double fromLongitude, final double toLatitude, final double toLongitude)
+    {
+        final double dLat = Math.toRadians(toLatitude - fromLatitude);
+        final double dLon = Math.toRadians(toLongitude - fromLongitude);
+        final double fromLatitudeRadians = Math.toRadians(fromLatitude);
+        final double toLatitudeRadians = Math.toRadians(toLatitude);
+        final double a = haversin(dLat) + StrictMath.cos(fromLatitudeRadians) * StrictMath.cos(toLatitudeRadians) * haversin(dLon);
+        final double c = 2.0D * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1.0D - a));
+        return 6372.8D * c;
+    }
+
+    private static double haversin(final double value)
+    {
+        return StrictMath.pow(StrictMath.sin(value / 2.0D), 2.0D);
     }
 
     private final File                      osmXmlFile;

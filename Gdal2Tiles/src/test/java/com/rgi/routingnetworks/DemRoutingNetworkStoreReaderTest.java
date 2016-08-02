@@ -40,14 +40,18 @@ public class DemRoutingNetworkStoreReaderTest
     @Test
     public void testConstructor() throws RoutingNetworkStoreException
     {
-        final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(new File("C:/Users/corp/Desktop/dataFromMatt/wgs84Dems/dem_40cm_a2_westpoint_maincampus_tile2.tif"),
-                                                                                         1,
-                                                                                         5.0,
-                                                                                         null,
-                                                                                         20.0,
-                                                                                         0.0);
+        final File inputFile  = new File("C:/Users/corp/Desktop/mwtc_srtm_90m.tif");
+        final File outputFile = new File(inputFile.getName().substring(0, inputFile.getName().indexOf('.')) + ".osm.xml");
 
-        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(new File("westpoint_maincampus_tile2.osm.xml"),
+        final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(inputFile,
+                                                                                         1,
+                                                                                         1.0,
+                                                                                         null,
+                                                                                         7,
+                                                                                         20.0,
+                                                                                         0.00001);  // I /think/ this is about a meter's worth of distance at the equator
+
+        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
                                                                                             networkReader.getBounds(),
                                                                                             networkReader.getDescription(),
                                                                                             networkReader.getCoordinateReferenceSystem());

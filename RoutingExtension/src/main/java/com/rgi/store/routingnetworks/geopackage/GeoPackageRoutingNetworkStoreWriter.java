@@ -22,11 +22,13 @@
  * SOFTWARE.
  */
 
-package com.rgi.store.routingnetworks;
+package com.rgi.store.routingnetworks.geopackage;
 
-import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.store.routingnetworks.Edge;
+import com.rgi.store.routingnetworks.Node;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -34,21 +36,15 @@ import java.util.List;
 /**
  * @author Luke Lambert
  */
-public interface RoutingNetworkStoreReader
+public class GeoPackageRoutingNetworkStoreWriter implements RoutingNetworkStoreWriter
 {
-    List<Pair<String, Type>> getNodeAttributeDescriptions() throws RoutingNetworkStoreException;
 
-    List<Pair<String, Type>> getEdgeAttributeDescriptions() throws RoutingNetworkStoreException;
+    @Override
+    public void write(final List<Node>               nodes,
+                      final List<Edge>               edges,
+                      final List<Pair<String, Type>> nodeAttributeDescriptions,
+                      final List<Pair<String, Type>> edgeAttributeDescriptions) throws RoutingNetworkStoreException
+    {
 
-    List<Node> getNodes();
-
-    List<Edge> getEdges();
-
-    CoordinateReferenceSystem getCoordinateReferenceSystem();
-
-    BoundingBox getBounds();
-
-    String getDescription();
-
-    boolean isBidirectional();
+    }
 }
