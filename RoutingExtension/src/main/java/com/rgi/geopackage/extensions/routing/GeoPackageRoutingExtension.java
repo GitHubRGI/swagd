@@ -23,6 +23,7 @@
 
 package com.rgi.geopackage.extensions.routing;
 
+import com.rgi.common.BoundingBox;
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -49,6 +50,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import static com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension.getNodeAttributesTableName;
 
 /**
  * Implementation of the SWAGD Routing GeoPackage extension
@@ -124,6 +127,42 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         return this.networkExtension;
     }
 
+    public BoundingBox calculateBounds(final Network network) throws SQLException
+    {
+        if(network == null)
+        {
+            throw new IllegalArgumentException("Network may not be null");
+        }
+
+        final RoutingNetworkDescription routingNetworkDescription = this.getRoutingNetworkDescription(network.getTableName());
+
+        final String boundsQuery = String.format("SELECT MIN(%1$s),\n" +
+                                                 "       MIN(%2$s),\n" +
+                                                 "       MAX(%1$s),\n " +
+                                                 "       MAX(%2$s)\n" +
+                                                 "FROM (SELECT %1$s,\n" +
+                                                 "             %2$s\n" +
+                                                 "      FROM %3$s);",
+                                                 routingNetworkDescription.getLongitudeDescription().getName(),
+                                                 routingNetworkDescription.getLatitudeDescription() .getName(),
+                                                 getNodeAttributesTableName(network));
+
+        return JdbcUtility.selectOne(this.databaseConnection,
+                                     boundsQuery,
+                                     null,
+                                     resultSet -> { // If there are /no/ nodes in the collection, these values will all be null
+                                                    final Double minimumX = (Double)resultSet.getObject(1);
+                                                    final Double minimumY = (Double)resultSet.getObject(2);
+                                                    final Double maximumX = (Double)resultSet.getObject(3);
+                                                    final Double maximumY = (Double)resultSet.getObject(4);
+
+                                                    return new BoundingBox(minimumX == null ? Double.NaN : minimumX,
+                                                                           minimumY == null ? Double.NaN : minimumY,
+                                                                           maximumX == null ? Double.NaN : maximumX,
+                                                                           maximumY == null ? Double.NaN : maximumY);
+                                                  } );
+    }
+
     /**
      * Gets a specific routing network by table name, or null if no routing
      * network exists with that table name.
@@ -156,18 +195,17 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         return JdbcUtility.selectOne(this.databaseConnection,
                                      routingNetworkDescriptionQuery,
                                      preparedStatement -> preparedStatement.setString(1, networkTableName),
-                                     resultSet -> {
-                                         final Network network = this.networkExtension.getNetwork(networkTableName);
+                                     resultSet -> { final Network network = this.networkExtension.getNetwork(networkTableName);
 
-                                         final AttributeDescription longitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(1), AttributedType.Node);
-                                         final AttributeDescription latitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(2), AttributedType.Node);
-                                         final AttributeDescription elevationDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(3), AttributedType.Node);
+                                                    final AttributeDescription longitudeDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(1), AttributedType.Node);
+                                                    final AttributeDescription latitudeDescription  = this.networkExtension.getAttributeDescription(network, resultSet.getString(2), AttributedType.Node);
+                                                    final AttributeDescription elevationDescription = this.networkExtension.getAttributeDescription(network, resultSet.getString(3), AttributedType.Node);
 
-                                         return new RoutingNetworkDescription(network,
-                                                                              longitudeDescription,
-                                                                              latitudeDescription,
-                                                                              elevationDescription);
-                                     });
+                                                    return new RoutingNetworkDescription(network,
+                                                                                         longitudeDescription,
+                                                                                         latitudeDescription,
+                                                                                         elevationDescription);
+                                                  });
     }
 
     /**
@@ -327,7 +365,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                                    longitude,
                                                    routingNetwork.getLatitudeDescription().getName(),
                                                    latitude,
-                                                   GeoPackageNetworkExtension.getNodeAttributesTableName(routingNetwork.getNetwork().getTableName()));
+                                                   getNodeAttributesTableName(routingNetwork.getNetwork().getTableName()));
 
         return JdbcUtility.selectOne(this.databaseConnection,
                                      distanceQuery,
@@ -380,7 +418,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
         }
 
         final String networkTableName               = routingNetwork.getNetwork().getTableName();
-        final String networkNodeAttributesTableName = GeoPackageNetworkExtension.getNodeAttributesTableName(networkTableName);
+        final String networkNodeAttributesTableName = getNodeAttributesTableName(networkTableName);
         final String longitudeName                  = routingNetwork.getLongitudeDescription().getName();
         final String latitudeName                   = routingNetwork.getLatitudeDescription() .getName();
 
@@ -514,7 +552,7 @@ public class GeoPackageRoutingExtension extends ExtensionImplementation
                                                "WHERE %1$s <= %6$s AND %1$s >= %4$s AND %2$s <= %7$s AND %2$s >= %5$s",
                                                routingNetwork.getLongitudeDescription().getName(),
                                                routingNetwork. getLatitudeDescription().getName(),
-                                               GeoPackageNetworkExtension.getNodeAttributesTableName(routingNetwork.getNetwork().getTableName()),
+                                               getNodeAttributesTableName(routingNetwork.getNetwork().getTableName()),
                                                minimumX,
                                                minimumY,
                                                maximumX,

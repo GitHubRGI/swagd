@@ -108,10 +108,11 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
             throw new IllegalArgumentException("Image file is not in a recognized coordinate reference system");
         }
 
-        final DataSource dataSource = ogr.GetDriverByName("Memory").CreateDataSource("data source");
+        final DataSource dataSource = ogr.GetDriverByName("Memory") // Make constant
+                                         .CreateDataSource("data source");
 
         final Layer outputLayer = dataSource.CreateLayer("contours",
-                spatialReference);
+                                                         spatialReference);
 
         // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
         final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed

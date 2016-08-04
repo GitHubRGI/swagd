@@ -45,9 +45,9 @@ public class DemRoutingNetworkStoreReaderTest
 
         final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(inputFile,
                                                                                          1,
-                                                                                         1.0,
+                                                                                         10.0,
                                                                                          null,
-                                                                                         7,
+                                                                                         4,
                                                                                          20.0,
                                                                                          0.00001);  // I /think/ this is about a meter's worth of distance at the equator
 

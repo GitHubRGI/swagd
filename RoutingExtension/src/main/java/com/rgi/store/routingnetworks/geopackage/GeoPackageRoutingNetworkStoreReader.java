@@ -28,12 +28,15 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.geopackage.GeoPackage;
+import com.rgi.geopackage.core.SpatialReferenceSystem;
 import com.rgi.geopackage.extensions.network.AttributeDescription;
+import com.rgi.geopackage.extensions.network.AttributedNode;
 import com.rgi.geopackage.extensions.network.AttributedType;
 import com.rgi.geopackage.extensions.network.DataType;
 import com.rgi.geopackage.extensions.network.GeoPackageNetworkExtension;
 import com.rgi.geopackage.extensions.network.Network;
 import com.rgi.geopackage.extensions.routing.GeoPackageRoutingExtension;
+import com.rgi.geopackage.extensions.routing.RoutingNetworkDescription;
 import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.Node;
@@ -43,6 +46,7 @@ import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -113,9 +117,35 @@ public class GeoPackageRoutingNetworkStoreReader implements RoutingNetworkStoreR
     }
 
     @Override
-    public List<Node> getNodes()
+    public List<Node> getNodes() throws RoutingNetworkStoreException
     {
-        return null;//this.networkExtension
+        try
+        {
+            final RoutingNetworkDescription routingNetworkDescription = this.routingExtension.getRoutingNetworkDescription(this.network.getTableName());
+
+            final List<AttributeDescription> attributeDescriptions = this.networkExtension.getAttributeDescriptions(this.network,
+                                                                                                                    AttributedType.Node);
+
+            final int longitudeAttributeIndex = attributeDescriptions.indexOf(routingNetworkDescription.getLongitudeDescription());
+            final int latitudeAttributeIndex  = attributeDescriptions.indexOf(routingNetworkDescription.getLatitudeDescription());
+            final int elevationAttributeIndex = attributeDescriptions.indexOf(routingNetworkDescription.getElevationDescription());
+
+            final List<Node> nodes = new ArrayList<>(this.networkExtension.getNodeCount(this.network));
+
+            this.networkExtension
+                .visitNodes(this.network,
+                            attributedNode -> nodes.add(fromAttributedNode(attributedNode,
+                                                                           longitudeAttributeIndex,
+                                                                           latitudeAttributeIndex,
+                                                                           elevationAttributeIndex)),
+                            attributeDescriptions);
+
+            return nodes;
+        }
+        catch(final SQLException ex)
+        {
+            throw new RoutingNetworkStoreException(ex);
+        }
     }
 
     @Override
@@ -125,21 +155,38 @@ public class GeoPackageRoutingNetworkStoreReader implements RoutingNetworkStoreR
     }
 
     @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem()
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() throws RoutingNetworkStoreException
     {
-        return null;
+        try
+        {
+            final SpatialReferenceSystem spatialReferenceSystem = this.geoPackage.core().getSpatialReferenceSystem(this.network.getSpatialReferenceSystemIdentifier());
+
+            return new CoordinateReferenceSystem(spatialReferenceSystem.getOrganization(),
+                                                 spatialReferenceSystem.getIdentifier());
+        }
+        catch(final SQLException ex)
+        {
+            throw new RoutingNetworkStoreException(ex);
+        }
     }
 
     @Override
-    public BoundingBox getBounds()
+    public BoundingBox getBounds() throws RoutingNetworkStoreException
     {
-        return null;
+        try
+        {
+            return this.routingExtension.calculateBounds(this.network);
+        }
+        catch(final SQLException ex)
+        {
+            throw new RoutingNetworkStoreException(ex);
+        }
     }
 
     @Override
     public String getDescription()
     {
-        return null;
+        return this.network.getDescription();
     }
 
     @Override
@@ -173,6 +220,33 @@ public class GeoPackageRoutingNetworkStoreReader implements RoutingNetworkStoreR
         }
     }
 
+    private static Node fromAttributedNode(final AttributedNode attributedNode,
+                                           final int            longitudeAttributeIndex,
+                                           final int            latitudeAttributeIndex,
+                                           final int            elevationAttributeIndex)
+    {
+        final double longitude = (Double)attributedNode.getAttribute(longitudeAttributeIndex);
+        final double latitude  = (Double)attributedNode.getAttribute(latitudeAttributeIndex);
+
+        final Double elevation = elevationAttributeIndex == -1 ? null : (Double)attributedNode.getAttribute(elevationAttributeIndex);
+
+        final List<Object> attributes = attributedNode.getAttributes();
+
+        attributes.remove(longitudeAttributeIndex);
+        attributes.remove(latitudeAttributeIndex);
+
+        if(elevationAttributeIndex != -1)
+        {
+            attributes.remove(elevationAttributeIndex);
+        }
+
+        return new Node(attributedNode.getIdentifier(),
+                        longitude,
+                        latitude,
+                        elevation,
+                        attributes);
+    }
+
     private static Type convertType(final DataType dataType)
     {
         switch(dataType)
@@ -182,11 +256,13 @@ public class GeoPackageRoutingNetworkStoreReader implements RoutingNetworkStoreR
             case Real:    return double.class;
             case Text:    return String.class;
         }
+
+        return String.class;    // default value, treat all other types as a String
     }
 
     private final GeoPackage geoPackage;
     private final Network    network;
 
-    final GeoPackageRoutingExtension routingExtension;
-    final GeoPackageNetworkExtension networkExtension;
+    private final GeoPackageRoutingExtension routingExtension;
+    private final GeoPackageNetworkExtension networkExtension;
 }

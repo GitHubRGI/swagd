@@ -40,13 +40,13 @@ public interface RoutingNetworkStoreReader
 
     List<Pair<String, Type>> getEdgeAttributeDescriptions() throws RoutingNetworkStoreException;
 
-    List<Node> getNodes();
+    List<Node> getNodes() throws RoutingNetworkStoreException;
 
     List<Edge> getEdges();
 
-    CoordinateReferenceSystem getCoordinateReferenceSystem();
+    CoordinateReferenceSystem getCoordinateReferenceSystem() throws RoutingNetworkStoreException;
 
-    BoundingBox getBounds();
+    BoundingBox getBounds() throws RoutingNetworkStoreException;
 
     String getDescription();
 
