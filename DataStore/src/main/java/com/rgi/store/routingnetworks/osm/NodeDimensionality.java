@@ -22,34 +22,20 @@
  * SOFTWARE.
  */
 
-package com.rgi.store.routingnetworks;
-
-import com.rgi.common.BoundingBox;
-import com.rgi.common.Pair;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
-import com.rgi.store.routingnetworks.osm.NodeDimensionality;
-
-import java.lang.reflect.Type;
-import java.util.List;
+package com.rgi.store.routingnetworks.osm;
 
 /**
  * @author Luke Lambert
  */
-public interface RoutingNetworkStoreReader
+public enum NodeDimensionality
 {
-    List<Pair<String, Type>> getNodeAttributeDescriptions() throws RoutingNetworkStoreException;
+    /**
+     * Indicates that nodes for a particular routing network are strictly two dimensional
+     */
+    NoElevation,
 
-    List<Pair<String, Type>> getEdgeAttributeDescriptions() throws RoutingNetworkStoreException;
-
-    List<Node> getNodes() throws RoutingNetworkStoreException;
-
-    List<Edge> getEdges();
-
-    CoordinateReferenceSystem getCoordinateReferenceSystem() throws RoutingNetworkStoreException;
-
-    BoundingBox getBounds() throws RoutingNetworkStoreException;
-
-    String getDescription();
-
-    NodeDimensionality getNodeDimensionality() throws RoutingNetworkStoreException;
+    /**
+     * Indicates that nodes for a particular routing network are either two-and-a-half or three dimensional
+     */
+    HasElevation    // TODO is it worthwhile to break this out into 3 values? 2D, 2.5D, and 3D?
 }

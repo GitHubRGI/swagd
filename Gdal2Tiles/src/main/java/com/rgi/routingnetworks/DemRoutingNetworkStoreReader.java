@@ -31,9 +31,11 @@ import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.g2t.GeoTransformation;
 import com.rgi.store.routingnetworks.Edge;
+import com.rgi.store.routingnetworks.EdgeDirecctionality;
 import com.rgi.store.routingnetworks.Node;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
+import com.rgi.store.routingnetworks.osm.NodeDimensionality;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
@@ -200,6 +202,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
             this.edges.add(new Edge(this.edges.size(),
                                     node0.getIdentifier(),
                                     node1.getIdentifier(),
+                                    EdgeDirecctionality.TwoWay,
                                     Arrays.asList("footway")));
 
             // TODO is OSM data is treated as bidirectional?
@@ -296,9 +299,9 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     }
 
     @Override
-    public boolean isBidirectional()
+    public NodeDimensionality getNodeDimensionality()
     {
-        return true;
+        return NodeDimensionality.HasElevation;
     }
 
     private Coordinate<Double> toWgs84(final double x,

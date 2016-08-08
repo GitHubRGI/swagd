@@ -1076,7 +1076,7 @@ public class GeoPackageNetworkExtensionTest
                                                                                        "test",
                                                                                        AttributedType.Edge);
 
-            final Collection<AttributeDescription> attributeDescriptions = Collections.singletonList(test);
+            final List<AttributeDescription> attributeDescriptions = Collections.singletonList(test);
 
             final Collection<Pair<Pair<Integer, Integer>, List<Object>>> attributedEdges = new ArrayList<>();
             for (int i = 2; i < 5; i++)
@@ -1976,7 +1976,7 @@ public class GeoPackageNetworkExtensionTest
                                                                                              "nada",
                                                                                              AttributedType.Node);
 
-            final Collection<AttributeDescription> attributeDescriptions = Arrays.asList(attribute1, attribute2);
+            final List<AttributeDescription> attributeDescriptions = Arrays.asList(attribute1, attribute2);
 
             final Iterable<Pair<Integer, List<Object>>> nodeAttributePairs = Arrays.asList(new Pair<>(12, Arrays.asList((Object)10.20,
                                                                                                                         (Object)"word")));
@@ -2096,7 +2096,7 @@ public class GeoPackageNetworkExtensionTest
                                                                                              "description",
                                                                                              AttributedType.Node);
 
-            final Collection<AttributeDescription> attributeDescriptions = Arrays.asList(attribute1, attribute2);
+            final List<AttributeDescription> attributeDescriptions = Arrays.asList(attribute1, attribute2);
 
             final Iterable<Pair<Integer, List<Object>>> nodeAttributePairs = Arrays.asList(new Pair<>(1, Arrays.asList((Object)12, (Object)21)));
             networkExtension.addNodes(nodeAttributePairs, attributeDescriptions);
@@ -2247,7 +2247,7 @@ public class GeoPackageNetworkExtensionTest
                                                                                             "description",
                                                                                             AttributedType.Node);
 
-            final Collection<AttributeDescription> attributeDescriptions = Collections.singletonList(attribute);
+            final List<AttributeDescription> attributeDescriptions = Collections.singletonList(attribute);
 
             final Iterable<Pair<Integer, List<Object>>> nodeAttributePairs = Arrays.asList(new Pair<>(1, Arrays.asList((Object)12)),
                                                                                            new Pair<>(2, Arrays.asList((Object)14)),

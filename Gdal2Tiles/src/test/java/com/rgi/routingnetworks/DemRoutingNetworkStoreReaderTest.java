@@ -53,13 +53,14 @@ public class DemRoutingNetworkStoreReaderTest
 
         final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
                                                                                             networkReader.getBounds(),
-                                                                                            networkReader.getDescription(),
-                                                                                            networkReader.getCoordinateReferenceSystem());
+                                                                                            networkReader.getDescription());
 
         networkWriter.write(networkReader.getNodes(),
                             networkReader.getEdges(),
+                            networkReader.getNodeDimensionality(),
                             networkReader.getNodeAttributeDescriptions(),
-                            networkReader.getEdgeAttributeDescriptions());
+                            networkReader.getEdgeAttributeDescriptions(),
+                            networkReader.getCoordinateReferenceSystem());
 
 
     }

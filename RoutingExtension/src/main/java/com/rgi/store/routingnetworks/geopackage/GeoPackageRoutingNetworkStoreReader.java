@@ -42,6 +42,7 @@ import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.Node;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
+import com.rgi.store.routingnetworks.osm.NodeDimensionality;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -190,9 +191,19 @@ public class GeoPackageRoutingNetworkStoreReader implements RoutingNetworkStoreR
     }
 
     @Override
-    public boolean isBidirectional()
+    public NodeDimensionality getNodeDimensionality() throws RoutingNetworkStoreException
     {
-        return false;
+        try
+        {
+            return this.routingExtension
+                       .getRoutingNetworkDescription(this.network.getTableName())
+                       .getElevationDescription() == null ? NodeDimensionality.NoElevation
+                                                          : NodeDimensionality.HasElevation;
+        }
+        catch(final SQLException ex)
+        {
+            throw new RoutingNetworkStoreException(ex);
+        }
     }
 
     @Override
@@ -211,7 +222,7 @@ public class GeoPackageRoutingNetworkStoreReader implements RoutingNetworkStoreR
 
             return attributeDescriptions.stream()
                                         .map(attributeDescription -> Pair.of(attributeDescription.getName(),
-                                                                             convertType(attributeDescription.getDataType())))
+                                                                             fromDataType(attributeDescription.getDataType())))
                                         .collect(Collectors.toList());
         }
         catch(final SQLException ex)
@@ -247,7 +258,7 @@ public class GeoPackageRoutingNetworkStoreReader implements RoutingNetworkStoreR
                         attributes);
     }
 
-    private static Type convertType(final DataType dataType)
+    private static Type fromDataType(final DataType dataType)
     {
         switch(dataType)
         {

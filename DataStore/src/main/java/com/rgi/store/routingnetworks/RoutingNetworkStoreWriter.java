@@ -25,6 +25,8 @@
 package com.rgi.store.routingnetworks;
 
 import com.rgi.common.Pair;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.store.routingnetworks.osm.NodeDimensionality;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -35,8 +37,10 @@ import java.util.List;
 @FunctionalInterface
 public interface RoutingNetworkStoreWriter
 {
-    void write(final List<Node>               nodes,
-               final List<Edge>               edges,
-               final List<Pair<String, Type>> nodeAttributeDescriptions,
-               final List<Pair<String, Type>> edgeAttributeDescriptions) throws RoutingNetworkStoreException;
+    void write(final List<Node>                nodes,
+               final List<Edge>                edges,
+               final NodeDimensionality        nodeDimensionality,
+               final List<Pair<String, Type>>  nodeAttributeDescriptions,
+               final List<Pair<String, Type>>  edgeAttributeDescriptions,
+               final CoordinateReferenceSystem coordinateReferenceSystem) throws RoutingNetworkStoreException;
 }

@@ -36,21 +36,23 @@ public class Edge
 {
     /**
      * Constructor
-     *
-     * @param identifier  Unique identifier
-     * @param fromNode    The origin node of an edge
-     * @param toNode      The destination node of an edge
-     * @param attributes  List of other attributes associated with the node
+     * @param identifier         Unique identifier
+     * @param fromNode           The origin node of an edge
+     * @param toNode             The destination node of an edge
+     * @param edgeDirectionality Specifies whether or not the edge can be traversed in both directions
+     * @param attributes         List of other attributes associated with the node
      */
-    public Edge(final int          identifier,
-                final int          fromNode,
-                final int          toNode,
-                final List<Object> attributes)
+    public Edge(final int                 identifier,
+                final int                 fromNode,
+                final int                 toNode,
+                final EdgeDirecctionality edgeDirectionality,
+                final List<Object>        attributes)
     {
-        this.identifier = identifier;
-        this.from       = fromNode;
-        this.to         = toNode;
-        this.attributes = new ArrayList<>(attributes);
+        this.identifier         = identifier;
+        this.from               = fromNode;
+        this.to                 = toNode;
+        this.edgeDirectionality = edgeDirectionality;
+        this.attributes         = new ArrayList<>(attributes);
     }
 
     public int getIdentifier()
@@ -68,13 +70,19 @@ public class Edge
         return this.to;
     }
 
+    public EdgeDirecctionality getEdgeDirectionality()
+    {
+        return this.edgeDirectionality;
+    }
+
     public List<Object> getAttributes()
     {
         return Collections.unmodifiableList(this.attributes);
     }
 
-    private final int          identifier;
-    private final int          from;
-    private final int          to;
-    private final List<Object> attributes;
+    private final int                 identifier;
+    private final int                 from;
+    private final int                 to;
+    private final EdgeDirecctionality edgeDirectionality;
+    private final List<Object>        attributes;
 }

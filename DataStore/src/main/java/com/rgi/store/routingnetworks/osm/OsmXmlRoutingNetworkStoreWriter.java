@@ -28,6 +28,7 @@ import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.store.routingnetworks.Edge;
+import com.rgi.store.routingnetworks.EdgeDirecctionality;
 import com.rgi.store.routingnetworks.Node;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
@@ -46,23 +47,23 @@ import java.util.stream.Collectors;
  */
 public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWriter
 {
-    public OsmXmlRoutingNetworkStoreWriter(final File                      osmXmlFile,
-                                           final BoundingBox               bounds,
-                                           final String                    description,
-                                           final CoordinateReferenceSystem coordinateReferenceSystem)   // TODO move to write()?
+    public OsmXmlRoutingNetworkStoreWriter(final File        osmXmlFile,
+                                           final BoundingBox bounds,
+                                           final String      description)   // TODO move to write()?
     {
-        this.osmXmlFile                = osmXmlFile;
-        this.bounds                    = bounds;
-        this.description               = description;
-        this.coordinateReferenceSystem = coordinateReferenceSystem;
+        this.osmXmlFile  = osmXmlFile;
+        this.bounds      = bounds;
+        this.description = description;
     }
 
     // TODO use an XML library to do the writing, rather than hand-rolling strings
     @Override
-    public void write(final List<Node>               nodes,
-                      final List<Edge>               edges,
-                      final List<Pair<String, Type>> nodeAttributeDescriptions,
-                      final List<Pair<String, Type>> edgeAttributeDescriptions) throws RoutingNetworkStoreException
+    public void write(final List<Node>                nodes,
+                      final List<Edge>                edges,
+                      final NodeDimensionality        nodeDimensionality,
+                      final List<Pair<String, Type>>  nodeAttributeDescriptions,
+                      final List<Pair<String, Type>>  edgeAttributeDescriptions,
+                      final CoordinateReferenceSystem coordinateReferenceSystem) throws RoutingNetworkStoreException
     {
         try(final Writer writer = Files.newBufferedWriter(this.osmXmlFile.toPath(),
                                                           Charset.forName("UTF-8")))
@@ -82,6 +83,7 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
             {
                 writeNode(writer,
                           node,
+                          nodeDimensionality,
                           nodeAttributeNames);
             }
 
@@ -140,9 +142,10 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
                                    bounds.getMaximumY()));
     }
 
-    private static void writeNode(final Writer       writer,
-                                  final Node         node,
-                                  final List<String> nodeAttributeNames) throws IOException
+    private static void writeNode(final Writer             writer,
+                                  final Node               node,
+                                  final NodeDimensionality nodeDimensionality,
+                                  final List<String>       nodeAttributeNames) throws IOException
     {
         // TODO convert these values to EPSG:4326!
         writer.write(String.format("  <node id=\"%d\"" +
@@ -152,7 +155,8 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
                                    node.getLongitude(),
                                    node.getLatitude()));
 
-        if(node.getElevation() != null)
+        if(nodeDimensionality  != NodeDimensionality.NoElevation &&
+           node.getElevation() != null)
         {
             writer.write(String.format(" ele=\"%s\"",
                                        node.getElevation()));
@@ -195,12 +199,20 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
         final int attributeCount = Math.min(attributes.size(),
                                             edgeAttributeNames.size());
 
+        final String wayTagTemplate = "   <tag k=\"%s\" v=\"%s\"/>\n";
+
         for(int x = 0; x < attributeCount; ++x)
         {
-            writer.write(String.format("    <tag k=\"%s\" v=\"%s\"/>\n",
+            writer.write(String.format(wayTagTemplate,
                                        edgeAttributeNames.get(x),
                                        attributes.get(x)));
         }
+
+        writer.write(String.format(wayTagTemplate,
+                                   "oneway",
+                                   edge.getEdgeDirectionality() == EdgeDirecctionality.OneWay
+                                                                 ? "yes"
+                                                                 : "no"));
 
         writer.write("  </way>\n");
     }
@@ -218,21 +230,22 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
         final double toLatitudeRadians = Math.toRadians(toLatitude);
         final double a = haversin(dLat) + StrictMath.cos(fromLatitudeRadians) * StrictMath.cos(toLatitudeRadians) * haversin(dLon);
         final double c = 2.0D * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1.0D - a));
-        return 6372.8D * c;
+        return RADIUS_OF_EARTH_AT_EQUATOR_KILOMETERS * c;
     }
 
     private static double haversin(final double value)
     {
+        //noinspection MagicNumber
         return StrictMath.pow(StrictMath.sin(value / 2.0D), 2.0D);
     }
 
-    private final File                      osmXmlFile;
-    private final String                    description;
-    private final BoundingBox               bounds;
-    private final CoordinateReferenceSystem coordinateReferenceSystem;
+    private final File        osmXmlFile;
+    private final String      description;
+    private final BoundingBox bounds;
 
-    private static final String  XML_VERSION = "1.0";
-    private static final String  OSM_VERSION = "0.6";
-    private static final String  GENERATOR   = "SWAGD OsmXmlRoutingNetworkStoreWriter";
-    private static final Charset ENCODING    = Charset.forName("UTF-8");
+    private static final String  XML_VERSION                           = "1.0";
+    private static final String  OSM_VERSION                           = "0.6";
+    private static final String  GENERATOR                             = "SWAGD OsmXmlRoutingNetworkStoreWriter";
+    private static final Charset ENCODING                              = Charset.forName("UTF-8");
+    private static final double  RADIUS_OF_EARTH_AT_EQUATOR_KILOMETERS = 6372.8D;
 }

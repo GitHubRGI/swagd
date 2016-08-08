@@ -24,32 +24,18 @@
 
 package com.rgi.store.routingnetworks;
 
-import com.rgi.common.BoundingBox;
-import com.rgi.common.Pair;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
-import com.rgi.store.routingnetworks.osm.NodeDimensionality;
-
-import java.lang.reflect.Type;
-import java.util.List;
-
 /**
  * @author Luke Lambert
  */
-public interface RoutingNetworkStoreReader
+public enum EdgeDirecctionality
 {
-    List<Pair<String, Type>> getNodeAttributeDescriptions() throws RoutingNetworkStoreException;
+    /**
+     * Indicates that edges for a particular routing network may only be traversed in the "from node" to the "to node" direction
+     */
+    OneWay,
 
-    List<Pair<String, Type>> getEdgeAttributeDescriptions() throws RoutingNetworkStoreException;
-
-    List<Node> getNodes() throws RoutingNetworkStoreException;
-
-    List<Edge> getEdges();
-
-    CoordinateReferenceSystem getCoordinateReferenceSystem() throws RoutingNetworkStoreException;
-
-    BoundingBox getBounds() throws RoutingNetworkStoreException;
-
-    String getDescription();
-
-    NodeDimensionality getNodeDimensionality() throws RoutingNetworkStoreException;
+    /**
+     * Indicates that edges for a particular routing network may be traversed in either direction
+     */
+    TwoWay,
 }
