@@ -184,9 +184,9 @@ final class NodeFileHeader
                         if(matcher.matches())
                         {
                             return new NodeFileHeader(lineNumber,
-                                    Integer.parseInt(matcher.group("nodeCount")),            // TODO make constant
-                                    Integer.parseInt(matcher.group("attributeCount")),       // TODO make constant
-                                    Integer.parseInt(matcher.group("boundaryMarkerCount"))); // TODO make constant
+                                                      Integer.parseInt(matcher.group("nodeCount")),            // TODO make constant
+                                                      Integer.parseInt(matcher.group("attributeCount")),       // TODO make constant
+                                                      Integer.parseInt(matcher.group("boundaryMarkerCount"))); // TODO make constant
                         }
                     }
 
