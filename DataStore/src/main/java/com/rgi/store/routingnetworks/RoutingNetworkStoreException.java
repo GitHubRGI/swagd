@@ -25,9 +25,9 @@
 package com.rgi.store.routingnetworks;
 
 /**
- * Exception specific to tile store readers and writers
+ * Exception specific to routing network store readers and writers
  *
- * @author Steven D. Lander
+ * @author Luke Lambert
  *
  */
 @SuppressWarnings("serial")
@@ -36,8 +36,7 @@ public class RoutingNetworkStoreException extends Exception
     /**
      * Constructor
      *
-     * @param message
-     *             The exception message as a String when a TileStoreException is thrown
+     * @param message The exception message as a String when a TileStoreException is thrown
      */
     public RoutingNetworkStoreException(final String message)
     {
@@ -47,8 +46,7 @@ public class RoutingNetworkStoreException extends Exception
     /**
      * Constructor
      *
-     * @param cause
-     *             The Throwable object that indicates the cause of the TileStoreException
+     * @param cause The Throwable object that indicates the cause of the TileStoreException
      */
     public RoutingNetworkStoreException(final Throwable cause)
     {
@@ -58,10 +56,8 @@ public class RoutingNetworkStoreException extends Exception
     /**
      * Constructor
      *
-     * @param message
-     *             The Exception message as a String when a TileStoreException is thrown
-     * @param cause
-     *             The Throwable object that indicates the cause of the TileStoreException
+     * @param message The Exception message as a String when a TileStoreException is thrown
+     * @param cause   The Throwable object that indicates the cause of the TileStoreException
      */
     public RoutingNetworkStoreException(final String message, final Throwable cause)
     {
