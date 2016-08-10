@@ -1,9 +1,12 @@
 plugins
 {
+    id 'java'
     // Code coverage reports plugin
     id 'net.saliman.cobertura' version '2.3.1'
     // Code coverage report submission to Coveralls service
     id 'com.github.kt3k.coveralls' version '2.6.3'
+    // Copy dependencies into a single (shadow'd) jar
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
 }
 
 allprojects
@@ -11,14 +14,15 @@ allprojects
     group = 'com.rgi.TilingApp'
     version = '0.0.1-SNAPSHOT'
 
-    apply plugin: 'cobertura'
-    apply plugin: 'java'
-
     repositories
     {
         mavenLocal()
         mavenCentral()
     }
+    
+    apply plugin: 'java'
+    apply plugin: 'cobertura'
+    apply plugin: 'com.github.johnrengelman.shadow'
 
     dependencies
     {
@@ -46,6 +50,7 @@ def files = subprojects.collect{new File(it.projectDir, '/build/cobertura/cobert
 cobertura
 {
     coverageFormats = ['xml', 'html']
+    coverageIgnoreTrivial = true
     coverageSourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
     coverageMergeDatafiles = files
 }

@@ -1,7 +1,5 @@
 plugins
 {
-    // Copy dependencies into a single (shadow'd) jar
-    id 'com.github.johnrengelman.shadow' version '1.2.3'
     // Create windows exe from shadow'd jar
     id 'edu.sc.seis.launch4j' version '1.6.1'
 }
