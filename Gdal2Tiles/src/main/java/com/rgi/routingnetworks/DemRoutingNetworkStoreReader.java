@@ -204,13 +204,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                     node1.getIdentifier(),
                                     EdgeDirecctionality.TwoWay,
                                     Arrays.asList("footway")));
-
-            // TODO is OSM data is treated as bidirectional?
-//            // Add an edge with the to/from swapped so that
-//            this.edges.add(new Edge(this.edges.size(),
-//                                    node1.getIdentifier(),
-//                                    node0.getIdentifier(),
-//                                    Collections.emptyList()));
         }
 
         this.description = String.format("Elevation model routing network generated from source data %s, band %d. Original pixel size was %fm x %fm. Contains %d nodes and %d edges. Created with parameters, contour interval: %s, pixel no data value: %s, contour simplification tolerance: %s, triangulation tolerance: %s.",

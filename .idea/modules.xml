@@ -32,9 +32,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD_main.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD_main.iml" group="SWAGD" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD_test.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD_test.iml" group="SWAGD" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool.iml" filepath="$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool.iml" group="VerifierTool" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool_main.iml" filepath="$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool_main.iml" group="VerifierTool" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool_test.iml" filepath="$PROJECT_DIR$/.idea/modules/VerifierTool/VerifierTool_test.iml" group="VerifierTool" />
     </modules>
   </component>
 </project>
