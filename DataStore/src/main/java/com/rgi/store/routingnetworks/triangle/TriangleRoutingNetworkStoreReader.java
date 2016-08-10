@@ -228,7 +228,7 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
         this.nodeAttributeDescriptions = new ArrayList<>(nodeAttributeDescriptions);
         this.coordinateReferenceSystem = coordinateReferenceSystem;
 
-        final int nonElevationAttributes = this.nodeFileHeader.getAttributeCount() - (elevationAttributeIndex > 0 ? 1 : 0);
+        final int nonElevationAttributes = this.nodeFileHeader.getAttributeCount() - (elevationAttributeIndex < 0 ? 0 : 1);
 
         if(this.nodeAttributeDescriptions.size() != nonElevationAttributes)
         {
@@ -359,22 +359,22 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
         nodes.forEach(node -> { final double x = node.getX();
                                 final double y = node.getY();
 
-                                if(x < bbox[0])
+                                if(Double.isNaN(bbox[0]) || x < bbox[0])
                                 {
                                     bbox[0] = x;
                                 }
 
-                                if(x > bbox[2])
+                                if(Double.isNaN(bbox[2]) || x > bbox[2])
                                 {
                                     bbox[2] = x;
                                 }
 
-                                if(y < bbox[1])
+                                if(Double.isNaN(bbox[1]) || y < bbox[1])
                                 {
                                     bbox[1] = y;
                                 }
 
-                                if(y > bbox[3])
+                                if(Double.isNaN(bbox[3]) || y > bbox[3])
                                 {
                                     bbox[3] = y;
                                 }
