@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Representation of a network edge
+ *
  * @author Luke Lambert
  *
  */

@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Representation of a network node
+ *
  * @author Luke Lambert
  */
 public class Node
@@ -38,7 +40,7 @@ public class Node
      *
      * @param identifier  Unique node identifier
      * @param x           Horizontal part of the node's coordinate
-     * @param y           vertical part of the node's coordinate
+     * @param y           Vertical part of the node's coordinate
      * @param elevation   Z part of the node's coordinate
      * @param attributes  List of other attributes associated with the node
      */
