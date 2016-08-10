@@ -31,11 +31,28 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 /**
+ *  * Interface for all routing network store writers
+ *
  * @author Luke Lambert
  */
 @FunctionalInterface
 public interface RoutingNetworkStoreWriter
 {
+    /**
+     * Writes the network to the underlying store
+     *
+     * @param nodes                     Collection of network nodes
+     * @param edges                     Collection of network edges
+     * @param nodeDimensionality        Indication of whether or not the
+     *                                  network contains elevation data
+     * @param nodeAttributeDescriptions Collection of name / type pairs
+     *                                  describing the nodes
+     * @param edgeAttributeDescriptions Collection of name / type pairs
+     *                                  describing the edges
+     * @param coordinateReferenceSystem Coordinate reference system of the data
+     * @throws RoutingNetworkStoreException Throws if there is an issue storing
+     *                                      the network
+     */
     void write(final List<Node>                nodes,
                final List<Edge>                edges,
                final NodeDimensionality        nodeDimensionality,
