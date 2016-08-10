@@ -80,9 +80,9 @@ final class NodeFileHeader
         stringBuilder.append("^\\s*");                   // Start of line, followed by any amount of space
         stringBuilder.append("(?<nodeIdentifier>\\d+)"); // capture one or more digits as the `nodeIdentifier`
         stringBuilder.append("\\s+");                    // whitespace delimiter
-        stringBuilder.append("(?<x>-?\\d+(?:.\\d+))?");   // capture a number (integer or real) as `x`
+        stringBuilder.append("(?<x>-?\\d+(?:.\\d+))?");  // capture a number (integer or real) as `x`
         stringBuilder.append("\\s+");                    // whitespace delimiter
-        stringBuilder.append("(?<y>-?\\d+(?:.\\d+))?");   // capture a number (integer or real) as `y`
+        stringBuilder.append("(?<y>-?\\d+(?:.\\d+))?");  // capture a number (integer or real) as `y`
 
         for(int attributeIndex = 0; attributeIndex < this.attributeCount; ++attributeIndex)
         {
@@ -122,7 +122,7 @@ final class NodeFileHeader
     }
 
     public Node parse(final String line,
-                      final int elevationAttributeIndex)
+                      final int    elevationAttributeIndex)
     {
         if(elevationAttributeIndex > this.attributeCount-1)
         {
