@@ -42,7 +42,7 @@ import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.Node;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
-import com.rgi.store.routingnetworks.osm.NodeDimensionality;
+import com.rgi.store.routingnetworks.NodeDimensionality;
 
 import java.io.File;
 import java.io.IOException;
@@ -235,7 +235,7 @@ public class GeoPackageRoutingNetworkStoreWriter implements RoutingNetworkStoreW
                                                                                                 "latitude",
                                                                                                 AttributedType.Node);
 
-        final AttributeDescription elevationAttribute = nodeDimensionality == NodeDimensionality.NoElevation
+        final AttributeDescription elevationAttribute = nodeDimensionality == NodeDimensionality.NO_ELEVATION
                                                                             ? null
                                                                             : networkExtension.addAttributeDescription(network,
                                                                                                  "elevation",
@@ -287,12 +287,12 @@ public class GeoPackageRoutingNetworkStoreWriter implements RoutingNetworkStoreW
     {
         final List<Object> nonSpatialAttributes = node.getAttributes();
 
-        final List<Object> attributes = new ArrayList<>((nodeDimensionality == NodeDimensionality.NoElevation ? 2 : 3) + nonSpatialAttributes.size());
+        final List<Object> attributes = new ArrayList<>((nodeDimensionality == NodeDimensionality.NO_ELEVATION ? 2 : 3) + nonSpatialAttributes.size());
 
         attributes.add(node.getX());
         attributes.add(node.getY());
 
-        if(nodeDimensionality != NodeDimensionality.NoElevation)
+        if(nodeDimensionality != NodeDimensionality.NO_ELEVATION)
         {
             attributes.add(node.getElevation());
         }

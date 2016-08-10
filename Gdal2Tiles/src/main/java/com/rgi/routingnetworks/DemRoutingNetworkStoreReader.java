@@ -35,7 +35,7 @@ import com.rgi.store.routingnetworks.EdgeDirecctionality;
 import com.rgi.store.routingnetworks.Node;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
-import com.rgi.store.routingnetworks.osm.NodeDimensionality;
+import com.rgi.store.routingnetworks.NodeDimensionality;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
@@ -202,7 +202,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
             this.edges.add(new Edge(this.edges.size(),
                                     node0.getIdentifier(),
                                     node1.getIdentifier(),
-                                    EdgeDirecctionality.TwoWay,
+                                    EdgeDirecctionality.TWO_WAY,
                                     Arrays.asList("footway")));
         }
 
@@ -294,7 +294,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     @Override
     public NodeDimensionality getNodeDimensionality()
     {
-        return NodeDimensionality.HasElevation;
+        return NodeDimensionality.HAS_ELEVATION;
     }
 
     private Coordinate<Double> toWgs84(final double x,

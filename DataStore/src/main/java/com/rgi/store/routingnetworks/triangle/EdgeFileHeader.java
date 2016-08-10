@@ -128,7 +128,7 @@ final class EdgeFileHeader
         return new Edge(edgeIdentifier,
                         endpoint0,
                         endpoint1,
-                        EdgeDirecctionality.TwoWay,
+                        EdgeDirecctionality.TWO_WAY,
                         Collections.emptyList());
     }
 

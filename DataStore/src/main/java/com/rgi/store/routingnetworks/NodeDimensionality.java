@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.store.routingnetworks.osm;
+package com.rgi.store.routingnetworks;
 
 /**
  * @author Luke Lambert
@@ -32,10 +32,10 @@ public enum NodeDimensionality
     /**
      * Indicates that nodes for a particular routing network are strictly two dimensional
      */
-    NoElevation,
+    NO_ELEVATION,
 
     /**
      * Indicates that nodes for a particular routing network are either two-and-a-half or three dimensional
      */
-    HasElevation    // TODO is it worthwhile to break this out into 3 values? 2D, 2.5D, and 3D?
+    HAS_ELEVATION    // TODO is it worthwhile to break this out into 3 values? 2D, 2.5D, and 3D?
 }

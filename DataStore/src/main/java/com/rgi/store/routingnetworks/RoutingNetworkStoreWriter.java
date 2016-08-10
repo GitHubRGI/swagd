@@ -26,7 +26,6 @@ package com.rgi.store.routingnetworks;
 
 import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
-import com.rgi.store.routingnetworks.osm.NodeDimensionality;
 
 import java.lang.reflect.Type;
 import java.util.List;

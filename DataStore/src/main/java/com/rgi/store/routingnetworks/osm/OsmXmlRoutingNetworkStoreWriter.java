@@ -30,6 +30,7 @@ import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.EdgeDirecctionality;
 import com.rgi.store.routingnetworks.Node;
+import com.rgi.store.routingnetworks.NodeDimensionality;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
 
@@ -60,7 +61,7 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
     @Override
     public void write(final List<Node>                nodes,
                       final List<Edge>                edges,
-                      final NodeDimensionality        nodeDimensionality,
+                      final NodeDimensionality nodeDimensionality,
                       final List<Pair<String, Type>>  nodeAttributeDescriptions,
                       final List<Pair<String, Type>>  edgeAttributeDescriptions,
                       final CoordinateReferenceSystem coordinateReferenceSystem) throws RoutingNetworkStoreException
@@ -155,7 +156,7 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
                                    node.getX(),
                                    node.getY()));
 
-        if(nodeDimensionality  != NodeDimensionality.NoElevation &&
+        if(nodeDimensionality  != NodeDimensionality.NO_ELEVATION &&
            node.getElevation() != null)
         {
             writer.write(String.format(" ele=\"%s\"",
@@ -210,7 +211,7 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
 
         writer.write(String.format(wayTagTemplate,
                                    "oneway",
-                                   edge.getEdgeDirectionality() == EdgeDirecctionality.OneWay
+                                   edge.getEdgeDirectionality() == EdgeDirecctionality.ONE_WAY
                                                                  ? "yes"
                                                                  : "no"));
 

@@ -32,10 +32,10 @@ public enum EdgeDirecctionality
     /**
      * Indicates that edges for a particular routing network may only be traversed in the "from node" to the "to node" direction
      */
-    OneWay,
+    ONE_WAY,
 
     /**
      * Indicates that edges for a particular routing network may be traversed in either direction
      */
-    TwoWay,
+    TWO_WAY,
 }

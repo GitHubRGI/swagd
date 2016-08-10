@@ -42,7 +42,7 @@ import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.Node;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
-import com.rgi.store.routingnetworks.osm.NodeDimensionality;
+import com.rgi.store.routingnetworks.NodeDimensionality;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -197,8 +197,8 @@ public class GeoPackageRoutingNetworkStoreReader implements RoutingNetworkStoreR
         {
             return this.routingExtension
                        .getRoutingNetworkDescription(this.network.getTableName())
-                       .getElevationDescription() == null ? NodeDimensionality.NoElevation
-                                                          : NodeDimensionality.HasElevation;
+                       .getElevationDescription() == null ? NodeDimensionality.NO_ELEVATION
+                                                          : NodeDimensionality.HAS_ELEVATION;
         }
         catch(final SQLException ex)
         {
