@@ -133,7 +133,7 @@ final class NodeFileHeader
 
         if(!matcher.matches())
         {
-            throw new RuntimeException(String.format("Node file line \"%s\" does not agree with the file's header specification",
+            throw new RuntimeException(String.format("Node entry \"%s\" does not agree with the file's header specification",
                                                      line));
         }
 
