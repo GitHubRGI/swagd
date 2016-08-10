@@ -228,12 +228,13 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
                                    final double toLatitude,
                                    final double toLongitude)
     {
-        final double dLat = Math.toRadians(toLatitude - fromLatitude);
-        final double dLon = Math.toRadians(toLongitude - fromLongitude);
+        final double dLat                = Math.toRadians(toLatitude - fromLatitude);
+        final double dLon                = Math.toRadians(toLongitude - fromLongitude);
         final double fromLatitudeRadians = Math.toRadians(fromLatitude);
-        final double toLatitudeRadians = Math.toRadians(toLatitude);
-        final double a = haversin(dLat) + StrictMath.cos(fromLatitudeRadians) * StrictMath.cos(toLatitudeRadians) * haversin(dLon);
-        final double c = 2.0D * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1.0D - a));
+        final double toLatitudeRadians   = Math.toRadians(toLatitude);
+        final double a                   = haversin(dLat) + StrictMath.cos(fromLatitudeRadians) * StrictMath.cos(toLatitudeRadians) * haversin(dLon);
+        final double c                   = 2.0D * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1.0D - a));
+
         return RADIUS_OF_EARTH_AT_EQUATOR_KILOMETERS * c;
     }
 
