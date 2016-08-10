@@ -191,10 +191,10 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
             final Node node1 = this.getNode(edge.GetPoint(1));
 
             //noinspection FloatingPointEquality
-            if(this.haversineDistance(new Coordinate<>(node0.getLongitude(),
-                                                       node0.getLatitude()),
-                                      new Coordinate<>(node1.getLongitude(),
-                                                       node1.getLatitude())) <= 0.0)
+            if(this.haversineDistance(new Coordinate<>(node0.getX(),
+                                                       node0.getY()),
+                                      new Coordinate<>(node1.getX(),
+                                                       node1.getY())) <= 0.0)
             {
                 throw new RoutingNetworkStoreException("Attempting to add an edge with a cartesian distance of 0");
             }

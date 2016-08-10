@@ -152,8 +152,8 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
                                           " lon=\"%s\"" +
                                           " lat=\"%s\"",
                                    node.getIdentifier(),
-                                   node.getLongitude(),
-                                   node.getLatitude()));
+                                   node.getX(),
+                                   node.getY()));
 
         if(nodeDimensionality  != NodeDimensionality.NoElevation &&
            node.getElevation() != null)

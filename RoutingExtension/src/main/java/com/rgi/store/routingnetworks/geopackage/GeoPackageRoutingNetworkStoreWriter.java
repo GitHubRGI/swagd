@@ -289,8 +289,8 @@ public class GeoPackageRoutingNetworkStoreWriter implements RoutingNetworkStoreW
 
         final List<Object> attributes = new ArrayList<>((nodeDimensionality == NodeDimensionality.NoElevation ? 2 : 3) + nonSpatialAttributes.size());
 
-        attributes.add(node.getLongitude());
-        attributes.add(node.getLatitude());
+        attributes.add(node.getX());
+        attributes.add(node.getY());
 
         if(nodeDimensionality != NodeDimensionality.NoElevation)
         {

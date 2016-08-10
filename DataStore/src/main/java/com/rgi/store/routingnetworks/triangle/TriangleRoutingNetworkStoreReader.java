@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * <p>A reader for ".node" and ".edge" files that are the outputs of
@@ -201,43 +200,6 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
      * @param elevationAttributeIndex
      *             The index (0-based) of the elevation attribute. A negative
      *             value indicates this set of nodes is two dimensional.
-     * @param coordinateReferenceSystem
-     *             Coordinate reference system of the data
-     * @throws IOException
-     *             Throws if there is an issue with file reading
-     */
-    public TriangleRoutingNetworkStoreReader(final File                      nodeFile,
-                                             final File                      edgeFile,
-                                             final int                       elevationAttributeIndex,
-                                             final CoordinateReferenceSystem coordinateReferenceSystem) throws IOException
-    {
-        this.nodeFile                  = nodeFile;
-        this.edgeFile                  = edgeFile;
-        this.elevationAttributeIndex   = elevationAttributeIndex;
-        this.nodeFileHeader            = NodeFileHeader.from(nodeFile);
-        this.coordinateReferenceSystem = coordinateReferenceSystem;
-
-        final int nonElevationAttributes = this.nodeFileHeader.getAttributeCount() - (elevationAttributeIndex > 0 ? 1 : 0);
-
-        // Generate attribute names in the form
-        this.nodeAttributeDescriptions = IntStream.rangeClosed(1, nonElevationAttributes)
-                                                  .boxed()
-                                                  .map(number -> Pair.<String, Type>of(String.format("attribute%d",
-                                                                                                     number),
-                                                                                       String.class))
-                                                  .collect(Collectors.toList());
-    }
-
-    /**
-     * Constructor
-     *
-     * @param nodeFile
-     *             The ".node" file, containing the triangle node data
-     * @param edgeFile
-     *             The ".edge" file, containing the triangle edge data
-     * @param elevationAttributeIndex
-     *             The index (0-based) of the elevation attribute. A negative
-     *             value indicates this set of nodes is two dimensional.
      * @param nodeAttributeDescriptions
      *             Name/type pairs that describe the attributes. This
      *             collection should not contain a description for the
@@ -249,19 +211,37 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
      *             Coordinate reference system of the data
      * @throws IOException
      *             Throws if there is an issue with file reading
+     * @throws RoutingNetworkStoreException
+     *             Throws if there is problem parsing the .node and .edge files
      */
     public TriangleRoutingNetworkStoreReader(final File                      nodeFile,
                                              final File                      edgeFile,
                                              final int                       elevationAttributeIndex,
                                              final List<Pair<String, Type>>  nodeAttributeDescriptions,
-                                             final CoordinateReferenceSystem coordinateReferenceSystem) throws IOException
+                                             final CoordinateReferenceSystem coordinateReferenceSystem) throws IOException, RoutingNetworkStoreException
     {
         this.nodeFile                  = nodeFile;
         this.edgeFile                  = edgeFile;
         this.elevationAttributeIndex   = elevationAttributeIndex;
         this.nodeFileHeader            = NodeFileHeader.from(nodeFile);
+        this.edgeFileHeader            = EdgeFileHeader.from(edgeFile);
         this.nodeAttributeDescriptions = new ArrayList<>(nodeAttributeDescriptions);
         this.coordinateReferenceSystem = coordinateReferenceSystem;
+
+        final int nonElevationAttributes = this.nodeFileHeader.getAttributeCount() - (elevationAttributeIndex > 0 ? 1 : 0);
+
+        if(this.nodeAttributeDescriptions.size() != nonElevationAttributes)
+        {
+            throw new IllegalArgumentException(String.format("Expected %d node attribute description, but got %d",
+                                                             nonElevationAttributes,
+                                                             this.nodeAttributeDescriptions.size()));
+        }
+
+        this.nodes = this.parseNodes();
+
+        this.bounds = calculateBounds(this.nodes);
+
+        this.edges = this.parseEdges();
     }
 
     @Override
@@ -278,6 +258,47 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
 
     @Override
     public List<Node> getNodes() throws RoutingNetworkStoreException
+    {
+        return Collections.unmodifiableList(this.nodes);
+    }
+
+    @Override
+    public List<Edge> getEdges()
+    {
+        return Collections.unmodifiableList(this.edges);
+    }
+
+    @Override
+    public CoordinateReferenceSystem getCoordinateReferenceSystem() throws RoutingNetworkStoreException
+    {
+        return this.coordinateReferenceSystem;
+    }
+
+    @Override
+    public BoundingBox getBounds()
+    {
+        return this.bounds;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return String.format("Triangle network as described by %s and %s. Contains %d nodes and %d edges.",
+                             this.nodeFile.getName(),
+                             this.edgeFile.getName(),
+                             this.nodes.size(),
+                             this.edges.size());
+    }
+
+    @Override
+    public NodeDimensionality getNodeDimensionality() throws RoutingNetworkStoreException
+    {
+        return this.elevationAttributeIndex < 0
+                                            ? NodeDimensionality.NoElevation
+                                            : NodeDimensionality.HasElevation;
+    }
+
+    private List<Node> parseNodes() throws RoutingNetworkStoreException
     {
         try
         {
@@ -302,44 +323,80 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
         }
     }
 
-    @Override
-    public List<Edge> getEdges()
+    private List<Edge> parseEdges() throws RoutingNetworkStoreException
     {
-        return null;
+        try
+        {
+            final List<Edge> edges = Files.lines(this.edgeFile.toPath())
+                                          .skip(this.edgeFileHeader.getLineNumber()+1)                    // Skip past the header line
+                                          .filter(line -> !TRIANGLE_NO_DATA_LINE.matcher(line).matches()) // Skip empty lines, and comments
+                                          .map(this.edgeFileHeader::parse)
+                                          .collect(Collectors.toList());
+
+            if(edges.size() != this.edgeFileHeader.getEdgeCount())
+            {
+                throw new RoutingNetworkStoreException(String.format("Node file header reports an edge count of %d, but the file contains %d edges",
+                                                                     this.edgeFileHeader.getEdgeCount(),
+                                                                     edges.size()));
+            }
+
+            return edges;
+        }
+        catch(final RuntimeException | IOException ex)
+        {
+            throw new RoutingNetworkStoreException(ex);
+        }
     }
 
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() throws RoutingNetworkStoreException
+    private static BoundingBox calculateBounds(final Iterable<Node> nodes)
     {
-        return this.coordinateReferenceSystem;
-    }
+        final double[] bbox = { Double.NaN, // x min
+                                Double.NaN, // y min
+                                Double.NaN, // x max
+                                Double.NaN  // y max
+                              };
 
-    @Override
-    public BoundingBox getBounds() throws RoutingNetworkStoreException
-    {
-        return null;
-    }
+        nodes.forEach(node -> { final double x = node.getX();
+                                final double y = node.getY();
 
-    @Override
-    public String getDescription()
-    {
-        return null;
-    }
+                                if(x < bbox[0])
+                                {
+                                    bbox[0] = x;
+                                }
 
-    @Override
-    public NodeDimensionality getNodeDimensionality() throws RoutingNetworkStoreException
-    {
-        return this.elevationAttributeIndex < 0
-                                            ? NodeDimensionality.NoElevation
-                                            : NodeDimensionality.HasElevation;
+                                if(x > bbox[2])
+                                {
+                                    bbox[2] = x;
+                                }
+
+                                if(y < bbox[1])
+                                {
+                                    bbox[1] = y;
+                                }
+
+                                if(y > bbox[3])
+                                {
+                                    bbox[3] = y;
+                                }
+                              });
+
+        return new BoundingBox(bbox[0],
+                               bbox[1],
+                               bbox[2],
+                               bbox[3]);
     }
 
     private final File                      nodeFile;
     private final File                      edgeFile;
     private final NodeFileHeader            nodeFileHeader;
+    private final EdgeFileHeader            edgeFileHeader;
     private final int                       elevationAttributeIndex;
     private final List<Pair<String, Type>>  nodeAttributeDescriptions;
     private final CoordinateReferenceSystem coordinateReferenceSystem;
+
+    private final List<Node>  nodes;
+    private final List<Edge>  edges;
+    private final BoundingBox bounds;
 
     static final Pattern TRIANGLE_NO_DATA_LINE = Pattern.compile("(\\s*(#.*)?)?$");
 }

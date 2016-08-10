@@ -37,20 +37,20 @@ public class Node
      * Constructor
      *
      * @param identifier  Unique node identifier
-     * @param longitude   X part of the node's coordinate
-     * @param latitude    Y part of the node's coordinate
+     * @param x           Horizontal part of the node's coordinate
+     * @param y           vertical part of the node's coordinate
      * @param elevation   Z part of the node's coordinate
      * @param attributes  List of other attributes associated with the node
      */
     public Node(final int          identifier,
-                final double       longitude,
-                final double       latitude,
+                final double       x,
+                final double       y,
                 final Double       elevation,
                 final List<Object> attributes)
     {
         this.identifier = identifier;
-        this.longitude  = longitude;
-        this.latitude   = latitude;
+        this.x          = x;
+        this.y          = y;
         this.elevation  = elevation;
         this.attributes = new ArrayList<>(attributes);
     }
@@ -60,14 +60,14 @@ public class Node
         return this.identifier;
     }
 
-    public double getLongitude()
+    public double getX()
     {
-        return this.longitude;
+        return this.x;
     }
 
-    public double getLatitude()
+    public double getY()
     {
-        return this.latitude;
+        return this.y;
     }
 
     public Double getElevation()
@@ -81,8 +81,8 @@ public class Node
     }
 
     private final int          identifier;
-    private final double       longitude;
-    private final double       latitude;
+    private final double       x;
+    private final double       y;
     private final Double       elevation;
     private final List<Object> attributes;
 }
