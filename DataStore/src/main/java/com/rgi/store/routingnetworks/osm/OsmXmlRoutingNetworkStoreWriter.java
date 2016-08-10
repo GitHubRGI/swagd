@@ -223,7 +223,10 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
         writer.write("</osm>");
     }
 
-    private static double distance(final double fromLatitude, final double fromLongitude, final double toLatitude, final double toLongitude)
+    private static double distance(final double fromLatitude,
+                                   final double fromLongitude,
+                                   final double toLatitude,
+                                   final double toLongitude)
     {
         final double dLat = Math.toRadians(toLatitude - fromLatitude);
         final double dLon = Math.toRadians(toLongitude - fromLongitude);
