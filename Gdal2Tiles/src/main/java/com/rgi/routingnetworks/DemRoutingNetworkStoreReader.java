@@ -401,6 +401,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         wgs84SpatialReference.ImportFromEPSG(WGS84_EPSG_IDENTIFIER);
     }
 
+    // TODO when progress is implemented, we'll want to use something like the following:
     // from ogr2ogr.java - https://searchcode.com/codesearch/view/18938479/
 //    private static class ScaledProgress extends ProgressCallback
 //    {
