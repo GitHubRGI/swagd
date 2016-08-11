@@ -9,7 +9,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="GeoPackage_main" />
     <orderEntry type="module" module-name="Common_main" />
     <orderEntry type="module" module-name="Gdal2Tiles_main" />
     <orderEntry type="module" module-name="DataStore_main" />

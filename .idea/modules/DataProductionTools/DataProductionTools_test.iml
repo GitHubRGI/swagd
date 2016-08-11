@@ -15,9 +15,6 @@
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.slf4j:slf4j-log4j12:1.7.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.slf4j:slf4j-api:1.7.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: log4j:log4j:1.2.17" level="project" />
-    <orderEntry type="module" module-name="Common_main" scope="TEST" />
-    <orderEntry type="module" module-name="DataStore_main" scope="TEST" />
-    <orderEntry type="library" name="Gradle: args4j:args4j:2.32" level="project" />
   </component>
   <component name="TestModuleProperties" production-module="DataProductionTools_main" />
 </module>
