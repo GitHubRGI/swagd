@@ -71,7 +71,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
      *
      * @param file                      File containing the digital elevation model dataset
      * @param rasterBand                Band of the raster to treat as elevation data
-     * @param contourInterval           Elevation interval (elevation values will be multiples of the interval)
+     * @param contourElevationInterval  Contour Elevation interval (elevation values will be multiples of the interval)
      * @param noDataValue               Value that indicates that a pixel contains no elevation data, and is to be ignored (nullable)
      * @param coordinatePrecision       Number of decimal places to round the coordinates. A negative value will cause no rounding to occur
      * @param simplificationTolerance   Tolerance used to simplify the contour rings that are used in the triangulation of the data
@@ -80,7 +80,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
      */
     public DemRoutingNetworkStoreReader(final File   file,
                                         final int    rasterBand,
-                                        final double contourInterval,
+                                        final double contourElevationInterval,
                                         final Double noDataValue,
                                         final int    coordinatePrecision,
                                         final double simplificationTolerance,
@@ -118,7 +118,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 
         // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
         final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
-                                                   contourInterval,                           // double           contourInterval - The elevation interval between contours generated
+                                                   contourElevationInterval,                           // double           contourElevationInterval - The elevation interval between contours generated
                                                    0,                                         // double           contourBase     - The "base" relative to which contour intervals are applied. This is normally zero, but could be different. To generate 10m contours at 5, 15, 25, ... the ContourBase would be 5
                                                    null,                                      // double[]         fixedLevels     - The list of fixed contour levels at which contours should be generated. It will contain FixedLevelCount entries, and may be NULL
                                                    (noDataValue == null) ? 0   : 1,           // int              useNoData       - If TRUE the noDataValue will be used
@@ -213,7 +213,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                          metersPerPixel.getHeight(),
                                          this.nodes.size(),
                                          this.edges.size(),
-                                         contourInterval,
+                                         contourElevationInterval,
                                          noDataValue,
                                          simplificationTolerance,
                                          triangulationTolerance);

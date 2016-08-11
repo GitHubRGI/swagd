@@ -11,6 +11,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="RoutingExtension_main" />
     <orderEntry type="module" module-name="NetworkExtension_main" />
+    <orderEntry type="module" module-name="DataStore_main" />
     <orderEntry type="library" name="Gradle: junit:junit:4.12" level="project" />
     <orderEntry type="module" module-name="Common_main" />
     <orderEntry type="module" module-name="GeoPackage_main" />

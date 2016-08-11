@@ -24,6 +24,8 @@
 
 package com.rgi.dem2gh;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
 import java.io.File;
@@ -33,14 +35,21 @@ import java.io.File;
  */
 public class CommandLineOptions
 {
-	private File inputFile;
-    private int  rasterBand;
+	private File   inputFile;
+    private int    rasterBand;
+    private double contourElevationInterval;
+    private Double noDataValue;
+    private int    coordinatePrecision = -1;
+    private double simplificationTolerance;
+    private double triangulationTolerance;
+
+     // triangulationTolerance    Snaps points that are within a tolerance's distance from one another (we THINK)
 
 	@Option(required = true,
-            name     = "-i",
-            aliases  = "-in",
+            name     = "-d",
+            aliases  = "-dem",
             metaVar  = "<Input File Path>",
-            usage    = "Input digital elevation model")
+            usage    = "File containing the digital elevation model dataset")
 	public void setInputFile(final String inputFilename)
 	{
 		final String path = getFullPath(inputFilename);
@@ -67,9 +76,7 @@ public class CommandLineOptions
             usage    = "Raster band containing elevation data")
 	public void setRasterBand(final int rasterBand)
 	{
-		this.rasterBand = rasterBand;
-
-        if(rasterBand < 1)
+		if(rasterBand < 1)
 		{
 			throw new IllegalArgumentException("Raster band must be greater than 0");
 		}
@@ -82,337 +89,108 @@ public class CommandLineOptions
         return this.rasterBand;
     }
 
-//	@Option(required = false, help = true, name = "-h", aliases = "--help", usage = "Show Help")
-//	public void showHelp(final boolean show) throws CmdLineException
-//	{
-//		this.showHelp = show;
-//		if(show)
-//		{
-//			final CmdLineParser parser = new CmdLineParser(this);
-//			parser.printUsage(System.out);
-//		}
-//	}
-//
-//	/**
-//	 * path to the output file/directory for packaging/tiling
-//	 *
-//	 * @param filePath - output file path
-//	 * @throws IllegalArgumentException - if output path  is null or empty
-//	 */
-//	@Option(required = true, name = "-o", aliases = "-out", metaVar = "<Output File Path>", usage = "Full output path for tiling or Packaging operation")
-//	public void setOutputFile(final String filePath)
-//	{
-//		final String path = HeadlessOptions.getFullPath(filePath);
-//		this.outputFile = new File(path);
-//	}
-//
-//	/**
-//	 * EPSG output SRS number
-//	 *
-//	 * @param outSrs - input SRS
-//	 * @throws IllegalArgumentException if unrecognized spatial reference.
-//	 */
-//	@Option(name = "--outputsrs", metaVar = "<epsg srs int>", usage = "Desired output SRS EPSG identifier, eg 3857")
-//	public void setOutputSrs(final int outSrs)
-//	{
-//		// special case for TMS.
-//		final SpatialReference srs = new SpatialReference();
-//		try
-//		{
-//			if(srs.ImportFromEPSG(outSrs) == 0)
-//			{
-//				this.outputSrs = outSrs;
-//			}
-//		}
-//		catch(final RuntimeException ignored)
-//		{
-//			throw new IllegalArgumentException(String.format("Error: Output SRS %d is not a GDAL supported EPSG value.",
-//															 outSrs));
-//		}
-//
-//	}
-//
-//	/**
-//	 * EPSG input SRS number, required if input is a tms cache
-//	 *
-//	 * @param inSrs - input SRS
-//	 * @throws IllegalArgumentException if unrecognized spatial reference.
-//	 */
-//	@Option(name = "--inputsrs", metaVar = "<epsg srs int>", usage = "Input Spatial reference system EPSG identifier (ie 4326)")
-//	public void setInputSRS(final int inSrs)
-//	{
-//		// special case for TMS.
-//		final SpatialReference srs = new SpatialReference();
-//		try
-//		{
-//			if(srs.ImportFromEPSG(inSrs) == 0)
-//			{
-//				this.inputSrs = inSrs;
-//			}
-//		}
-//		catch(final RuntimeException ignored)
-//		{
-//			throw new IllegalArgumentException(String.format("Error: input SRS %d is not a GDAL supported EPSG value.",
-//															 inSrs));
-//		}
-//	}
-//
-//	/**
-//	 * Tile set Name
-//	 *
-//	 * @param name - name of the tileset to read from
-//	 * @throws IllegalArgumentException - name is null, or longer than 10000 characters
-//	 */
-//	@Option(name = "-ti", metaVar = "<Tile Set Name>", aliases = {"--intileset", "--intilesetname"},
-//			usage = "Input Tile Set for GeoPackages, default is short name of output geopackage.")
-//	public void setTileSetNameIn(final String name)
-//	{
-//		if(name != null && name.length() <= HeadlessOptions.MAGIC_MAX_VALUE)
-//		{
-//			this.tileSetNameIn = name;
-//		}
-//		else
-//		{
-//			throw new IllegalArgumentException("Provided Name is invalid, must be a "
-//											   + "non-null string shorter than MAGIC_MAX_VALUE characters");
-//		}
-//	}
-//
-//	/**
-//	 * Tile set Name
-//	 *
-//	 * @param name - tile set name to write out to
-//	 * @throws IllegalArgumentException - name is null, or longer than 10000 characters
-//	 */
-//	@Option(name = "-to", metaVar = "<Tile Set Name>", aliases = {"--outtileset", "--outtilesetname"},
-//			usage = "Input Tile Set for GeoPackages, default is short name of output geopackage.")
-//	public void setTileSetNameOut(final String name)
-//	{
-//		if(name != null && name.length() <= HeadlessOptions.MAGIC_MAX_VALUE)
-//		{
-//			this.tileSetNameOut = name;
-//		}
-//		else
-//		{
-//			throw new IllegalArgumentException("Provided Name is invalid, must be a "
-//											   + "non-null string shorter than MAGIC_MAX_VALUE characters");
-//		}
-//	}
-//
-//	/**
-//	 * Tile Set Description
-//	 *
-//	 * @param description - test description of tileset
-//	 */
-//	@Option(name = "-d", aliases = "--description", metaVar = "<text tile set description>", usage = "Tile set description")
-//	public void setTileSetDescription(final String description)
-//	{
-//		if(description != null && description.length() <= HeadlessOptions.MAGIC_MAX_VALUE)
-//		{
-//			this.tileSetDescription = description;
-//		}
-//		else
-//		{
-//			throw new IllegalArgumentException("Provided Description is invalid, must be a "
-//											   + "non-null string shorter than MAGIC_MAX_VALUE characters");
-//		}
-//	}
-//
-//	/**
-//	 * tile width
-//	 *
-//	 * @param width - tile width
-//	 * @throws IllegalArgumentException value must be between 1 - MAGIC_MAX_VALUE
-//	 */
-//	@Option(name = "-W", aliases = "--width", metaVar = "<1-9999>", usage = "Tile width in pixels; default is 256")
-//	public void setTileWidth(final int width)
-//	{
-//		if(width > 0 && width < HeadlessOptions.MAGIC_MAX_VALUE)
-//		{
-//			this.tileWidth = width;
-//		}
-//		else
-//		{
-//			throw new IllegalArgumentException(String.format("error setting tile Width to %d, "
-//															 +
-//															 "value must be greater than 0 and less than MAGIC_MAX_VALUE",
-//															 width));
-//		}
-//	}
-//
-//	/**
-//	 * Tile Height
-//	 *
-//	 * @param height - tile height
-//	 * @throws IllegalArgumentException - value must be between 1 and MAGIC_MAX_VALUE
-//	 */
-//	@Option(name = "-H", aliases = "--height", metaVar = "<1-9999>", usage = "Tile height in pixels; default is 256")
-//	public void setTileHeight(final int height)
-//	{
-//		if(height > 0 && height < HeadlessOptions.MAGIC_MAX_VALUE)
-//		{
-//			this.tileHeight = height;
-//		}
-//		else
-//		{
-//			throw new IllegalArgumentException(String.format("error setting tile height to %d, "
-//															 +
-//															 "value must be greater than 0 and less than MAGIC_MAX_VALUE",
-//															 height));
-//		}
-//	}
-//
-//	// image settings
-//	@SuppressWarnings("HardcodedFileSeparator")
-//	@Option(name = "-f", aliases = "--format", metaVar = "image/png or image/jpeg", usage = "Image format for tiling operations, default is png (options are png, jpeg,etc.)")
-//	private void setImageFormat(final String formatString) throws MimeTypeParseException
-//	{
-//		if(formatString.equalsIgnoreCase("image/jpeg")
-//		   || formatString.equalsIgnoreCase("image/png"))
-//		{
-//			this.imageFormat = new MimeType(formatString.toLowerCase());
-//		}
-//		else
-//		{
-//			//noinspection HardcodedFileSeparator
-//			throw new IllegalArgumentException(String.format("error setting image format to %s! must be 'image/jpeg' or 'image/png'",
-//															 formatString));
-//		}
-//	}
-//
-//	@Option(name = "-c", aliases = "--compression", metaVar = "<jpeg>", usage = "Compression type for image tiling, default is jpeg")
-//	public void setCompressionType(final String compressionType)
-//	{
-//		if(compressionType.equalsIgnoreCase("jpeg"))
-//		{
-//			this.compressionType = compressionType.toLowerCase();
-//		}
-//		else
-//		{
-//			throw new IllegalArgumentException(String.format("error setting image compression to %s! must be jpeg",
-//															 compressionType));
-//		}
-//	}
-//
-//	/**
-//	 * quality of compression as a percentage (1-100%)
-//	 *
-//	 * @param compressionQuality - quality of compression as a percentage
-//	 */
-//	@Option(name = "-q", aliases = "--quality", metaVar = "<1-100>", usage = "Compression quality for jpeg compression, between 0-100")
-//	public void setCompressionQuality(final int compressionQuality)
-//	{
-//		if(compressionQuality > 0 && compressionQuality <= 100)
-//		{
-//			this.compressionQuality = compressionQuality;
-//		}
-//		else
-//		{
-//			throw new IllegalArgumentException("Error: Compression Quality must be between 1-100");
-//		}
-//	}
-//
-//	//Getters
-//	public int getTileWidth()
-//	{
-//		return this.tileWidth;
-//	}
-//
-//	public int getTileHeight()
-//	{
-//		return this.tileHeight;
-//	}
-//
-//	public int getOutputSrs()
-//	{
-//		return this.outputSrs;
-//	}
-//
-//	public int getInputSrs()
-//	{
-//		return this.inputSrs;
-//	}
-//
-//	public File getInputFile()
-//	{
-//		return this.inputFile;
-//	}
-//
-//	public MimeType getImageFormat()
-//	{
-//		return this.imageFormat;
-//	}
-//
-//	public boolean getShowHelp() { return this.showHelp; }
-//	/**
-//	 * returns the tilestore adaptor for input
-//	 *
-//	 * @return - adaptor, or null if validation has not yet occured, OR if an error was thrown.
-//	 * @throws IllegalArgumentException
-//	 */
-//	public HeadlessTileStoreAdapter getInputAdapter()
-//	{
-//		if(this.validator != null)
-//		{
-//			return this.validator.getInputAdapter();
-//		}
-//		throw new IllegalArgumentException("Validation has not occurred");
-//	}
-//
-//	/**
-//	 * returns the tilestore adaptor for output
-//	 *
-//	 * @return - adaptor, or null if validation has not yet occured, OR if an error was thrown.
-//	 * @throws IllegalArgumentException - if validation failed or has not yet occured
-//	 */
-//	public HeadlessTileStoreAdapter getOutputAdapter()
-//	{
-//		if(this.validator != null)
-//		{
-//			return this.validator.getOutputAdapter();
-//		}
-//		throw new IllegalArgumentException("Validation has not occurred");
-//	}
-//
-//	public File getOutputFile()
-//	{
-//		return this.outputFile;
-//	}
-//
-//	public String getTileSetNameIn()
-//	{
-//		return this.tileSetNameIn;
-//	}
-//
-//	public String getTileSetNameOut()
-//	{
-//		return this.tileSetNameOut;
-//	}
-//
-//	public String getTileSetDescription()
-//	{
-//		return this.tileSetDescription;
-//	}
-//
-//	public String getCompressionType()
-//	{
-//		return this.compressionType;
-//	}
-//
-//	public int getCompressionQuality()
-//	{
-//		return this.compressionQuality;
-//	}
-//
-//	public boolean isValid()
-//	{
-//		if(this.validator == null)
-//		{
-//			this.validator = new HeadlessOptionsValidator(this, this.logger);
-//		}
-//
-//		return this.validator.isValid();
-//	}
+    @Option(required = true,
+            name     = "-i",
+            aliases  = "-interval",
+            metaVar  = "<Contour Elevation Interval>",
+            usage    = "Contour elevation interval (elevation values will be multiples of the interval). In CRS elevation units.")
+	public void setContourElevationInterval(final double contourElevationInterval)
+	{
+		if(contourElevationInterval <= 0.0)
+		{
+			throw new IllegalArgumentException("Raster band must be greater than 0");
+		}
+
+		this.contourElevationInterval = contourElevationInterval;
+	}
+
+	public double getContourElevationInterval()
+    {
+        return this.contourElevationInterval;
+    }
+
+    @Option(name     = "-v",
+            aliases  = "-noDataValue",
+            metaVar  = "<No Data Value>",
+            usage    = "Value that indicates that a pixel in the DEM contains no elevation data, and is to be ignored")
+	public void setNoDataValue(final Double noDataValue)
+	{
+		this.noDataValue = noDataValue;
+	}
+
+	public Double getNoDataValue()
+    {
+        return this.noDataValue;
+    }
+
+    @Option(name     = "-p",
+            aliases  = "-precision",
+            metaVar  = "<Coordinate Precision>",
+            usage    = "Number of decimal places to round the coordinates. A negative value will cause no rounding to occur")
+	public void setCoordinatePrecision(final int coordinatePrecision)
+	{
+		if(coordinatePrecision < 0)
+		{
+			throw new IllegalArgumentException("Coordinate precision must be greater than 0");
+		}
+
+		this.coordinatePrecision = coordinatePrecision;
+	}
+
+	public int getCoordinatePrecision()
+    {
+        return this.coordinatePrecision;
+    }
+
+    @Option(required = true,
+            name     = "-s",
+            aliases  = "-simplificationTolerance",
+            metaVar  = "<Contour Simplification Tolerance>",
+            usage    = "Tolerance used to simplify the contour rings that are used in the triangulation of the data. All nodes in the simplified geometry will be within this tolerance of the original geometry. The tolerance value must be non-negative. A tolerance value of zero is effectively a no-op.")
+	public void setSimplificationTolerance(final double simplificationTolerance)
+	{
+		if(simplificationTolerance < 0.0)
+		{
+			throw new IllegalArgumentException("Contour simplification tolerance must be greater than 0");
+		}
+
+		this.simplificationTolerance = simplificationTolerance;
+	}
+
+	public double getSimplificationTolerance()
+    {
+        return this.simplificationTolerance;
+    }
+
+    @Option(required = true,
+            name     = "-t",
+            aliases  = "-triangulationTolerance",
+            metaVar  = "<Triangulation Tolerance>",
+            usage    = "Snaps points that are within a tolerance's distance from one another.")
+	public void setTriangulationTolerance(final double triangulationTolerance)
+	{
+		if(triangulationTolerance < 0.0)
+		{
+			throw new IllegalArgumentException("Triangulation tolerance must be greater than 0");
+		}
+
+		this.triangulationTolerance = triangulationTolerance;
+	}
+
+	public double getTriangulationTolerance()
+    {
+        return this.triangulationTolerance;
+    }
+
+	@Option(help = true,
+            name = "-h",
+            aliases = "--help",
+            usage = "Show Help")
+	public void showHelp(final boolean showHelp) throws CmdLineException
+	{
+		final CmdLineParser parser = new CmdLineParser(this);
+		parser.printUsage(System.out);
+	}
 
 	/**
 	 * returns a full path to the specified file, replacing cmdline based shortcuts

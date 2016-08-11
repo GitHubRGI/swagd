@@ -45,36 +45,35 @@ public class Dem2Graphhopper
         try
         {
             parser.parseArgument(args);
-            if(options.isValid())
-            {
-                final String inputFilename = options.getInputFile().getName();
 
-                final File outputFile = new File(inputFilename.substring(0, inputFilename.indexOf('.')) + ".osm.xml");
+            final String inputFilename = options.getInputFile().getName();
+
+            final File outputFile = new File(inputFilename.substring(0, inputFilename.indexOf('.')) + ".osm.xml");
 
 
-                final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(options.getInputFile(),
-                                                                                                 1,
-                                                                                                 10.0,
-                                                                                                 null,
-                                                                                                 4,
-                                                                                                 20.0,
-                                                                                                 0.00001);  // I /think/ this is about a meter's worth of distance at the equator
+            final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(options.getInputFile(),
+                                                                                             options.getRasterBand(),
+                                                                                             options.getContourElevationInterval(),
+                                                                                             options.getNoDataValue(),
+                                                                                             options.getCoordinatePrecision(),
+                                                                                             options.getSimplificationTolerance(),
+                                                                                             options.getTriangulationTolerance());
 
-                final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
-                                                                                                    networkReader.getBounds(),
-                                                                                                    networkReader.getDescription());
+            final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
+                                                                                                networkReader.getBounds(),
+                                                                                                networkReader.getDescription());
 
-                networkWriter.write(networkReader.getNodes(),
-                                    networkReader.getEdges(),
-                                    networkReader.getNodeDimensionality(),
-                                    networkReader.getNodeAttributeDescriptions(),
-                                    networkReader.getEdgeAttributeDescriptions(),
-                                    networkReader.getCoordinateReferenceSystem());
-            }
+            networkWriter.write(networkReader.getNodes(),
+                                networkReader.getEdges(),
+                                networkReader.getNodeDimensionality(),
+                                networkReader.getNodeAttributeDescriptions(),
+                                networkReader.getEdgeAttributeDescriptions(),
+                                networkReader.getCoordinateReferenceSystem());
         }
         catch(final Throwable th)
         {
             System.err.println(th.getMessage());
+            parser.printUsage(System.out);
         }
     }
 }
