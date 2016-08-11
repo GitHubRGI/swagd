@@ -281,25 +281,26 @@ public class FeaturesVerifier extends Verifier
                    Severity.Warning);
     }
 
-    /**
-     * Requirement XX
-     *
-     * <blockquote>
-     *
-     * </blockquote>
-     *
-     *
-     * (<a href="http://www.geopackage.org/spec/#XX">ref</a>)
-     *
-     * @throws AssertionError
-     *             throws if the GeoPackage fails to meet the requirement
-     */
-    @Requirement(reference = "Requirement XX",
-                 text      = "")
-    public void requirementXX() throws AssertionError
-    {
-
-    }
+    // template for remaining requirement tests
+//    /**
+//     * Requirement XX
+//     *
+//     * <blockquote>
+//     *
+//     * </blockquote>
+//     *
+//     *
+//     * (<a href="http://www.geopackage.org/spec/#XX">ref</a>)
+//     *
+//     * @throws AssertionError
+//     *             throws if the GeoPackage fails to meet the requirement
+//     */
+//    @Requirement(reference = "Requirement XX",
+//                 text      = "")
+//    public void requirementXX() throws AssertionError
+//    {
+//
+//    }
 
     /**
      * The restrictions here match: http://www.geopackage.org/spec/#_data_21
@@ -321,17 +322,6 @@ public class FeaturesVerifier extends Verifier
             return false;
         }
     }
-
-//    private String getGeometryColumnName(final String tableName) throws SQLException
-//    {
-//        return JdbcUtility.selectOne(this.getSqliteConnection(),
-//                                     String.format("SELECT %s FROM %s WHERE %s = ?",
-//                                                   "column_name",
-//                                                   GeoPackageFeatures.GeometryColumnsTableName,
-//                                                   "table_name"),
-//                                     preparedStatement -> preparedStatement.setString(1, tableName),
-//                                     resultSet -> resultSet.getString("column_name"));
-//    }
 
     private boolean hasPrimaryKey(final String tableName)
     {

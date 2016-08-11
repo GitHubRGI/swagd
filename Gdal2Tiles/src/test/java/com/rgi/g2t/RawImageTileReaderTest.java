@@ -81,7 +81,7 @@ public class RawImageTileReaderTest
     {
         final Dataset dataset = GdalUtility.open(this.rawData);
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
-        try (final RawImageTileReader ignored = new RawImageTileReader(null, dataset, tileDimensions, null, null))
+        try(final RawImageTileReader ignored = new RawImageTileReader(null, dataset, tileDimensions, null, null))
         {
             fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
@@ -100,7 +100,7 @@ public class RawImageTileReaderTest
         final Dataset dataset = GdalUtility.open(this.rawData);
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
 
-        try (final RawImageTileReader ignored = new RawImageTileReader(new File("S"), dataset, tileDimensions, null, null))
+        try(final RawImageTileReader ignored = new RawImageTileReader(new File("S"), dataset, tileDimensions, null, null))
         {
             fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
@@ -117,7 +117,7 @@ public class RawImageTileReaderTest
     public void constructorIllegalArgumentException3() throws TileStoreException
     {
         final Color color = Color.BLUE;
-        try (final RawImageTileReader ignored = new RawImageTileReader(this.rawData, null, color))
+        try(final RawImageTileReader ignored = new RawImageTileReader(this.rawData, null, color))
         {
             fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
@@ -133,7 +133,7 @@ public class RawImageTileReaderTest
         final Dataset dataset = gdal.GetDriverByName("MEM").Create("test", 12, 23, 0);
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
 
-        try (final RawImageTileReader ignored = new RawImageTileReader(this.rawData, dataset, tileDimensions, null, null))
+        try(final RawImageTileReader ignored = new RawImageTileReader(this.rawData, dataset, tileDimensions, null, null))
         {
             fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
@@ -153,7 +153,7 @@ public class RawImageTileReaderTest
         final Dataset dataset = gdal.GetDriverByName("MEM").Create("test", 12, 23, 1);
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
 
-        try (final RawImageTileReader ignored = new RawImageTileReader(this.rawData, dataset, tileDimensions, null, null))
+        try(final RawImageTileReader ignored = new RawImageTileReader(this.rawData, dataset, tileDimensions, null, null))
         {
             fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
@@ -177,7 +177,7 @@ public class RawImageTileReaderTest
 
         final Dimensions<Integer> tileDimensions = new Dimensions<>(256, 256);
 
-        try (final RawImageTileReader ignored = new RawImageTileReader(this.rawData, dataset, tileDimensions, null, null))
+        try(final RawImageTileReader ignored = new RawImageTileReader(this.rawData, dataset, tileDimensions, null, null))
         {
             fail("Expected RawImageTileReader to throw an IllegalArgumentException.");
         }
@@ -266,12 +266,11 @@ public class RawImageTileReaderTest
         final int maxZoom = GdalUtility.getMaximalZoom(data, tileRanges, TileOrigin.LowerLeft, tileScheme, tileSize);
 
         final int tileCount  =   IntStream.rangeClosed(minZoom, maxZoom)
-                                          .map(zoomLevel -> {
-                                                                final Range<Coordinate<Integer>> range = tileRanges.get(zoomLevel);
+                                          .map(zoomLevel -> { final Range<Coordinate<Integer>> range = tileRanges.get(zoomLevel);
 
-                                                                return (range.getMaximum().getX() - range.getMinimum().getX() + 1) *
-                                                                       (range.getMinimum().getY() - range.getMaximum().getY() + 1);
-                                           })
+                                                              return (range.getMaximum().getX() - range.getMinimum().getX() + 1) *
+                                                                     (range.getMinimum().getY() - range.getMaximum().getY() + 1);
+                                                            })
                                           .sum();
 
         try(final RawImageTileReader reader = new RawImageTileReader(this.rawData, tileSize, Color.BLACK))
@@ -413,16 +412,15 @@ public class RawImageTileReaderTest
         try(final RawImageTileReader reader = new RawImageTileReader(this.rawData, tileSize, Color.BLACK))
         {
             final AtomicLong count = new AtomicLong(0);
-            reader.getZoomLevels().forEach(zoom ->
-            {
-                try
-                {
-                    count.addAndGet(reader.stream(zoom).count());
-                } catch(final TileStoreException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            });
+            reader.getZoomLevels().forEach(zoom -> { try
+                                                     {
+                                                         count.addAndGet(reader.stream(zoom).count());
+                                                     }
+                                                     catch(final TileStoreException e)
+                                                     {
+                                                         throw new RuntimeException(e);
+                                                     }
+                                                   });
             assertEquals("RawImageTileReader method stream() did not return the correct stream",
                          reader.stream().count(),
                          reader.countTiles());

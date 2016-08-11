@@ -109,7 +109,7 @@ public class WellKnownBinaryFactory
         this.geometryFactories.put(WkbGeometryZM.GeometryTypeDimensionalityBase + GeometryType.GeometryCollection.getCode(), (byteBuffer) -> WkbGeometryCollectionZM.readWellKnownBinary(this::createGeometry, byteBuffer));  // type 7 XYZM
     }
 
-        /**
+    /**
      * Associate a geometry factory with a specific geometry type code.
      *
      * @param geometryTypeCode
