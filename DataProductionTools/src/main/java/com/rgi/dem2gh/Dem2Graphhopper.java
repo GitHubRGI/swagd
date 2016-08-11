@@ -24,6 +24,8 @@
 
 package com.rgi.dem2gh;
 
+import com.graphhopper.GraphHopper;
+import com.graphhopper.util.CmdArgs;
 import com.rgi.routingnetworks.DemRoutingNetworkStoreReader;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
@@ -69,6 +71,12 @@ public class Dem2Graphhopper
                                 networkReader.getNodeAttributeDescriptions(),
                                 networkReader.getEdgeAttributeDescriptions(),
                                 networkReader.getCoordinateReferenceSystem());
+
+            final CmdArgs cmdArgs = new CmdArgs();
+
+            //cmdArgs.put();
+
+            final GraphHopper gh = new GraphHopper().init(cmdArgs);
         }
         catch(final Throwable th)
         {
