@@ -10,10 +10,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="NetworkExtension_main" />
+    <orderEntry type="module" module-name="DataStore_main" />
     <orderEntry type="module" module-name="Common_main" />
     <orderEntry type="module" module-name="GeoPackage_main" />
     <orderEntry type="library" name="Gradle: org.xerial:sqlite-jdbc:3.8.7" level="project" />
     <orderEntry type="library" name="Gradle: args4j:args4j:2.32" level="project" />
-    <orderEntry type="module" module-name="DataStore_main" />
   </component>
 </module>
