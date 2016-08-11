@@ -41,58 +41,58 @@ import java.util.Collections;
  */
 public class DemRoutingNetworkStoreReaderTest
 {
-    @Test
-    public void testDemToOsm() throws RoutingNetworkStoreException
-    {
-        final File inputFile  = new File("C:/Users/corp/Desktop/mwtc_srtm_90m.tif");
-        final File outputFile = new File(inputFile.getName().substring(0, inputFile.getName().indexOf('.')) + ".osm.xml");
-
-        final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(inputFile,
-                                                                                         1,
-                                                                                         10.0,
-                                                                                         null,
-                                                                                         4,
-                                                                                         20.0,
-                                                                                         0.00001);  // I /think/ this is about a meter's worth of distance at the equator
-
-        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
-                                                                                            networkReader.getBounds(),
-                                                                                            networkReader.getDescription());
-
-        networkWriter.write(networkReader.getNodes(),
-                            networkReader.getEdges(),
-                            networkReader.getNodeDimensionality(),
-                            networkReader.getNodeAttributeDescriptions(),
-                            networkReader.getEdgeAttributeDescriptions(),
-                            networkReader.getCoordinateReferenceSystem());
-
-
-    }
-
-    @Test
-    public void testTriangleToOsm() throws RoutingNetworkStoreException, IOException
-    {
-        final File nodeFile  = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
-        final File edgeFile  = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
-        final File outputFile = new File(nodeFile.getName().substring(0, nodeFile.getName().indexOf('.')) + ".osm.xml");
-
-        final RoutingNetworkStoreReader networkReader = new TriangleRoutingNetworkStoreReader(nodeFile,
-                                                                                              edgeFile,
-                                                                                              0,
-                                                                                              Collections.emptyList(),
-                                                                                              new CoordinateReferenceSystem("EPSG", 4326));
-
-        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
-                                                                                            networkReader.getBounds(),
-                                                                                            networkReader.getDescription());
-
-        networkWriter.write(networkReader.getNodes(),
-                            networkReader.getEdges(),
-                            networkReader.getNodeDimensionality(),
-                            networkReader.getNodeAttributeDescriptions(),
-                            networkReader.getEdgeAttributeDescriptions(),
-                            networkReader.getCoordinateReferenceSystem());
-
-
-    }
+//    @Test
+//    public void testDemToOsm() throws RoutingNetworkStoreException
+//    {
+//        final File inputFile  = new File("C:/Users/corp/Desktop/mwtc_srtm_90m.tif");
+//        final File outputFile = new File(inputFile.getName().substring(0, inputFile.getName().indexOf('.')) + ".osm.xml");
+//
+//        final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(inputFile,
+//                                                                                         1,
+//                                                                                         10.0,
+//                                                                                         null,
+//                                                                                         4,
+//                                                                                         20.0,
+//                                                                                         0.00001);  // I /think/ this is about a meter's worth of distance at the equator
+//
+//        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
+//                                                                                            networkReader.getBounds(),
+//                                                                                            networkReader.getDescription());
+//
+//        networkWriter.write(networkReader.getNodes(),
+//                            networkReader.getEdges(),
+//                            networkReader.getNodeDimensionality(),
+//                            networkReader.getNodeAttributeDescriptions(),
+//                            networkReader.getEdgeAttributeDescriptions(),
+//                            networkReader.getCoordinateReferenceSystem());
+//
+//
+//    }
+//
+//    @Test
+//    public void testTriangleToOsm() throws RoutingNetworkStoreException, IOException
+//    {
+//        final File nodeFile  = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.node");
+//        final File edgeFile  = new File("C:/Users/corp/Desktop/sample data/networks/triangle/contour.1/contour.1.edge");
+//        final File outputFile = new File(nodeFile.getName().substring(0, nodeFile.getName().indexOf('.')) + ".osm.xml");
+//
+//        final RoutingNetworkStoreReader networkReader = new TriangleRoutingNetworkStoreReader(nodeFile,
+//                                                                                              edgeFile,
+//                                                                                              0,
+//                                                                                              Collections.emptyList(),
+//                                                                                              new CoordinateReferenceSystem("EPSG", 4326));
+//
+//        final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
+//                                                                                            networkReader.getBounds(),
+//                                                                                            networkReader.getDescription());
+//
+//        networkWriter.write(networkReader.getNodes(),
+//                            networkReader.getEdges(),
+//                            networkReader.getNodeDimensionality(),
+//                            networkReader.getNodeAttributeDescriptions(),
+//                            networkReader.getEdgeAttributeDescriptions(),
+//                            networkReader.getCoordinateReferenceSystem());
+//
+//
+//    }
 }
