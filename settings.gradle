@@ -18,3 +18,5 @@ project(':NetworkExtension').projectDir = "$rootDir/NetworkExtension" as File
 project(':Packager').projectDir = "$rootDir/Packager" as File
 project(':RGISuite').projectDir = "$rootDir/RGISuite" as File
 project(':RoutingExtension').projectDir = "$rootDir/RoutingExtension" as File
+include 'DataProductionTools'
+
