@@ -286,8 +286,8 @@ public final class GenerateRoutingNetworks
              .filter(line -> !line.startsWith("#"))
              .forEach(line -> { final String[] pieces = SpacePattern.split(line.trim());
 
-                                double x = Double.valueOf(pieces[longitudeIndex]);
-                                double y = Double.valueOf(pieces[latitudeIndex]);
+                                final double x = Double.valueOf(pieces[longitudeIndex]);
+                                final double y = Double.valueOf(pieces[latitudeIndex]);
 
                                 if(x < bbox[0])
                                 {
@@ -320,10 +320,10 @@ public final class GenerateRoutingNetworks
      * Puts a file in the Triangle utility node format
      * (https://www.cs.cmu.edu/~quake/triangle.node.html) into a network
      */
-    private static void loadNodeAttributes(final GeoPackageNetworkExtension       networkExtension,
-                                           final File                             triangleFormatNodes,
-                                           final Network                          network,
-                                           final Collection<AttributeDescription> attributeDescriptions) throws SQLException, IOException
+    private static void loadNodeAttributes(final GeoPackageNetworkExtension networkExtension,
+                                           final File                       triangleFormatNodes,
+                                           final Network                    network,
+                                           final List<AttributeDescription> attributeDescriptions) throws SQLException, IOException
     {
         final Function<String, Pair<Integer, List<Object>>> lineToPair = line -> { final String[] pieces = SpacePattern.split(line.trim());
 
@@ -383,10 +383,10 @@ public final class GenerateRoutingNetworks
         }
     }
 
-    private static void loadAttributedEdges(final GeoPackageNetworkExtension       networkExtension,
-                                            final ResultSet                        resultSet,
-                                            final Network                          network,
-                                            final Collection<AttributeDescription> attributeDescriptions) throws SQLException
+    private static void loadAttributedEdges(final GeoPackageNetworkExtension networkExtension,
+                                            final ResultSet                  resultSet,
+                                            final Network                    network,
+                                            final List<AttributeDescription> attributeDescriptions) throws SQLException
     {
         final Collection<Pair<Pair<Integer, Integer>, List<Object>>> edges = new ArrayList<>();
 

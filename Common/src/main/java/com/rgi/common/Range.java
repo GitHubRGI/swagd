@@ -52,7 +52,7 @@ public class Range <T>
     }
 
     /**
-     * This constructor iterates over a container who's generic type is
+     * This constructor iterates over a container whose generic type is
      * mapped to the T via the mapper function.  The comparison function
      * determines the ordering of the container's objects.
      *

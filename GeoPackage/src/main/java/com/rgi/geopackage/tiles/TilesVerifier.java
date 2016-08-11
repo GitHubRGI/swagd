@@ -33,7 +33,7 @@ import com.rgi.geopackage.verification.ColumnDefinition;
 import com.rgi.geopackage.verification.ForeignKeyDefinition;
 import com.rgi.geopackage.verification.Requirement;
 import com.rgi.geopackage.verification.Severity;
-import com.rgi.geopackage.verification.TableDefinition;
+import com.rgi.geopackage.verification.UniqueDefinition;
 import com.rgi.geopackage.verification.VerificationLevel;
 import com.rgi.geopackage.verification.Verifier;
 
@@ -58,6 +58,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -97,18 +98,16 @@ public class TilesVerifier extends Verifier
         this.hasTileMatrixTable    = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageTiles.MatrixTableName);
         this.hasTileMatrixSetTable = DatabaseUtility.tableOrViewExists(this.getSqliteConnection(), GeoPackageTiles.MatrixSetTableName);
 
-        final String queryTables = "SELECT tbl_name FROM sqlite_master " +
-                                   "WHERE tbl_name NOT LIKE 'gpkg_%' "   +
-                                   "AND (type = 'table' OR type = 'view');";
-
         this.tileTableNames = JdbcUtility.selectFilter(this.getSqliteConnection(),
-                                                       queryTables,
+                                                       "SELECT tbl_name FROM sqlite_master WHERE tbl_name NOT LIKE 'gpkg_%' AND (type = 'table' OR type = 'view');",
                                                        null,
                                                        resultSet -> resultSet.getString("tbl_name"),
                                                        tableName -> { try
                                                                       {
-                                                                          final TableDefinition possiblePyramidTable = new TilePyramidUserDataTableDefinition(tableName);
-                                                                          this.verifyTable(possiblePyramidTable);
+                                                                          this.verifyTable(tableName,
+                                                                                           TilePyramidUserDataTableColumns,
+                                                                                           TilePyramidUserDataTableForeignKeys,
+                                                                                           TilePyramidUserDataTableUniqueColumnGroups);
                                                                           return true;
                                                                       }
                                                                       catch(final SQLException | AssertionError ignored)
@@ -145,7 +144,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 34",
                  text      = "The gpkg_contents table SHALL contain a row with a data_type column value of \"tiles\" for each tile pyramid user data table or view.")
-    public void Requirement34() throws AssertionError
+    public void requirement34() throws AssertionError
     {
         final Collection<String> missingTileTableNames = this.tileTableNames
                                                              .stream()
@@ -174,7 +173,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 35",
                  text      = "In a GeoPackage that contains a tile pyramid user data table that contains tile data, by default, zoom level pixel sizes for that table SHALL vary by a factor of 2 between zoom levels in tile matrix metadata table.")
-    public void Requirement35() throws SQLException, AssertionError
+    public void requirement35() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -264,7 +263,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 36",
                  text      = "In a GeoPackage that contains a tile pyramid user data table that contains tile data SHALL store that tile data in MIME type image/jpeg or image/png")
-    public void Requirement36() throws SQLException, AssertionError
+    public void requirement36() throws SQLException, AssertionError
     {
         assertTrue("Test skipped when verification level is not set to " + VerificationLevel.Full.name(),
                    this.verificationLevel == VerificationLevel.Full,
@@ -315,7 +314,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 37",
                  text      = "In a GeoPackage that contains a tile pyramid user data table that contains tile data that is not MIME type image png, by default SHALL store that tile data in MIME type image jpeg")
-    public void Requirement37()
+    public void requirement37()
     {
         // This requirement is tested through Requirement 35 test in TilesVerifier.
     }
@@ -339,7 +338,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 38",
                  text      = "A GeoPackage that contains a tile pyramid user data table SHALL contain gpkg_tile_matrix_set table or view per Table Definition, Tile Matrix Set Table or View Definition and gpkg_tile_matrix_set Table Creation SQL. ")
-    public void Requirement38() throws AssertionError, SQLException
+    public void requirement38() throws AssertionError, SQLException
     {
         if(!this.tileTableNames.isEmpty())
         {
@@ -389,7 +388,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 39",
                  text      = "Values of the gpkg_tile_matrix_set table_name column SHALL reference values in the gpkg_contents table_name column for rows with a data type of \"tiles\".")
-    public void Requirement39() throws SQLException, AssertionError
+    public void requirement39() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixSetTable)
         {
@@ -424,7 +423,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 40",
                  text      = "The gpkg_tile_matrix_set table or view SHALL contain one row record for each tile pyramid user data table.")
-    public void Requirement40() throws SQLException, AssertionError
+    public void requirement40() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixSetTable)
         {
@@ -460,7 +459,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 41",
                   text      = "Values of the gpkg_tile_matrix_set srs_id column SHALL reference values in the gpkg_spatial_ref_sys srs_id column.")
-    public void Requirement41() throws SQLException, AssertionError
+    public void requirement41() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixSetTable)
         {
@@ -508,7 +507,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 42",
                   text      = "A GeoPackage that contains a tile pyramid user data table SHALL contain a gpkg_tile_matrix table or view per clause 2.2.7.1.1 Table Definition, Table Tile Matrix Metadata Table or View Definition and Table gpkg_tile_matrix Table Creation SQL.")
-    public void Requirement42() throws AssertionError, SQLException
+    public void requirement42() throws AssertionError, SQLException
     {
         if(!this.tileTableNames.isEmpty())
         {
@@ -559,7 +558,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 43",
                   text      = "Values of the gpkg_tile_matrix table_name column SHALL reference values in the gpkg_contents table_name column for rows with a data_type of 'tiles'.")
-    public void Requirement43() throws SQLException, AssertionError
+    public void requirement43() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -599,7 +598,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 44",
                   text      = "The gpkg_tile_matrix table or view SHALL contain one row record for each zoom level that contains one or more tiles in each tile pyramid user data table or view.")
-    public void Requirement44() throws SQLException, AssertionError
+    public void requirement44() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -646,7 +645,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 45",
                   text      = "The minimum bounding box defined in the gpkg_tile_matrix_set table or view for a tile pyramid user data table SHALL be exact so that the bounding box coordinates for individual tiles in a tile pyramid MAY be calculated based on the column values for the user data table in the gpkg_tile_matrix table or view.")
-    public void Requirement45() throws SQLException, AssertionError
+    public void requirement45() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable &&
            this.hasTileMatrixSetTable)
@@ -729,7 +728,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 46",
                   text      = "The zoom_level column value in a gpkg_tile_matrix table row SHALL not be negative.")
-    public void Requirement46() throws SQLException, AssertionError
+    public void requirement46() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -759,7 +758,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 47",
                   text      = "The matrix_width column value in a gpkg_tile_matrix table row SHALL be greater than 0.")
-    public void Requirement47() throws SQLException, AssertionError
+    public void requirement47() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -795,7 +794,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 48",
                   text      = "The matrix_height column value in a gpkg_tile_matrix table row SHALL be greater than 0.")
-    public void Requirement48() throws SQLException, AssertionError
+    public void requirement48() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -831,7 +830,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 49",
                   text      = "The tile_width column value in a gpkg_tile_matrix table row SHALL be greater than 0.")
-    public void Requirement49() throws SQLException, AssertionError
+    public void requirement49() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -867,7 +866,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 50",
                  text      = "The tile_height column value in a gpkg_tile_matrix table row SHALL be greater than 0.")
-    public void Requirement50() throws SQLException, AssertionError
+    public void requirement50() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -903,7 +902,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 51",
                   text      = "The pixel_x_size column value in a gpkg_tile_matrix table row SHALL be greater than 0.")
-    public void Requirement51() throws SQLException, AssertionError
+    public void requirement51() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -940,7 +939,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 52",
                   text      = "The pixel_y_size column value in a gpkg_tile_matrix table row SHALL be greater than 0.")
-    public void Requirement52() throws SQLException, AssertionError
+    public void requirement52() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -979,7 +978,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 53",
                   text      = "The pixel_x_size and pixel_y_size column values for zoom_level column values in a gpkg_tile_matrix table sorted in ascending order SHALL be sorted in descending order.")
-    public void Requirement53() throws SQLException, AssertionError
+    public void requirement53() throws SQLException, AssertionError
     {
         if(this.hasTileMatrixTable)
         {
@@ -1073,12 +1072,15 @@ public class TilesVerifier extends Verifier
                               + " column constraints per Clause 2.2.8.1.1 Table Definition,"
                               + " Tiles Table or View Definition and EXAMPLE: tiles table "
                               + "Insert Statement (Informative).")
-    public void Requirement54() throws SQLException, AssertionError
+    public void requirement54() throws SQLException, AssertionError
     {
         // Verify the tables are defined correctly
-        for(final String table: this.contentsTileTableNames)
+        for(final String tableName: this.contentsTileTableNames)
         {
-            this.verifyTable(new TilePyramidUserDataTableDefinition(table));
+            this.verifyTable(tableName,
+                             TilePyramidUserDataTableColumns,
+                             TilePyramidUserDataTableForeignKeys,
+                             TilePyramidUserDataTableUniqueColumnGroups);
         }
     }
 
@@ -1100,7 +1102,7 @@ public class TilesVerifier extends Verifier
                               + "the tile pyramid (tp) user data table zoom_level column value in a "
                               + "GeoPackage SHALL be in the range min(tm.zoom_level) less than or equal "
                               + "to tp.zoom_level less than or equal to max(tm.zoom_level).")
-    public void Requirement55() throws AssertionError, SQLException
+    public void requirement55() throws AssertionError, SQLException
     {
         if(this.hasTileMatrixTable)
         {
@@ -1167,7 +1169,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement(reference = "Requirement 56",
                  text      = "For each distinct table_name from the gpkg_tile_matrix (tm) table, the tile pyramid (tp) user data table tile_column column value in a GeoPackage SHALL be in the range 0 <= tp.tile_column <= tm.matrix_width - 1 where the tm and tp zoom_level column values are equal. ")
-    public void Requirement56() throws AssertionError, SQLException
+    public void requirement56() throws AssertionError, SQLException
     {
         if(this.hasTileMatrixTable)
         {
@@ -1230,7 +1232,7 @@ public class TilesVerifier extends Verifier
      */
     @Requirement (reference = "Requirement 57",
                   text      = "For each distinct table_name from the gpkg_tile_matrix (tm) table, the tile pyramid (tp) user data table tile_row column value in a GeoPackage SHALL be in the range 0 <= tp.tile_row <= tm.matrix_height - 1 where the tm and tp zoom_level column values are equal.")
-    public void Requirement57() throws AssertionError, SQLException
+    public void requirement57() throws AssertionError, SQLException
     {
         if(this.hasTileMatrixTable)
         {
@@ -1276,98 +1278,6 @@ public class TilesVerifier extends Verifier
                          Severity.Warning);
         }
     }
-
-    /**
-     * Reference 2.2.6.1.1 Table 8. TileMatrix Set Table or View Definition para. 1
-     * <blockquote>
-     * The gpkg_tile_matrix_set table or updateable view defines the minimum bounding box ({@code min_x, min_y, max_x, max_y})
-     * and spatial reference system ({@code srs_id}) for all content in a tile pyramid user data table.
-     * </blockquote>
-     *
-     * @throws AssertionError throws if the GeoPackage fails to meet the requirement
-     * @throws SQLException throws if an SQLException occurs
-     */
-    /*@Requirement (reference = "Reference 2.2.6.1.1 Table 8.",
-                  text      = "The gpkg_tile_matrix_set table or updateable view defines the minimum bounding box (min_x, min_y, max_x, max_y)"
-                               +" and spatial reference system (srs_id) for all content in a tile pyramid user data table. ")
-    public void reference22611Table8() throws SQLException, AssertionError
-    {
-        if(this.hasTileMatrixTable)
-        {
-            for(final String pyramidTable: this.tileTableNames)
-            {
-
-                final String tileRowMaxQuery = String.format("SELECT matrix_height as height, " +
-                                                              "zoom_level as zoom, "      +
-                                                              "table_name "                +
-                                                       "FROM gpkg_tile_matrix "           +
-                                                       "WHERE table_name = ? "            +
-                                                       "AND ( "                           +
-                                                               "EXISTS( SELECT NULL FROM %1$s WHERE tile_row = (height - 1) AND zoom_level = zoom ) " +
-                                                            ");",
-                                                      pyramidTable);
-
-                final String tileColumnMaxQuery = String.format("SELECT matrix_width as width, " +
-                                                                 "zoom_level as zoom, "      +
-                                                                 "table_name "                +
-                                                          "FROM gpkg_tile_matrix "           +
-                                                          "WHERE table_name = ? "           +
-                                                          "AND ( "                           +
-                                                                  "EXISTS( SELECT NULL FROM %1$s WHERE tile_column = (width - 1) AND zoom_level = zoom ) " +
-                                                               ");",
-                                                          pyramidTable);
-
-                final String tileRowMinQuery = String.format("SELECT tile_row FROM %s WHERE tile_row = 0;", pyramidTable);
-
-                final String tileColumnMinQuery = String.format("SELECT tile_column FROM %s WHERE tile_column = 0;", pyramidTable);
-
-
-                try(final PreparedStatement maxRowStatement    = this.getSqliteConnection().prepareStatement(tileRowMaxQuery);
-                    PreparedStatement maxColumnStatement = this.getSqliteConnection().prepareStatement(tileColumnMaxQuery))
-                {
-                    maxRowStatement.setString(1, pyramidTable);
-                    maxColumnStatement.setString(1, pyramidTable);
-
-                    try(final Statement minRowStatement = this.getSqliteConnection().createStatement();
-                        Statement minColumnStatement = this.getSqliteConnection().createStatement();
-
-                        final ResultSet maxRowResults = maxRowStatement.executeQuery();
-                        final ResultSet maxColumnResults = maxColumnStatement.executeQuery();
-                        final ResultSet minRowResult    = minRowStatement.executeQuery(tileRowMinQuery);
-                        final ResultSet minColumnResult = minColumnStatement.executeQuery(tileColumnMinQuery))
-                    {
-                        final Collection<String> errors = new ArrayList<>();
-
-                        if(!minColumnResult.isBeforeFirst())
-                        {
-                            errors.add("minimum column (0)");
-                        }
-
-                        if(!minRowResult.isBeforeFirst())
-                        {
-                            errors.add("minimum row (0)");
-                        }
-
-                        if(!maxColumnResults.isBeforeFirst())
-                        {
-                            errors.add("maximum column (matrix_width - 1)");
-                        }
-
-                        if(!maxRowResults.isBeforeFirst())
-                        {
-                            errors.add("maximum row (matrix_height - 1)");
-                        }
-
-                        assertTrue(String.format("There must be at least one tile in the minimum and maximum row and column in tile pyramid user data table '%s'.  The table has no tile for %s, at any zoom level.  The table's contents do not agree with its associated minimum bounding box defined by gpkg_tile_matrix_set.",
-                                                pyramidTable,
-                                                String.join(", ", errors)),
-                                   errors.isEmpty(),
-                                   Severity.Warning);
-                    }
-                }
-            }
-        }
-    }*/
 
     private static boolean isAcceptedImageFormat(final byte[] tileData)
     {
@@ -1416,9 +1326,9 @@ public class TilesVerifier extends Verifier
                                                           {
                                                               image.reset();
                                                           }
-                                                          catch(final Exception e)
+                                                          catch(final IOException ignored)
                                                           {
-                                                              e.printStackTrace();
+
                                                           }
                                                       }
                                                     });
@@ -1433,9 +1343,25 @@ public class TilesVerifier extends Verifier
     private static final Collection<ImageReader> jpegImageReaders;
     private static final Collection<ImageReader> pngImageReaders;
 
+    private static final Map<String, ColumnDefinition> TilePyramidUserDataTableColumns;
+    private static final Set<ForeignKeyDefinition>     TilePyramidUserDataTableForeignKeys;
+    private static final Set<UniqueDefinition>         TilePyramidUserDataTableUniqueColumnGroups;
+
+
     static
     {
         jpegImageReaders = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/jpeg"));
         pngImageReaders  = TilesVerifier.iteratorToCollection(ImageIO.getImageReadersByMIMEType("image/png"));
+
+        TilePyramidUserDataTableColumns = new HashMap<>();
+
+        TilePyramidUserDataTableColumns.put("id",          new ColumnDefinition("INTEGER", false, true,  true,  null));
+        TilePyramidUserDataTableColumns.put("zoom_level",  new ColumnDefinition("INTEGER", true,  false, false, null));
+        TilePyramidUserDataTableColumns.put("tile_column", new ColumnDefinition("INTEGER", true,  false, false, null));
+        TilePyramidUserDataTableColumns.put("tile_row",    new ColumnDefinition("INTEGER", true,  false, false, null));
+        TilePyramidUserDataTableColumns.put("tile_data",   new ColumnDefinition("BLOB",    true,  false, false, null));
+
+        TilePyramidUserDataTableForeignKeys = Collections.emptySet();
+        TilePyramidUserDataTableUniqueColumnGroups =  new HashSet<>(Arrays.asList(new UniqueDefinition("zoom_level", "tile_column", "tile_row")));
     }
 }

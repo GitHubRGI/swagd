@@ -166,7 +166,7 @@ public class BinaryHeaderTest
 
         assertArrayEquals("Envelope array incorrectly set by the constructor",
                           envelope,
-                          binaryHeader.getEnvelope(),
+                          binaryHeader.getEnvelopeArray(),
                           0.0);
 
         assertEquals("Flags incorrectly set by the constructor",
@@ -315,7 +315,7 @@ public class BinaryHeaderTest
 
         assertArrayEquals("Envelope incorrectly set by the constructor",
                           emptyEnvelope,
-                          header.getEnvelope(),
+                          header.getEnvelopeArray(),
                           0.0);
     }
 
@@ -475,7 +475,7 @@ public class BinaryHeaderTest
 
             assertArrayEquals("Envelope incorrectly set by the constructor",
                               envelope.toArray(),
-                              header.getEnvelope(),
+                              header.getEnvelopeArray(),
                               0.0);
         }
     }

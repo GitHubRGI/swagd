@@ -191,7 +191,7 @@ public final class GdalUtility
      * >here</a>.
      *
      * @param dataset A GDAL {@link Dataset}
-     * @return Returns a {@link BufferedImage} who's contents matches that of
+     * @return Returns a {@link BufferedImage} whose contents matches that of
      * the input GDAL {@link Dataset}
      */
     public static BufferedImage convert(final Dataset dataset)

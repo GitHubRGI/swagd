@@ -165,7 +165,7 @@
     <inspection_tool class="CheckForOutOfMemoryOnLargeArrayAllocation" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="m_limit" value="64" />
     </inspection_tool>
-    <inspection_tool class="CheckedExceptionClass" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="CheckedExceptionClass" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="ClassCoupling" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="m_includeJavaClasses" value="false" />
       <option name="m_includeLibraryClasses" value="false" />
@@ -483,7 +483,7 @@
     <inspection_tool class="IfMayBeConditional" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="IfStatementWithIdenticalBranches" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="IfStatementWithTooManyBranches" enabled="true" level="ERROR" enabled_by_default="true">
-      <option name="m_limit" value="3" />
+      <option name="m_limit" value="5" />
     </inspection_tool>
     <inspection_tool class="IgnoreResultOfCall" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="m_reportAllNonLibraryCalls" value="false" />
@@ -561,7 +561,7 @@
     <inspection_tool class="InterfaceNeverImplemented" enabled="false" level="ERROR" enabled_by_default="false">
       <option name="ignoreInterfacesThatOnlyDeclareConstants" value="false" />
     </inspection_tool>
-    <inspection_tool class="InterfaceWithOnlyOneDirectInheritor" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="InterfaceWithOnlyOneDirectInheritor" enabled="false" level="ERROR" enabled_by_default="false" />
     <inspection_tool class="IteratorHasNextCallsIteratorNext" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="IteratorNextDoesNotThrowNoSuchElementException" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="JDBCExecuteWithNonConstantString" enabled="true" level="WARNING" enabled_by_default="true" />

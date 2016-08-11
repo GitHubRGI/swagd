@@ -78,7 +78,7 @@ public class GeoTransformation
      */
     public double[] getAffineTransform()
     {
-        return this.affineTransform;
+        return this.affineTransform.clone();
     }
 
     /**
@@ -104,9 +104,10 @@ public class GeoTransformation
      */
     public BoundingBox getBounds(final Dataset dataset) // TODO take pixel dimensions instead
     {
+        // based on some code found here: https://github.com/naturalatlas/node-gdal/blob/master/examples/gdalinfo.js#L29-L67
         return new BoundingBox(this.affineTransform[0],
-                               this.affineTransform[3] - this.affineTransform[5] * dataset.getRasterYSize(),
-                               this.affineTransform[0] + this.affineTransform[1] * dataset.getRasterXSize(),
+                               this.affineTransform[3] + (dataset.getRasterXSize() * this.affineTransform[4]) + (dataset.getRasterYSize() * this.affineTransform[5]),
+                               this.affineTransform[0] + (dataset.getRasterXSize() * this.affineTransform[1]) + (dataset.getRasterYSize() * this.affineTransform[2]),
                                this.affineTransform[3]);
     }
 

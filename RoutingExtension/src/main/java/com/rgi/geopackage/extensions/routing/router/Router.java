@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -134,10 +135,10 @@ public abstract class Router
         this.routingNetwork    = routingNetwork;
         this.edgeCostEvaluator = edgeCostEvaluator;
 
-        this.nodeAttributeDescriptions = nodeAttributeDescriptions == null ? Collections.<AttributeDescription>emptyList() : new ArrayList<AttributeDescription>(nodeAttributeDescriptions);
-        this.edgeAttributeDescriptions = edgeAttributeDescriptions == null ? Collections.<AttributeDescription>emptyList() : new ArrayList<AttributeDescription>(edgeAttributeDescriptions);
-        this.restrictedNodeIdentifiers = restrictedNodeIdentifiers == null ? Collections.<Integer>emptySet()               : new HashSet<Integer>(restrictedNodeIdentifiers);
-        this.restrictedEdgeIdentifiers = restrictedEdgeIdentifiers == null ? Collections.<Integer>emptySet()               : new HashSet<Integer>(restrictedEdgeIdentifiers);
+        this.nodeAttributeDescriptions = nodeAttributeDescriptions == null ? Collections.emptyList() : new ArrayList<>(nodeAttributeDescriptions);
+        this.edgeAttributeDescriptions = edgeAttributeDescriptions == null ? Collections.emptyList() : new ArrayList<>(edgeAttributeDescriptions);
+        this.restrictedNodeIdentifiers = restrictedNodeIdentifiers == null ? Collections.emptySet()  : new HashSet<>(restrictedNodeIdentifiers);
+        this.restrictedEdgeIdentifiers = restrictedEdgeIdentifiers == null ? Collections.emptySet()  : new HashSet<>(restrictedEdgeIdentifiers);
     }
 
     /**
@@ -157,8 +158,8 @@ public abstract class Router
     protected final GeoPackageRoutingExtension       routingExtension;
     protected final GeoPackageNetworkExtension       networkExtension;
     protected final RoutingNetworkDescription        routingNetwork;
-    protected final Collection<AttributeDescription> nodeAttributeDescriptions;
-    protected final Collection<AttributeDescription> edgeAttributeDescriptions;
+    protected final List<AttributeDescription>       nodeAttributeDescriptions;
+    protected final List<AttributeDescription>       edgeAttributeDescriptions;
     protected final Function<AttributedEdge, Double> edgeCostEvaluator;
     protected final Collection<Integer>              restrictedNodeIdentifiers;
     protected final Collection<Integer>              restrictedEdgeIdentifiers;

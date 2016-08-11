@@ -24,7 +24,10 @@
 package com.rgi.geopackage.features;
 
 import com.rgi.geopackage.features.geometry.Geometry;
+import com.rgi.geopackage.features.geometry.m.EnvelopeM;
 import com.rgi.geopackage.features.geometry.xy.Envelope;
+import com.rgi.geopackage.features.geometry.z.EnvelopeZ;
+import com.rgi.geopackage.features.geometry.zm.EnvelopeZM;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -87,12 +90,12 @@ public class BinaryHeader
 
         if(bytes.length < this.byteSize)
         {
-            throw new IllegalArgumentException("Byte array length is shorter than the envelope size would indicate");
+            throw new IllegalArgumentException("Byte array length is shorter than the envelope array size would indicate");
         }
 
-        this.envelope = getHeaderEnvelopeDoubles(bytes,
-                                                 this.byteOrder,
-                                                 this.envelopeContentsIndicator.getArraySize());
+        this.envelopeArray = getHeaderEnvelopeDoubles(bytes,
+                                                      this.byteOrder,
+                                                      this.envelopeContentsIndicator.getArraySize());
 
     }
 
@@ -111,11 +114,12 @@ public class BinaryHeader
      *             Spatial reference system identifier for the geometry. Should
      *             match the identifier in the contents table.
      * @param envelopeContentsIndicator
-     *             Indicator of the envelope's contents (empty, not empty, and
-     *             dimensionality)
-     * @param envelope
-     *             Geometry envelope. Size depends on the envelope contents
-     *             indicator. Elements are listed min, max, and xyzm order.
+     *             Indicator of the envelope array's contents (empty, not
+     *             empty, and dimensionality)
+     * @param envelopeArray
+     *             Geometry envelopeArray. Size depends on the envelopeArray
+     *             contents indicator. Elements are listed min, max, and xyzm
+     *             order.
      */
     protected BinaryHeader(final byte                      version,
                            final BinaryType                binaryType,
@@ -123,7 +127,7 @@ public class BinaryHeader
                            final ByteOrder                 byteOrder,
                            final int                       spatialReferenceSystemIdentifier,
                            final EnvelopeContentsIndicator envelopeContentsIndicator,
-                           final double[]                  envelope)
+                           final double[]                  envelopeArray)
     {
         if(binaryType == null)
         {
@@ -145,14 +149,14 @@ public class BinaryHeader
             throw new IllegalArgumentException("Envelope contents indicator may not be null");
         }
 
-        if(envelope == null)
+        if(envelopeArray == null)
         {
-            throw new IllegalArgumentException("Envelope may not be null. Use Envelope.Empty to represent an empty envelope.");
+            throw new IllegalArgumentException("Envelope may not be null. Use Envelope.Empty to represent an empty envelope array.");
         }
 
-        if(envelope.length != envelopeContentsIndicator.getArraySize())
+        if(envelopeArray.length != envelopeContentsIndicator.getArraySize())
         {
-            throw new IllegalArgumentException("Envelope content indicator does not agree with the length of the envelope array");
+            throw new IllegalArgumentException("Envelope content indicator does not agree with the length of the envelope rray");
         }
 
         this.version                          = version;
@@ -161,7 +165,7 @@ public class BinaryHeader
         this.byteOrder                        = byteOrder;
         this.spatialReferenceSystemIdentifier = spatialReferenceSystemIdentifier;
         this.envelopeContentsIndicator        = envelopeContentsIndicator;
-        this.envelope                         = envelope.clone();
+        this.envelopeArray                    = envelopeArray.clone();
 
         @SuppressWarnings("NumericCastThatLosesPrecision")
         final int envelopeContentsMask = (byte)(this.envelopeContentsIndicator.getCode() << 1);
@@ -202,7 +206,7 @@ public class BinaryHeader
                this.contents                         == other.contents                         &&
                this.byteOrder                   .equals(other.byteOrder)                       &&
                this.envelopeContentsIndicator        == other.envelopeContentsIndicator        &&
-               Arrays.equals(this.getEnvelope(), other.getEnvelope());
+               Arrays.equals(this.getEnvelopeArray(), other.getEnvelopeArray());
 
     }
 
@@ -215,7 +219,7 @@ public class BinaryHeader
         result = 31 * result + this.byteOrder.hashCode();
         result = 31 * result + this.spatialReferenceSystemIdentifier;
         result = 31 * result + this.envelopeContentsIndicator.hashCode();
-        result = 31 * result + Arrays.hashCode(this.getEnvelope());
+        result = 31 * result + Arrays.hashCode(this.getEnvelopeArray());
         result = 31 * result + (int)this.flags;
         result = 31 * result + this.byteSize;
         return result;
@@ -251,9 +255,48 @@ public class BinaryHeader
         return this.envelopeContentsIndicator;
     }
 
-    public double[] getEnvelope()
+    public double[] getEnvelopeArray()
     {
-        return this.envelope.clone();
+        return this.envelopeArray.clone();
+    }
+
+    public Envelope getEnvelope()
+    {
+        switch(this.envelopeContentsIndicator)
+        {
+            case NoEnvelope: return null;
+
+            case Xy:         return new Envelope(this.envelopeArray[0],  // min x
+                                                 this.envelopeArray[2],  // min y
+                                                 this.envelopeArray[1],  // max x
+                                                 this.envelopeArray[3]); // max y
+
+            case Xyz:        return new EnvelopeZ(this.envelopeArray[0],  // min x
+                                                  this.envelopeArray[2],  // min y
+                                                  this.envelopeArray[4],  // min z
+                                                  this.envelopeArray[1],  // max y
+                                                  this.envelopeArray[3],  // max y
+                                                  this.envelopeArray[5]); // max z
+
+            case Xym:        return new EnvelopeM(this.envelopeArray[0],  // min x
+                                                  this.envelopeArray[2],  // min y
+                                                  this.envelopeArray[4],  // min m
+                                                  this.envelopeArray[1],  // max y
+                                                  this.envelopeArray[3],  // max y
+                                                  this.envelopeArray[5]); // max m
+
+            case Xyzm:       return new EnvelopeZM(this.envelopeArray[0],  // min x
+                                                   this.envelopeArray[2],  // min y
+                                                   this.envelopeArray[4],  // min z
+                                                   this.envelopeArray[6],  // min m
+                                                   this.envelopeArray[1],  // max y
+                                                   this.envelopeArray[3],  // max z
+                                                   this.envelopeArray[5],  // max z
+                                                   this.envelopeArray[7]); // max m
+
+        }
+
+        return null;
     }
 
     public byte getFlags()
@@ -288,7 +331,7 @@ public class BinaryHeader
         byteOutputStream.write(this.flags);
         byteOutputStream.write(this.spatialReferenceSystemIdentifier);
 
-        for(final double envelopeBound : this.envelope)
+        for(final double envelopeBound : this.envelopeArray)
         {
             byteOutputStream.write(envelopeBound);
         }
@@ -296,12 +339,12 @@ public class BinaryHeader
 
     /**
      * Constructs a header from the supplied arguments, and writes it to a
-     * byte buffer. Currently there's no way to skip writing the envelope.
+     * byte buffer. Currently there's no way to skip writing the envelopeArray.
      *
      * @param byteOutputStream
      *             Destination for the bytes of the header
      * @param geometry
-     *             Used to determine the envelope, contents (empty or not), and
+     *             Used to determine the envelopeArray, contents (empty or not), and
      *             the geometry's binary type
      * @param spatialReferenceSystemIdentifier
      *             Spatial reference system identifier for the geometry
@@ -359,7 +402,7 @@ public class BinaryHeader
     private final ByteOrder                 byteOrder;  // NOTE: this applies *only* to the bytes of the GeoPackage binary header. The byte order of the well known binary that follows the header is specified by the first byte of its contents: 0 - big endian, 1 - little endian
     private final int                       spatialReferenceSystemIdentifier;
     private final EnvelopeContentsIndicator envelopeContentsIndicator;
-    private final double[]                  envelope;
+    private final double[]                  envelopeArray;
     private final byte                      flags;
     private final int                       byteSize;
 }

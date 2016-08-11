@@ -58,7 +58,7 @@ public class GeoPackageTiles
      * @param core
      *             Access to GeoPackage's "core" methods
      */
-    public GeoPackageTiles(final Connection databaseConnection, final GeoPackageCore core) throws SQLException
+    public GeoPackageTiles(final Connection databaseConnection, final GeoPackageCore core)
     {
         this.databaseConnection = databaseConnection;
         this.core               = core;
