@@ -23,25 +23,26 @@
 
 package com.rgi.g2t;
 
+import com.rgi.common.BoundingBox;
+import com.rgi.common.coordinate.Coordinate;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.junit.Test;
 
-import com.rgi.common.BoundingBox;
-import com.rgi.common.coordinate.Coordinate;
-import com.rgi.g2t.GeoTransformation;
-
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+@SuppressWarnings("JavaDoc")
 public class GeoTransformationTest
 {
     /**
      * Tests constructor throws an IllegalArgumentException when
      * given a null array
      */
-    @SuppressWarnings("static-method")
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentException1()
     {
@@ -54,7 +55,6 @@ public class GeoTransformationTest
      * Tests constructor throws and IllegalArgumentException when
      * given an array not of length 6
      */
-    @SuppressWarnings("static-method")
     @Test(expected = IllegalArgumentException.class)
     public void constructorIllegalArgumentExcpetion2()
     {
@@ -69,7 +69,6 @@ public class GeoTransformationTest
      * Tests the constructor correctly sets the value of the affine transformation array,
      * the top left coordinate, and the pixel resolution
      */
-    @SuppressWarnings({"static-method", "MagicNumber"})
     @Test
     public void constructorTest()
     {
@@ -91,7 +90,6 @@ public class GeoTransformationTest
     /**
      * Tests isNorthUp
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testIsNorthUp1()
     {
@@ -105,7 +103,6 @@ public class GeoTransformationTest
     /**
      * Tests is NorthUp
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testIsNorthUp2()
     {
@@ -119,7 +116,6 @@ public class GeoTransformationTest
     /**
      * Tests is NorthUp
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testIsNorthUp3()
     {
@@ -133,7 +129,6 @@ public class GeoTransformationTest
     /**
      * Tests is NorthUp
      */
-    @SuppressWarnings("static-method")
     @Test
     public void testIsNorthUp4()
     {
@@ -143,15 +138,13 @@ public class GeoTransformationTest
         assertTrue("GeoTransformation method isNorthUp returned true instead of false.",
                    geoTransformation.isNorthUp());
     }
-
-    @SuppressWarnings({"static-method", "MagicNumber"})
     @Test
     public void testGetBounds()
     {
         gdal.AllRegister();
         final Dataset data = gdal.GetDriverByName("MEM").Create("data", 100, 300, 0);
-        final double[] affineTransform = {0, 1, 2, 3, 4, 5};
-        final BoundingBox box = new BoundingBox(0, 3-5 * 300.0, 100, 3);
+        final double[] affineTransform = {0, 1.0, 0.0, 3.0, 4.0, -5.0};
+        final BoundingBox box = new BoundingBox(0, 3 + 100*4 + 300*-5, 100, 3);
 
         try
         {
