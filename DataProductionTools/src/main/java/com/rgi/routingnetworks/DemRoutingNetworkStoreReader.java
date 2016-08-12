@@ -113,61 +113,66 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         final DataSource dataSource = ogr.GetDriverByName("Memory") // Make constant
                                          .CreateDataSource("data source");
 
-        final Layer outputLayer = dataSource.CreateLayer("contours",
-                                                         spatialReference);
+        final Geometry pointCollection = new Geometry(ogrConstants.wkbMultiPoint);
 
-        // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
-        final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
-                                                   contourElevationInterval,                           // double           contourElevationInterval - The elevation interval between contours generated
-                                                   0,                                         // double           contourBase     - The "base" relative to which contour intervals are applied. This is normally zero, but could be different. To generate 10m contours at 5, 15, 25, ... the ContourBase would be 5
-                                                   null,                                      // double[]         fixedLevels     - The list of fixed contour levels at which contours should be generated. It will contain FixedLevelCount entries, and may be NULL
-                                                   (noDataValue == null) ? 0   : 1,           // int              useNoData       - If TRUE the noDataValue will be used
-                                                   (noDataValue == null) ? 0.0 : noDataValue, // double           noDataValue     - The value to use as a "no data" value. That is, a pixel value which should be ignored in generating contours as if the value of the pixel were not known
-                                                   outputLayer,                               // Layer            dstLayer        - The layer to which new contour vectors will be written. Each contour will have a LINESTRING geometry attached to it
-                                                   -1,                                        // int              idField         - If not -1 this will be used as a field index to indicate where a unique id should be written for each feature (contour) written
-                                                   -1,                                        // int              elevField       - If not -1 this will be used as a field index to indicate where the elevation value of the contour should be written
-                                                   null);                                     // ProgressCallback callback        - A ProgressCallback that may be used to report progress to the user, or to interrupt the algorithm. May be NULL if not required
-
-        if(gdalError != gdalconstConstants.CE_None)
+        try
         {
-            throw new RuntimeException(new GdalError().getMessage());
-        }
+            final Layer outputLayer = dataSource.CreateLayer("contours",
+                                                             spatialReference);
 
-        final Geometry pointCollection = new Geometry(ogrConstants.wkbMultiPoint);//pointCollectionFeature.GetGeometryRef();
+            // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
+            final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
+                                                       contourElevationInterval,                           // double           contourElevationInterval - The elevation interval between contours generated
+                                                       0,                                         // double           contourBase     - The "base" relative to which contour intervals are applied. This is normally zero, but could be different. To generate 10m contours at 5, 15, 25, ... the ContourBase would be 5
+                                                       null,                                      // double[]         fixedLevels     - The list of fixed contour levels at which contours should be generated. It will contain FixedLevelCount entries, and may be NULL
+                                                       (noDataValue == null) ? 0   : 1,           // int              useNoData       - If TRUE the noDataValue will be used
+                                                       (noDataValue == null) ? 0.0 : noDataValue, // double           noDataValue     - The value to use as a "no data" value. That is, a pixel value which should be ignored in generating contours as if the value of the pixel were not known
+                                                       outputLayer,                               // Layer            dstLayer        - The layer to which new contour vectors will be written. Each contour will have a LINESTRING geometry attached to it
+                                                       -1,                                        // int              idField         - If not -1 this will be used as a field index to indicate where a unique id should be written for each feature (contour) written
+                                                       -1,                                        // int              elevField       - If not -1 this will be used as a field index to indicate where the elevation value of the contour should be written
+                                                       null);                                     // ProgressCallback callback        - A ProgressCallback that may be used to report progress to the user, or to interrupt the algorithm. May be NULL if not required
 
-        for(Feature feature = outputLayer.GetNextFeature(); feature != null; feature = outputLayer.GetNextFeature())
-        {
-            final Geometry originalGeometry = feature.GetGeometryRef();
-
-            // http://gdal.org/java/org/gdal/ogr/Geometry.html#SimplifyPreserveTopology(double) ->
-            // This function is built on the GEOS library, check it for the definition of the geometry operation. If OGR is built without the GEOS library, this function will always fail, issuing a CPLE_NotSupported error.
-            // http://geos.refractions.net/ro/doxygen_docs/html/classgeos_1_1simplify_1_1TopologyPreservingSimplifier.html ->
-            // All vertices in the simplified geometry will be within this distance of the original geometry. The tolerance value must be non-negative. A tolerance value of zero is effectively a no-op.
-            final Geometry simplifiedGeometry = originalGeometry.SimplifyPreserveTopology(simplificationTolerance); // https://gis.stackexchange.com/questions/102254/ogr-simplifypreservetopology-does-not-keep-the-topology
-                                                                                                                    // Topology preserving means in practice that parts of the multilinestring meet after simplification, polygons
-                                                                                                                    // do not have self-intersections, inner rings in polygons stay inside outer rings, etc. Especially for polygon
-                                                                                                                    // layers this method does not prevent gaps, overlaps, and slivers from appearing, even though this is the
-                                                                                                                    // general belief. I would say that the method has a misleading name which makes users to believe that it saves
-                                                                                                                    // the topology for the whole layer. However, the name and behaviour is the same in PostGIS and in JTS
-                                                                                                                    // http://www.tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/simplify/TopologyPreservingSimplifier.html
-
-            final int pointCount = simplifiedGeometry.GetPointCount();
-
-            for(int x = 0; x < pointCount; ++x)
+            if(gdalError != gdalconstConstants.CE_None)
             {
-                final double[] point = simplifiedGeometry.GetPoint(x);
+                throw new RuntimeException(new GdalError().getMessage());
+            }
 
-                final Geometry pointGeometry = new Geometry(ogrConstants.wkbPoint);
+            for(Feature feature = outputLayer.GetNextFeature(); feature != null; feature = outputLayer.GetNextFeature())
+            {
+                final Geometry originalGeometry = feature.GetGeometryRef();
 
-                pointGeometry.AddPoint(round(point[0], coordinatePrecision),
-                                       round(point[1], coordinatePrecision),
-                                       round(point[2], coordinatePrecision));
+                // http://gdal.org/java/org/gdal/ogr/Geometry.html#SimplifyPreserveTopology(double) ->
+                // This function is built on the GEOS library, check it for the definition of the geometry operation. If OGR is built without the GEOS library, this function will always fail, issuing a CPLE_NotSupported error.
+                // http://geos.refractions.net/ro/doxygen_docs/html/classgeos_1_1simplify_1_1TopologyPreservingSimplifier.html ->
+                // All vertices in the simplified geometry will be within this distance of the original geometry. The tolerance value must be non-negative. A tolerance value of zero is effectively a no-op.
+                final Geometry simplifiedGeometry = originalGeometry.SimplifyPreserveTopology(simplificationTolerance); // https://gis.stackexchange.com/questions/102254/ogr-simplifypreservetopology-does-not-keep-the-topology
+                                                                                                                        // Topology preserving means in practice that parts of the multilinestring meet after simplification, polygons
+                                                                                                                        // do not have self-intersections, inner rings in polygons stay inside outer rings, etc. Especially for polygon
+                                                                                                                        // layers this method does not prevent gaps, overlaps, and slivers from appearing, even though this is the
+                                                                                                                        // general belief. I would say that the method has a misleading name which makes users to believe that it saves
+                                                                                                                        // the topology for the whole layer. However, the name and behaviour is the same in PostGIS and in JTS
+                                                                                                                        // http://www.tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/simplify/TopologyPreservingSimplifier.html
 
-                pointCollection.AddGeometry(pointGeometry);
+                final int pointCount = simplifiedGeometry.GetPointCount();
+
+                for(int x = 0; x < pointCount; ++x)
+                {
+                    final double[] point = simplifiedGeometry.GetPoint(x);
+
+                    final Geometry pointGeometry = new Geometry(ogrConstants.wkbPoint);
+
+                    pointGeometry.AddPoint(round(point[0], coordinatePrecision),
+                                           round(point[1], coordinatePrecision),
+                                           round(point[2], coordinatePrecision));
+
+                    pointCollection.AddGeometry(pointGeometry);
+                }
             }
         }
-
-        dataSource.delete();
+        finally
+        {
+            dataSource.delete();    // Also destroys outputLayer
+        }
 
         // http://www.gdal.org/classOGRGeometry.html#ab7d3c3e5b033ca6bbb470016e7661da7
         final Geometry triangulation = pointCollection.DelaunayTriangulation(triangulationTolerance, // double tolerance - optional snapping tolerance to use for improved robustness
