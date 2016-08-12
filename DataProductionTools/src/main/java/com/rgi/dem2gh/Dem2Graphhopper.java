@@ -25,6 +25,7 @@
 package com.rgi.dem2gh;
 
 import com.graphhopper.GraphHopper;
+import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.util.CmdArgs;
 import com.rgi.routingnetworks.DemRoutingNetworkStoreReader;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
@@ -37,8 +38,12 @@ import java.io.File;
 /**
  * @author Luke Lambert
  */
-public class Dem2Graphhopper
+public final class Dem2Graphhopper
 {
+    private Dem2Graphhopper()
+    {
+    }
+
     public static void main(final String[] args)
     {
         final CommandLineOptions options = new CommandLineOptions();
@@ -47,12 +52,19 @@ public class Dem2Graphhopper
         try
         {
             parser.parseArgument(args);
+        }
+        catch(final Throwable th)
+        {
+            System.err.println(th.getMessage());
+            parser.printUsage(System.out);
+        }
 
-            final String inputFilename = options.getInputFile().getName();
+        final String inputFilename = options.getInputFile().getName();
 
-            final File outputFile = new File(inputFilename.substring(0, inputFilename.indexOf('.')) + ".osm.xml");
+        final String baseOutputFileName = inputFilename.substring(0, inputFilename.indexOf('.'));
 
-
+        try
+        {
             final RoutingNetworkStoreReader networkReader = new DemRoutingNetworkStoreReader(options.getInputFile(),
                                                                                              options.getRasterBand(),
                                                                                              options.getContourElevationInterval(),
@@ -61,7 +73,8 @@ public class Dem2Graphhopper
                                                                                              options.getSimplificationTolerance(),
                                                                                              options.getTriangulationTolerance());
 
-            final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(outputFile,
+            final File osmXmloutputFile = new File(baseOutputFileName + ".osm.xml");
+            final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(osmXmloutputFile,
                                                                                                 networkReader.getBounds(),
                                                                                                 networkReader.getDescription());
 
@@ -72,16 +85,36 @@ public class Dem2Graphhopper
                                 networkReader.getEdgeAttributeDescriptions(),
                                 networkReader.getCoordinateReferenceSystem());
 
-            final CmdArgs cmdArgs = new CmdArgs();
+            final String graphHopperOutputDirectoryName = baseOutputFileName + "-gh";
+            final String[] inputs = { "graph.flag_encoders=foot",
+                                      "graph.elevation.dataaccess=RAM_STORE",
+                                      "prepare.ch.weightings=no",
+                                      "graph.dataaccess=RAM_STORE",
+                                      "graph.location=" + graphHopperOutputDirectoryName, // where to store the results
+                                      "osmreader.osm=" + osmXmloutputFile     // input osm
+                                    };
 
-            //cmdArgs.put();
+            final GraphHopper graphHopper = new GraphHopper().init(CmdArgs.read(inputs));
 
-            final GraphHopper gh = new GraphHopper().init(cmdArgs);
+            try
+            {
+                final ElevationProvider tagElevationProvider = new TagElevationProvider();
+
+                tagElevationProvider.setBaseURL(osmXmloutputFile.getPath());
+
+                graphHopper.setElevation(true);
+                graphHopper.setElevationProvider(tagElevationProvider);
+
+                graphHopper.importOrLoad(); // Creates binary output
+            }
+            finally
+            {
+                graphHopper.close();
+            }
         }
         catch(final Throwable th)
         {
             System.err.println(th.getMessage());
-            parser.printUsage(System.out);
         }
     }
 }

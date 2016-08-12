@@ -43,6 +43,10 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.rgi.store.routingnetworks.osm.Constants.ELEVATION_NODE_ATTRIBUTE_NAME;
+import static com.rgi.store.routingnetworks.osm.Constants.LATITUDE_NODE_ATTRIBUTE_NAME;
+import static com.rgi.store.routingnetworks.osm.Constants.LONGITUDE_NODE_ATTRIBUTE_NAME;
+
 /**
  * @author Luke Lambert
  */
@@ -150,16 +154,19 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
     {
         // TODO convert these values to EPSG:4326!
         writer.write(String.format("  <node id=\"%d\"" +
-                                          " lon=\"%s\"" +
-                                          " lat=\"%s\"",
+                                          " %s=\"%s\"" +
+                                          " %s=\"%s\"",
                                    node.getIdentifier(),
+                                   LONGITUDE_NODE_ATTRIBUTE_NAME,
                                    node.getX(),
+                                   LATITUDE_NODE_ATTRIBUTE_NAME,
                                    node.getY()));
 
         if(nodeDimensionality  != NodeDimensionality.NO_ELEVATION &&
            node.getElevation() != null)
         {
-            writer.write(String.format(" ele=\"%s\"",
+            writer.write(String.format(" %s=\"%s\"",
+                                       ELEVATION_NODE_ATTRIBUTE_NAME,
                                        node.getElevation()));
         }
 

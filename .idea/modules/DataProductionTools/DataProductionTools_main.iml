@@ -26,6 +26,8 @@
     <orderEntry type="module" module-name="GeoPackage_main" />
     <orderEntry type="library" name="Gradle: xerces:xercesImpl:2.11.0" level="project" />
     <orderEntry type="library" name="Gradle: xalan:xalan:2.7.2" level="project" />
+    <orderEntry type="library" name="Gradle: com.vividsolutions:jts:1.13" level="project" />
+    <orderEntry type="library" name="Gradle: org.slf4j:slf4j-simple:1.7.5" level="project" />
     <orderEntry type="library" name="Gradle: com.graphhopper:graphhopper-tools-lgpl:0.7.0" level="project" />
     <orderEntry type="library" name="Gradle: net.sf.trove4j:trove4j:3.0.3" level="project" />
     <orderEntry type="library" name="Gradle: org.slf4j:slf4j-api:1.7.21" level="project" />

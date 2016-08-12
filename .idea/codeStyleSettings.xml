@@ -15,6 +15,8 @@
           <option name="BRACE_STYLE" value="2" />
           <option name="CLASS_BRACE_STYLE" value="2" />
           <option name="METHOD_BRACE_STYLE" value="2" />
+          <option name="CATCH_ON_NEW_LINE" value="true" />
+          <option name="FINALLY_ON_NEW_LINE" value="true" />
           <option name="SPACE_BEFORE_IF_PARENTHESES" value="false" />
           <option name="SPACE_BEFORE_WHILE_PARENTHESES" value="false" />
           <option name="SPACE_BEFORE_FOR_PARENTHESES" value="false" />
