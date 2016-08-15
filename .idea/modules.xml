@@ -35,6 +35,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD_main.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD_main.iml" group="SWAGD" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/SWAGD_test.iml" filepath="$PROJECT_DIR$/.idea/modules/SWAGD_test.iml" group="SWAGD" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DataProductionTools/libs/graphhopper/core/graphhopper.iml" filepath="$PROJECT_DIR$/.idea/modules/DataProductionTools/libs/graphhopper/core/graphhopper.iml" group="graphhopper" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DataProductionTools/libs/graphhopper/core/graphhopper_main.iml" filepath="$PROJECT_DIR$/.idea/modules/DataProductionTools/libs/graphhopper/core/graphhopper_main.iml" group="graphhopper" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/DataProductionTools/libs/graphhopper/core/graphhopper_test.iml" filepath="$PROJECT_DIR$/.idea/modules/DataProductionTools/libs/graphhopper/core/graphhopper_test.iml" group="graphhopper" />
     </modules>
   </component>
 </project>

@@ -1,6 +1,8 @@
 group = 'DataProductionTools'
 description = 'GIS data production tools'
 
+apply plugin: 'maven'
+
 dependencies
 {
     compile project(':Common')
@@ -8,7 +10,7 @@ dependencies
 
     compile fileTree(dir: 'lib', include: ['gdal-2.1.0.jar'])
     compile project(':Gdal2Tiles')
-    compile 'com.graphhopper:graphhopper:0.7.0'
+    compile project(':graphhopper')
 }
 
 cobertura
