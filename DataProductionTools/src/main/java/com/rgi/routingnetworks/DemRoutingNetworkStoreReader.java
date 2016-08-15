@@ -176,7 +176,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 
         // http://www.gdal.org/classOGRGeometry.html#ab7d3c3e5b033ca6bbb470016e7661da7
         final Geometry triangulation = pointCollection.DelaunayTriangulation(triangulationTolerance, // double tolerance - optional snapping tolerance to use for improved robustness
-                                                                             1);                     // int    onlyEdges - if TRUE, will return a MULTILINESTRING, otherwise it will return a GEOMETRYCOLLECTION containing triangular POLYGONs
+                                                                             1);                     // int    onlyEdges - if TRUE (non-zero), will return a MULTILINESTRING, otherwise it will return a GEOMETRYCOLLECTION containing triangular POLYGONs
         final double[] envelope = new double[4]; // minX, maxX, minY, maxY
 
         triangulation.GetEnvelope(envelope);
