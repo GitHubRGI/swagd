@@ -1,8 +1,6 @@
 group = 'DataProductionTools'
 description = 'GIS data production tools'
 
-apply plugin: 'maven'
-
 dependencies
 {
     compile project(':Common')

@@ -1,5 +1,8 @@
 rootProject.name = 'SWAGD'
-include 'graphhopper'
+include ':graphhopper-tools-lgpl'
+include ':graphhopper'
+include ':graphhopper-tools'
+include ':graphhopper-web'
 include ':Common'
 include ':DataStore'
 include ':Gdal2Tiles'
@@ -11,6 +14,13 @@ include ':RGISuite'
 include ':RoutingExtension'
 include ':DataProductionTools'
 
+project(':graphhopper-tools-lgpl').projectDir =
+"$rootDir/DataProductionTools/libs/graphhopper/tools-lgpl" as File
+project(':graphhopper').projectDir = "$rootDir/DataProductionTools/libs/graphhopper/core" as File
+project(':graphhopper-tools').projectDir =
+"$rootDir/DataProductionTools/libs/graphhopper/tools" as File
+project(':graphhopper-web').projectDir =
+"$rootDir/DataProductionTools/libs/graphhopper/web" as File
 project(':Common').projectDir = "$rootDir/Common" as File
 project(':DataStore').projectDir = "$rootDir/DataStore" as File
 project(':Gdal2Tiles').projectDir = "$rootDir/Gdal2Tiles" as File
@@ -21,5 +31,4 @@ project(':Packager').projectDir = "$rootDir/Packager" as File
 project(':RGISuite').projectDir = "$rootDir/RGISuite" as File
 project(':RoutingExtension').projectDir = "$rootDir/RoutingExtension" as File
 project(':DataProductionTools').projectDir = "$rootDir/DataProductionTools" as File
-project(':graphhopper').projectDir = "$rootDir/DataProductionTools/libs/graphhopper/core" as File
 
