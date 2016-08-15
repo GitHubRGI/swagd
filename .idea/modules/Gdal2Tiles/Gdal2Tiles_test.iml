@@ -36,4 +36,5 @@
     <orderEntry type="library" name="Gradle: args4j:args4j:2.32" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: log4j:log4j:1.2.17" level="project" />
   </component>
+  <component name="TestModuleProperties" production-module="Gdal2Tiles_main" />
 </module>

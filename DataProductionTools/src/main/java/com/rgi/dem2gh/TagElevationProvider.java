@@ -160,6 +160,7 @@ public class TagElevationProvider implements ElevationProvider
      *
      * @return UnsupportedOperationException
      */
+    @SuppressWarnings("BooleanParameter")
     @Override
     public void setCalcMean(final boolean calcMean)
     {
