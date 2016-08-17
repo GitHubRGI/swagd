@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.rgi.routingnetworks;
+package com.rgi.routingnetworks.dem;
 
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Dimensions;
@@ -37,6 +37,7 @@ import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
 import com.rgi.store.routingnetworks.NodeDimensionality;
 import org.gdal.gdal.Dataset;
+import org.gdal.gdal.ProgressCallback;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.ogr.DataSource;
@@ -86,7 +87,43 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                         final double simplificationTolerance,
                                         final double triangulationTolerance) throws RoutingNetworkStoreException
     {
+        this(file,
+             rasterBand,
+             contourElevationInterval,
+             noDataValue,
+             coordinatePrecision,
+             simplificationTolerance,
+             triangulationTolerance,
+             null);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param file                      File containing the digital elevation model dataset
+     * @param rasterBand                Band of the raster to treat as elevation data
+     * @param contourElevationInterval  Contour Elevation interval (elevation values will be multiples of the interval)
+     * @param noDataValue               Value that indicates that a pixel contains no elevation data, and is to be ignored (nullable)
+     * @param coordinatePrecision       Number of decimal places to round the coordinates. A negative value will cause no rounding to occur
+     * @param simplificationTolerance   Tolerance used to simplify the contour rings that are used in the triangulation of the data
+     * @param triangulationTolerance    Snaps points that are within a tolerance's distance from one another (we THINK)
+     * @param progressCallback          Callback to observe process progress. Ignored if null.
+     * @throws RoutingNetworkStoreException thrown if the resulting network would contain invalid data
+     */
+    public DemRoutingNetworkStoreReader(final File             file,
+                                        final int              rasterBand,
+                                        final double           contourElevationInterval,
+                                        final Double           noDataValue,
+                                        final int              coordinatePrecision,
+                                        final double           simplificationTolerance,
+                                        final double           triangulationTolerance,
+                                        final ProgressCallback progressCallback) throws RoutingNetworkStoreException
+    {
         final Dataset dataset = GdalUtility.open(file);
+
+        this.rasterWidth      = dataset.getRasterXSize();
+        this.rasterHeight     = dataset.getRasterYSize();
+        this.progressCallback = progressCallback;
 
         final Dimensions<Double> metersPerPixel = this.getMetersPerPixel(dataset);
 
@@ -122,7 +159,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 
             // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
             final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
-                                                       contourElevationInterval,                           // double           contourElevationInterval - The elevation interval between contours generated
+                                                       contourElevationInterval,                  // double           contourElevationInterval - The elevation interval between contours generated
                                                        0,                                         // double           contourBase     - The "base" relative to which contour intervals are applied. This is normally zero, but could be different. To generate 10m contours at 5, 15, 25, ... the ContourBase would be 5
                                                        null,                                      // double[]         fixedLevels     - The list of fixed contour levels at which contours should be generated. It will contain FixedLevelCount entries, and may be NULL
                                                        (noDataValue == null) ? 0   : 1,           // int              useNoData       - If TRUE the noDataValue will be used
@@ -130,7 +167,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                                        outputLayer,                               // Layer            dstLayer        - The layer to which new contour vectors will be written. Each contour will have a LINESTRING geometry attached to it
                                                        -1,                                        // int              idField         - If not -1 this will be used as a field index to indicate where a unique id should be written for each feature (contour) written
                                                        -1,                                        // int              elevField       - If not -1 this will be used as a field index to indicate where the elevation value of the contour should be written
-                                                       null);                                     // ProgressCallback callback        - A ProgressCallback that may be used to report progress to the user, or to interrupt the algorithm. May be NULL if not required
+                                                       this.progressCallback);                                     // ProgressCallback callback        - A ProgressCallback that may be used to report progress to the user, or to interrupt the algorithm. May be NULL if not required
 
             if(gdalError != gdalconstConstants.CE_None)
             {
@@ -302,6 +339,16 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         return NodeDimensionality.HAS_ELEVATION;
     }
 
+    public int getRasterWidth()
+    {
+        return this.rasterWidth;
+    }
+
+    public int getRasterHeight()
+    {
+        return this.rasterHeight;
+    }
+
     private Coordinate<Double> toWgs84(final double x,
                                        final double y)
     {
@@ -396,6 +443,9 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     private final CoordinateReferenceSystem coordinateReferenceSystem;
     private final CoordinateTransformation  sourceToWgs84Transformation;
     private final boolean                   sourceSpatialReferenceIsNotWgs84;
+    private final int                       rasterWidth;
+    private final int                       rasterHeight;
+    private final ProgressCallback          progressCallback;
 
     private static final double           RADIUS_OF_EARTH_KILOMETERS = 6372.8;
     private static final int              WGS84_EPSG_IDENTIFIER      = 4326;

@@ -42,7 +42,7 @@ public class GeoTransformation
     // affineTransform[2] // rotation, 0 if image is "north up"
     // affineTransform[3] // top left y
     // affineTransform[4] // rotation, 0 if image is "north up"
-    // affineTransform[5] // n-s pixel resolution..... negative?
+    // affineTransform[5] // n-s pixel resolution (negative value!)
 
     /**
      * @param affineTransform

@@ -35,17 +35,17 @@ import java.io.File;
  */
 public class CommandLineOptions
 {
-	private File   inputFile;
-    private int    rasterBand;
-    private double contourElevationInterval;
-    private Double noDataValue;
-    private int    coordinatePrecision = -1;
-    private double simplificationTolerance;
-    private double triangulationTolerance;
+	private File    inputFile;
+    private int     rasterBand;
+    private double  contourElevationInterval;
+    private Double  noDataValue;
+    private int     coordinatePrecision = -1;
+    private double  simplificationTolerance;
+    private double  triangulationTolerance;
+    private boolean outputRasterizedNetwork = true;
+    private double  outputRasterScale = 1.0;
 
-     // triangulationTolerance    Snaps points that are within a tolerance's distance from one another (we THINK)
-
-	@Option(required = true,
+     @Option(required = true,
             name     = "-d",
             aliases  = "-dem",
             metaVar  = "<Input File Path>",
@@ -180,6 +180,33 @@ public class CommandLineOptions
 	public double getTriangulationTolerance()
     {
         return this.triangulationTolerance;
+    }
+
+    @Option(name     = "-r",
+            aliases  = "-rasterize",
+            metaVar  = "<TRUE>",
+            usage    = "Additionally create a rasterization of the network")
+	public void setOutputRasterizedNetwork(final boolean outputRasterizedNetwork)
+    {
+        this.outputRasterizedNetwork = outputRasterizedNetwork;
+    }
+
+    public boolean getOutputRasterizedNetwork()
+    {
+        return this.outputRasterizedNetwork;
+    }
+
+    @Option(name     = "-rasterScale",
+            metaVar  = "<10.0>",
+            usage    = "Scale of the original image for the rasterized network output. Ignored if -r is set to false.")
+	public void setOutputRasterizedNetwork(final double outputRasterScale)
+    {
+        this.outputRasterScale = outputRasterScale;
+    }
+
+    public double getOutputRasterScale()
+    {
+        return this.outputRasterScale;
     }
 
 	@Option(help = true,
