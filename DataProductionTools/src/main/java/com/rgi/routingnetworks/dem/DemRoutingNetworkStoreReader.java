@@ -33,9 +33,9 @@ import com.rgi.g2t.GeoTransformation;
 import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.EdgeDirecctionality;
 import com.rgi.store.routingnetworks.Node;
+import com.rgi.store.routingnetworks.NodeDimensionality;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
-import com.rgi.store.routingnetworks.NodeDimensionality;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.ProgressCallback;
 import org.gdal.gdal.gdal;
@@ -51,6 +51,7 @@ import org.gdal.osr.SpatialReference;
 import utility.GdalError;
 import utility.GdalUtility;
 
+import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -61,10 +62,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Vector;
 
 /**
  * @author Luke Lambert
  */
+@SuppressWarnings("UseOfObsoleteCollectionType")    // GDAL's Java API uses 'Vector' an obsolete collection type
 public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 {
     /**
@@ -121,144 +124,226 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     {
         final Dataset dataset = GdalUtility.open(file);
 
-        this.rasterWidth      = dataset.getRasterXSize();
-        this.rasterHeight     = dataset.getRasterYSize();
-        this.progressCallback = progressCallback;
-
-        final Dimensions<Double> metersPerPixel = this.getMetersPerPixel(dataset);
-
-        // We cannot tile an image with no geo referencing information
-        if(!GdalUtility.hasGeoReference(dataset))
+        try
         {
-            throw new IllegalArgumentException("Input raster image has no georeference.");
-        }
+            this.rasterWidth      = dataset.getRasterXSize();
+            this.rasterHeight     = dataset.getRasterYSize();
+            this.progressCallback = progressCallback;
 
-        final SpatialReference spatialReference = new SpatialReference(dataset.GetProjection());
+            final Dimensions<Double> metersPerPixel = this.getMetersPerPixel(dataset);
 
-        this.sourceSpatialReferenceIsNotWgs84 = spatialReference.IsSame(wgs84SpatialReference) == 0;
+            // We cannot tile an image with no geo referencing information
+            if(!GdalUtility.hasGeoReference(dataset))
+            {
+                throw new IllegalArgumentException("Input raster image has no georeference.");
+            }
 
-        this.sourceToWgs84Transformation = CoordinateTransformation.CreateCoordinateTransformation(new SpatialReference(dataset.GetProjection()),
-                                                                                                   wgs84SpatialReference);
+            final SpatialReference spatialReference = new SpatialReference(dataset.GetProjection());
 
-        this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(dataset));
+            this.sourceSpatialReferenceIsNotWgs84 = spatialReference.IsSame(wgs84SpatialReference) == 0;
 
-        if(this.coordinateReferenceSystem  == null)
-        {
-            throw new IllegalArgumentException("Image file is not in a recognized coordinate reference system");
-        }
+            this.sourceToWgs84Transformation = CoordinateTransformation.CreateCoordinateTransformation(new SpatialReference(dataset.GetProjection()),
+                                                                                                       wgs84SpatialReference);
 
-        final DataSource dataSource = ogr.GetDriverByName("Memory") // Make constant
+            this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(dataset));
+
+            if(this.coordinateReferenceSystem  == null)
+            {
+                throw new IllegalArgumentException("Image file is not in a recognized coordinate reference system");
+            }
+
+                    final DataSource dataSource = ogr.GetDriverByName("Memory") // Make constant
                                          .CreateDataSource("data source");
 
-        final Geometry pointCollection = new Geometry(ogrConstants.wkbMultiPoint);
+            final Geometry pointCollection = new Geometry(ogrConstants.wkbMultiPoint);
+
+            try
+            {
+                final Layer outputLayer = dataSource.CreateLayer("contours",
+                                                                 spatialReference);
+
+                // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
+                final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
+                                                           contourElevationInterval,                  // double           contourElevationInterval - The elevation interval between contours generated
+                                                           0,                                         // double           contourBase     - The "base" relative to which contour intervals are applied. This is normally zero, but could be different. To generate 10m contours at 5, 15, 25, ... the ContourBase would be 5
+                                                           null,                                      // double[]         fixedLevels     - The list of fixed contour levels at which contours should be generated. It will contain FixedLevelCount entries, and may be NULL
+                                                           (noDataValue == null) ? 0   : 1,           // int              useNoData       - If TRUE the noDataValue will be used
+                                                           (noDataValue == null) ? 0.0 : noDataValue, // double           noDataValue     - The value to use as a "no data" value. That is, a pixel value which should be ignored in generating contours as if the value of the pixel were not known
+                                                           outputLayer,                               // Layer            dstLayer        - The layer to which new contour vectors will be written. Each contour will have a LINESTRING geometry attached to it
+                                                           -1,                                        // int              idField         - If not -1 this will be used as a field index to indicate where a unique id should be written for each feature (contour) written
+                                                           -1,                                        // int              elevField       - If not -1 this will be used as a field index to indicate where the elevation value of the contour should be written
+                                                           this.progressCallback);                                     // ProgressCallback callback        - A ProgressCallback that may be used to report progress to the user, or to interrupt the algorithm. May be NULL if not required
+
+                if(gdalError != gdalconstConstants.CE_None)
+                {
+                    throw new RuntimeException(new GdalError().getMessage());
+                }
+
+                // Render Contours (for debug purposes)
+//                this.renderContours(file.getName() + ".contours.tif",
+//                                    this.rasterWidth,
+//                                    this.rasterHeight,
+//                                    new GeoTransformation(dataset.GetGeoTransform()).getBounds(dataset),
+//                                    spatialReference,
+//                                    outputLayer,
+//                                    new Color(255, 255, 255, 0),
+//                                    Color.BLACK);
+
+                for(Feature feature = outputLayer.GetNextFeature(); feature != null; feature = outputLayer.GetNextFeature())
+                {
+                    final Geometry originalGeometry = feature.GetGeometryRef();
+
+                    // http://gdal.org/java/org/gdal/ogr/Geometry.html#SimplifyPreserveTopology(double) ->
+                    // This function is built on the GEOS library, check it for the definition of the geometry operation. If OGR is built without the GEOS library, this function will always fail, issuing a CPLE_NotSupported error.
+                    // http://geos.refractions.net/ro/doxygen_docs/html/classgeos_1_1simplify_1_1TopologyPreservingSimplifier.html ->
+                    // All vertices in the simplified geometry will be within this distance of the original geometry. The tolerance value must be non-negative. A tolerance value of zero is effectively a no-op.
+                    final Geometry simplifiedGeometry = originalGeometry.SimplifyPreserveTopology(simplificationTolerance); // https://gis.stackexchange.com/questions/102254/ogr-simplifypreservetopology-does-not-keep-the-topology
+                                                                                                                            // Topology preserving means in practice that parts of the multilinestring meet after simplification, polygons
+                                                                                                                            // do not have self-intersections, inner rings in polygons stay inside outer rings, etc. Especially for polygon
+                                                                                                                            // layers this method does not prevent gaps, overlaps, and slivers from appearing, even though this is the
+                                                                                                                            // general belief. I would say that the method has a misleading name which makes users to believe that it saves
+                                                                                                                            // the topology for the whole layer. However, the name and behaviour is the same in PostGIS and in JTS
+                                                                                                                            // http://www.tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/simplify/TopologyPreservingSimplifier.html
+
+                    final int pointCount = simplifiedGeometry.GetPointCount();
+
+                    for(int x = 0; x < pointCount; ++x)
+                    {
+                        final double[] point = simplifiedGeometry.GetPoint(x);
+
+                        final Geometry pointGeometry = new Geometry(ogrConstants.wkbPoint);
+
+                        pointGeometry.AddPoint(round(point[0], coordinatePrecision),
+                                               round(point[1], coordinatePrecision),
+                                               round(point[2], coordinatePrecision));
+
+                        pointCollection.AddGeometry(pointGeometry);
+                    }
+                }
+            }
+            finally
+            {
+                dataSource.delete();    // Also destroys outputLayer
+            }
+
+            // http://www.gdal.org/classOGRGeometry.html#ab7d3c3e5b033ca6bbb470016e7661da7
+            final Geometry triangulation = pointCollection.DelaunayTriangulation(triangulationTolerance, // double tolerance - optional snapping tolerance to use for improved robustness
+                                                                                 1);                     // int    onlyEdges - if TRUE (non-zero), will return a MULTILINESTRING, otherwise it will return a GEOMETRYCOLLECTION containing triangular POLYGONs
+            final double[] envelope = new double[4]; // minX, maxX, minY, maxY
+
+            triangulation.GetEnvelope(envelope);
+
+            this.bounds = new BoundingBox(envelope[0],
+                                          envelope[2],
+                                          envelope[1],
+                                          envelope[3]);
+
+            final int lineStringCount = triangulation.GetGeometryCount();
+
+            for(int x = 0; x < lineStringCount; ++x)
+            {
+                final Geometry edge = triangulation.GetGeometryRef(x);    // Aline string that represents an edge in the Delaunay triangulation
+
+                final Node node0 = this.getNode(edge.GetPoint(0));
+                final Node node1 = this.getNode(edge.GetPoint(1));
+
+                // Debug when coordinates are too close
+    //            if(this.haversineDistance(new Coordinate<>(node0.getX(),
+    //                                                       node0.getY()),
+    //                                      new Coordinate<>(node1.getX(),
+    //                                                       node1.getY())) <= 0.0)
+    //            {
+    //                throw new RoutingNetworkStoreException("Attempting to add an edge with a cartesian distance of 0");
+    //            }
+
+                this.edges.add(new Edge(this.edges.size(),
+                                        node0.getIdentifier(),
+                                        node1.getIdentifier(),
+                                        EdgeDirecctionality.TWO_WAY,
+                                        Arrays.asList("footway")));
+            }
+
+            this.description = String.format("Elevation model routing network generated from source data %s, band %d. Original pixel size was %fm x %fm. Contains %d nodes and %d edges. Created with parameters, contour interval: %s, pixel no data value: %s, contour simplification tolerance: %s, triangulation tolerance: %s.",
+                                             file.getName(),
+                                             rasterBand,
+                                             metersPerPixel.getWidth(),
+                                             metersPerPixel.getHeight(),
+                                             this.nodes.size(),
+                                             this.edges.size(),
+                                             contourElevationInterval,
+                                             noDataValue,
+                                             simplificationTolerance,
+                                             triangulationTolerance);
+        }
+        catch(final Throwable th)
+        {
+            throw new RoutingNetworkStoreException(th);
+        }
+        finally
+        {
+            dataset.delete();
+        }
+    }
+
+    private static void renderContours(final String           contoursFilePath,
+                                       final int              imageWidth,
+                                       final int              imageHeight,
+                                       final BoundingBox      bounds,
+                                       final SpatialReference spatialReference,
+                                       final Layer            layer,
+                                       final Color            background,
+                                       final Color            foreground)
+    {
+        final Vector<String> imageCreationOptions = new Vector<>(1);
+
+        imageCreationOptions.add("COMPRESS=LZW");
+
+        final Dataset rasterDataset = gdal.GetDriverByName("GTiff")
+                                          .Create(contoursFilePath,
+                                                  imageWidth,
+                                                  imageHeight,
+                                                  4,    // RGBA
+                                                  gdalconstConstants.GDT_Byte,
+                                                  imageCreationOptions);
 
         try
         {
-            final Layer outputLayer = dataSource.CreateLayer("contours",
-                                                             spatialReference);
+            rasterDataset.GetRasterBand(1).Fill(background.getRed());
+            rasterDataset.GetRasterBand(2).Fill(background.getGreen());
+            rasterDataset.GetRasterBand(3).Fill(background.getBlue());
+            rasterDataset.GetRasterBand(4).Fill(background.getAlpha());
 
-            // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
-            final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
-                                                       contourElevationInterval,                  // double           contourElevationInterval - The elevation interval between contours generated
-                                                       0,                                         // double           contourBase     - The "base" relative to which contour intervals are applied. This is normally zero, but could be different. To generate 10m contours at 5, 15, 25, ... the ContourBase would be 5
-                                                       null,                                      // double[]         fixedLevels     - The list of fixed contour levels at which contours should be generated. It will contain FixedLevelCount entries, and may be NULL
-                                                       (noDataValue == null) ? 0   : 1,           // int              useNoData       - If TRUE the noDataValue will be used
-                                                       (noDataValue == null) ? 0.0 : noDataValue, // double           noDataValue     - The value to use as a "no data" value. That is, a pixel value which should be ignored in generating contours as if the value of the pixel were not known
-                                                       outputLayer,                               // Layer            dstLayer        - The layer to which new contour vectors will be written. Each contour will have a LINESTRING geometry attached to it
-                                                       -1,                                        // int              idField         - If not -1 this will be used as a field index to indicate where a unique id should be written for each feature (contour) written
-                                                       -1,                                        // int              elevField       - If not -1 this will be used as a field index to indicate where the elevation value of the contour should be written
-                                                       this.progressCallback);                                     // ProgressCallback callback        - A ProgressCallback that may be used to report progress to the user, or to interrupt the algorithm. May be NULL if not required
+            rasterDataset.SetGeoTransform(new double[]{ bounds.getTopLeft().getX(),               // top left x
+                                                        bounds.getWidth() / (double)imageWidth,   // w-e pixel resolution
+                                                        0,                                        // rotation, 0 if image is "north up"
+                                                        bounds.getTopLeft().getY(),               // top left y
+                                                        0,                                        // rotation, 0 if image is "north up"
+                                                        -bounds.getHeight() / (double)imageHeight // n-s pixel resolution (negative value!)
+                                                      });
 
-            if(gdalError != gdalconstConstants.CE_None)
+            rasterDataset.SetProjection(spatialReference.ExportToWkt());
+
+
+            final int rasterizeError = gdal.RasterizeLayer(rasterDataset,
+                                                           new int[]{1, 2, 3, 4},
+                                                           layer,
+                                                           new double[]{ foreground.getRed(),
+                                                                         foreground.getGreen(),
+                                                                         foreground.getBlue(),
+                                                                         foreground.getAlpha()
+                                                                       },
+                                                           null,                    // "options" vector. valid choices are described here: http://gdal.org/gdal__alg_8h.html#adfe5e5d287d6c184aab03acbfa567cb1
+                                                           null);
+
+            if(rasterizeError != gdalconstConstants.CE_None)
             {
                 throw new RuntimeException(new GdalError().getMessage());
-            }
-
-            for(Feature feature = outputLayer.GetNextFeature(); feature != null; feature = outputLayer.GetNextFeature())
-            {
-                final Geometry originalGeometry = feature.GetGeometryRef();
-
-                // http://gdal.org/java/org/gdal/ogr/Geometry.html#SimplifyPreserveTopology(double) ->
-                // This function is built on the GEOS library, check it for the definition of the geometry operation. If OGR is built without the GEOS library, this function will always fail, issuing a CPLE_NotSupported error.
-                // http://geos.refractions.net/ro/doxygen_docs/html/classgeos_1_1simplify_1_1TopologyPreservingSimplifier.html ->
-                // All vertices in the simplified geometry will be within this distance of the original geometry. The tolerance value must be non-negative. A tolerance value of zero is effectively a no-op.
-                final Geometry simplifiedGeometry = originalGeometry.SimplifyPreserveTopology(simplificationTolerance); // https://gis.stackexchange.com/questions/102254/ogr-simplifypreservetopology-does-not-keep-the-topology
-                                                                                                                        // Topology preserving means in practice that parts of the multilinestring meet after simplification, polygons
-                                                                                                                        // do not have self-intersections, inner rings in polygons stay inside outer rings, etc. Especially for polygon
-                                                                                                                        // layers this method does not prevent gaps, overlaps, and slivers from appearing, even though this is the
-                                                                                                                        // general belief. I would say that the method has a misleading name which makes users to believe that it saves
-                                                                                                                        // the topology for the whole layer. However, the name and behaviour is the same in PostGIS and in JTS
-                                                                                                                        // http://www.tsusiatsoftware.net/jts/javadoc/com/vividsolutions/jts/simplify/TopologyPreservingSimplifier.html
-
-                final int pointCount = simplifiedGeometry.GetPointCount();
-
-                for(int x = 0; x < pointCount; ++x)
-                {
-                    final double[] point = simplifiedGeometry.GetPoint(x);
-
-                    final Geometry pointGeometry = new Geometry(ogrConstants.wkbPoint);
-
-                    pointGeometry.AddPoint(round(point[0], coordinatePrecision),
-                                           round(point[1], coordinatePrecision),
-                                           round(point[2], coordinatePrecision));
-
-                    pointCollection.AddGeometry(pointGeometry);
-                }
             }
         }
         finally
         {
-            dataSource.delete();    // Also destroys outputLayer
+            rasterDataset.delete();
         }
-
-        // http://www.gdal.org/classOGRGeometry.html#ab7d3c3e5b033ca6bbb470016e7661da7
-        final Geometry triangulation = pointCollection.DelaunayTriangulation(triangulationTolerance, // double tolerance - optional snapping tolerance to use for improved robustness
-                                                                             1);                     // int    onlyEdges - if TRUE (non-zero), will return a MULTILINESTRING, otherwise it will return a GEOMETRYCOLLECTION containing triangular POLYGONs
-        final double[] envelope = new double[4]; // minX, maxX, minY, maxY
-
-        triangulation.GetEnvelope(envelope);
-
-        this.bounds = new BoundingBox(envelope[0],
-                                      envelope[2],
-                                      envelope[1],
-                                      envelope[3]);
-
-        final int lineStringCount = triangulation.GetGeometryCount();
-
-        for(int x = 0; x < lineStringCount; ++x)
-        {
-            final Geometry edge = triangulation.GetGeometryRef(x);    // Aline string that represents an edge in the Delaunay triangulation
-
-            final Node node0 = this.getNode(edge.GetPoint(0));
-            final Node node1 = this.getNode(edge.GetPoint(1));
-
-            //noinspection FloatingPointEquality
-            if(this.haversineDistance(new Coordinate<>(node0.getX(),
-                                                       node0.getY()),
-                                      new Coordinate<>(node1.getX(),
-                                                       node1.getY())) <= 0.0)
-            {
-                throw new RoutingNetworkStoreException("Attempting to add an edge with a cartesian distance of 0");
-            }
-
-            this.edges.add(new Edge(this.edges.size(),
-                                    node0.getIdentifier(),
-                                    node1.getIdentifier(),
-                                    EdgeDirecctionality.TWO_WAY,
-                                    Arrays.asList("footway")));
-        }
-
-        this.description = String.format("Elevation model routing network generated from source data %s, band %d. Original pixel size was %fm x %fm. Contains %d nodes and %d edges. Created with parameters, contour interval: %s, pixel no data value: %s, contour simplification tolerance: %s, triangulation tolerance: %s.",
-                                         file.getName(),
-                                         rasterBand,
-                                         metersPerPixel.getWidth(),
-                                         metersPerPixel.getHeight(),
-                                         this.nodes.size(),
-                                         this.edges.size(),
-                                         contourElevationInterval,
-                                         noDataValue,
-                                         simplificationTolerance,
-                                         triangulationTolerance);
     }
 
     private static double round(final double real,
@@ -339,11 +424,13 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         return NodeDimensionality.HAS_ELEVATION;
     }
 
+    @SuppressWarnings("PublicMethodNotExposedInInterface")
     public int getRasterWidth()
     {
         return this.rasterWidth;
     }
 
+    @SuppressWarnings("PublicMethodNotExposedInInterface")
     public int getRasterHeight()
     {
         return this.rasterHeight;
