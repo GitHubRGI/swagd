@@ -35,10 +35,21 @@ import com.rgi.store.routingnetworks.osm.OsmXmlRoutingNetworkStoreWriter;
 import org.kohsuke.args4j.CmdLineParser;
 
 import java.awt.Color;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.RoundingMode;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
 import java.time.Duration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author Luke Lambert
@@ -94,7 +105,9 @@ public final class Dem2Graphhopper
         }
     }
 
-    private static void writeImageNetwork(CommandLineOptions options, String baseOutputFileName, DemRoutingNetworkStoreReader demNetworkReader) throws RoutingNetworkStoreException
+    private static void writeImageNetwork(final CommandLineOptions           options,
+                                          final String                       baseOutputFileName,
+                                          final DemRoutingNetworkStoreReader demNetworkReader) throws RoutingNetworkStoreException
     {
         final long startTime = System.currentTimeMillis();
 
@@ -122,17 +135,18 @@ public final class Dem2Graphhopper
     }
 
     private static void writeGraphHopperBinaryNetwork(final String baseOutputFileName,
-                                                      final File   osmXmlOutputFile)
+                                                      final File   osmXmlFile) throws IOException, InterruptedException
     {
         final long startTime = System.currentTimeMillis();
 
         final String graphHopperOutputDirectoryName = baseOutputFileName + "-gh";
+
         final String[] inputs = { "graph.flag_encoders=foot",
                                   "graph.elevation.dataaccess=RAM_STORE",
                                   "prepare.ch.weightings=no",
                                   "graph.dataaccess=RAM_STORE",
                                   "graph.location=" + graphHopperOutputDirectoryName, // where to store the results
-                                  "osmreader.osm=" + osmXmlOutputFile     // input osm
+                                  "osmreader.osm=" + osmXmlFile     // input osm
                                 };
 
         final GraphHopper graphHopper = new GraphHopper().init(CmdArgs.read(inputs));
@@ -141,12 +155,23 @@ public final class Dem2Graphhopper
         {
             final ElevationProvider tagElevationProvider = new TagElevationProvider();
 
-            tagElevationProvider.setBaseURL(osmXmlOutputFile.getPath());
+            tagElevationProvider.setBaseURL(osmXmlFile.getPath());
 
             graphHopper.setElevation(true);
             graphHopper.setElevationProvider(tagElevationProvider);
 
             graphHopper.importOrLoad(); // Creates binary output
+
+            final File graphHopperOutputDirectory = new File(graphHopperOutputDirectoryName);
+
+            // Create Zip from binary folder output
+            zipDirectory(graphHopperOutputDirectory, 9);
+
+            // Delete the temporary folder
+            if(graphHopperOutputDirectory.exists())
+            {
+                recursivelyDeleteDirectory(graphHopperOutputDirectory);
+            }
         }
         finally
         {
@@ -155,6 +180,69 @@ public final class Dem2Graphhopper
 
         System.out.format(" ...finished! (%s)\n",
                           elapsedTime(System.currentTimeMillis() - startTime));
+    }
+
+    private static void zipDirectory(final File directory,
+                                     final int  compressionLevel) throws IOException
+    {
+        final String graphHopperZipFilename = directory.getName() + ".zip";
+
+        try(final FileOutputStream fileOutputStream = new FileOutputStream(graphHopperZipFilename))
+        {
+            try(final BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream))
+            {
+                try(final ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream))
+                {
+                    zipOutputStream.setLevel(compressionLevel);
+
+                    final byte[] buffer = new byte[1024];
+
+                    final String[] directoryList = directory.list();
+                    if(directoryList != null)
+                    {
+                        for(final String subFilename : directoryList)
+                        {
+                            zipOutputStream.putNextEntry(new ZipEntry(subFilename));
+
+                            try(final FileInputStream fileInputStream = new FileInputStream(directory.getName() + File.separator + subFilename))
+                            {
+                                int readLength;
+                                while((readLength = fileInputStream.read(buffer)) > 0)
+                                {
+                                    zipOutputStream.write(buffer, 0, readLength);
+                                }
+                            }
+
+                            zipOutputStream.closeEntry();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void recursivelyDeleteDirectory(final File graphHopperOutputDirectory) throws IOException
+    {
+        // Example courtesy of: https://stackoverflow.com/a/27917071/16434
+        Files.walkFileTree(graphHopperOutputDirectory.toPath(),
+                           new SimpleFileVisitor<Path>()
+                           {
+                               @Override
+                               public FileVisitResult visitFile(final Path                file,
+                                                                final BasicFileAttributes attrs) throws IOException
+                               {
+                                   Files.delete(file);
+                                   return FileVisitResult.CONTINUE;
+                               }
+
+                               @Override
+                               public FileVisitResult postVisitDirectory(final Path        dir,
+                                                                         final IOException exc) throws IOException
+                               {
+                                   Files.delete(dir);
+                                   return FileVisitResult.CONTINUE;
+                               }
+                           });
     }
 
     private static File writeOsmNetwork(final String                       baseOutputFileName,
