@@ -1,0 +1,17 @@
+group = 'DataProductionTools'
+description = 'GIS data production tools'
+
+dependencies
+{
+    compile project(':Common')
+    compile project(':DataStore')
+
+    compile fileTree(dir: 'lib', include: ['gdal-2.1.0.jar'])
+    compile project(':Gdal2Tiles')
+    compile project(':graphhopper')
+}
+
+cobertura
+{
+
+}

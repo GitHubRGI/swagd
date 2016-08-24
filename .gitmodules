@@ -1,0 +1,3 @@
+[submodule "DataProductionTools/libs/graphhopper"]
+    path = DataProductionTools/libs/graphhopper
+    url = https://github.com/GitHubRGI/graphhopper.git

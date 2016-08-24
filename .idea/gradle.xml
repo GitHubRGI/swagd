@@ -10,6 +10,11 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Common" />
+            <option value="$PROJECT_DIR$/DataProductionTools" />
+            <option value="$PROJECT_DIR$/DataProductionTools/libs/graphhopper/core" />
+            <option value="$PROJECT_DIR$/DataProductionTools/libs/graphhopper/tools" />
+            <option value="$PROJECT_DIR$/DataProductionTools/libs/graphhopper/tools-lgpl" />
+            <option value="$PROJECT_DIR$/DataProductionTools/libs/graphhopper/web" />
             <option value="$PROJECT_DIR$/DataStore" />
             <option value="$PROJECT_DIR$/Gdal2Tiles" />
             <option value="$PROJECT_DIR$/GeoPackage" />
