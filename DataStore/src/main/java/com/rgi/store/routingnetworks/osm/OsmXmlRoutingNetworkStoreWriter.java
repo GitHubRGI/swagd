@@ -65,11 +65,17 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
     @Override
     public void write(final List<Node>                nodes,
                       final List<Edge>                edges,
-                      final NodeDimensionality nodeDimensionality,
+                      final NodeDimensionality        nodeDimensionality,
                       final List<Pair<String, Type>>  nodeAttributeDescriptions,
                       final List<Pair<String, Type>>  edgeAttributeDescriptions,
                       final CoordinateReferenceSystem coordinateReferenceSystem) throws RoutingNetworkStoreException
     {
+        if(!coordinateReferenceSystem.getAuthority().equalsIgnoreCase("EPSG") ||
+            coordinateReferenceSystem.getIdentifier() != 4326)
+        {
+            throw new RoutingNetworkStoreException("OSM XML must be using the EPSG:4326 coordinate reference system.");
+        }
+
         try(final Writer writer = Files.newBufferedWriter(this.osmXmlFile.toPath(),
                                                           Charset.forName("UTF-8")))
         {

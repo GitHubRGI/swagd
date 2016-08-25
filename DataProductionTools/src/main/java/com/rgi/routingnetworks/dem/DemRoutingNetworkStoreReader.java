@@ -25,11 +25,8 @@
 package com.rgi.routingnetworks.dem;
 
 import com.rgi.common.BoundingBox;
-import com.rgi.common.Dimensions;
 import com.rgi.common.Pair;
-import com.rgi.common.coordinate.Coordinate;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
-import com.rgi.g2t.GeoTransformation;
 import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.EdgeDirecctionality;
 import com.rgi.store.routingnetworks.Node;
@@ -82,13 +79,14 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
      * @param triangulationTolerance    Snaps points that are within a tolerance's distance from one another (we THINK)
      * @throws RoutingNetworkStoreException thrown if the resulting network would contain invalid data
      */
-    public DemRoutingNetworkStoreReader(final File   file,
-                                        final int    rasterBand,
-                                        final double contourElevationInterval,
-                                        final Double noDataValue,
-                                        final int    coordinatePrecision,
-                                        final double simplificationTolerance,
-                                        final double triangulationTolerance) throws RoutingNetworkStoreException
+    public DemRoutingNetworkStoreReader(final File                      file,
+                                        final int                       rasterBand,
+                                        final double                    contourElevationInterval,
+                                        final Double                    noDataValue,
+                                        final int                       coordinatePrecision,
+                                        final double                    simplificationTolerance,
+                                        final double                    triangulationTolerance,
+                                        final CoordinateReferenceSystem targetCoordinateReferenceSystem) throws RoutingNetworkStoreException
     {
         this(file,
              rasterBand,
@@ -97,6 +95,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
              coordinatePrecision,
              simplificationTolerance,
              triangulationTolerance,
+             targetCoordinateReferenceSystem,
              null);
     }
 
@@ -113,15 +112,30 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
      * @param progressCallback          Callback to observe process progress. Ignored if null.
      * @throws RoutingNetworkStoreException thrown if the resulting network would contain invalid data
      */
-    public DemRoutingNetworkStoreReader(final File             file,
-                                        final int              rasterBand,
-                                        final double           contourElevationInterval,
-                                        final Double           noDataValue,
-                                        final int              coordinatePrecision,
-                                        final double           simplificationTolerance,
-                                        final double           triangulationTolerance,
-                                        final ProgressCallback progressCallback) throws RoutingNetworkStoreException
+    public DemRoutingNetworkStoreReader(final File                      file,
+                                        final int                       rasterBand,
+                                        final double                    contourElevationInterval,
+                                        final Double                    noDataValue,
+                                        final int                       coordinatePrecision,
+                                        final double                    simplificationTolerance,
+                                        final double                    triangulationTolerance,
+                                        final CoordinateReferenceSystem targetCoordinateReferenceSystem,
+                                        final ProgressCallback          progressCallback) throws RoutingNetworkStoreException
     {
+
+        this.coordinateReferenceSystem = targetCoordinateReferenceSystem;
+
+        final SpatialReference targetSpatialReferenceSystem;
+
+        try
+        {
+            targetSpatialReferenceSystem = GdalUtility.createSpatialReference(targetCoordinateReferenceSystem);
+        }
+        catch(final RuntimeException ex)
+        {
+            throw new RoutingNetworkStoreException(ex);
+        }
+
         final Dataset dataset = GdalUtility.open(file);
 
         try
@@ -130,7 +144,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
             this.rasterHeight     = dataset.getRasterYSize();
             this.progressCallback = progressCallback;
 
-            final Dimensions<Double> metersPerPixel = this.getMetersPerPixel(dataset);
+            //final Dimensions<Double> metersPerPixel = this.getMetersPerPixel(dataset); // TODO
 
             // We cannot tile an image with no geo referencing information
             if(!GdalUtility.hasGeoReference(dataset))
@@ -138,29 +152,17 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                 throw new IllegalArgumentException("Input raster image has no georeference.");
             }
 
-            final SpatialReference spatialReference = new SpatialReference(dataset.GetProjection());
+            final SpatialReference sourceSpatialReference = new SpatialReference(dataset.GetProjection());
 
-            this.sourceSpatialReferenceIsNotWgs84 = spatialReference.IsSame(wgs84SpatialReference) == 0;
-
-            this.sourceToWgs84Transformation = CoordinateTransformation.CreateCoordinateTransformation(new SpatialReference(dataset.GetProjection()),
-                                                                                                       wgs84SpatialReference);
-
-            this.coordinateReferenceSystem = GdalUtility.getCoordinateReferenceSystem(GdalUtility.getSpatialReference(dataset));
-
-            if(this.coordinateReferenceSystem  == null)
-            {
-                throw new IllegalArgumentException("Image file is not in a recognized coordinate reference system");
-            }
-
-                    final DataSource dataSource = ogr.GetDriverByName("Memory") // Make constant
-                                         .CreateDataSource("data source");
+            final DataSource dataSource = ogr.GetDriverByName("Memory") // Make constant
+                                             .CreateDataSource("data source");
 
             final Geometry pointCollection = new Geometry(ogrConstants.wkbMultiPoint);
 
             try
             {
                 final Layer outputLayer = dataSource.CreateLayer("contours",
-                                                                 spatialReference);
+                                                                 sourceSpatialReference);
 
                 // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
                 final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
@@ -184,10 +186,13 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 //                                    this.rasterWidth,
 //                                    this.rasterHeight,
 //                                    new GeoTransformation(dataset.GetGeoTransform()).getBounds(dataset),
-//                                    spatialReference,
+//                                    sourceSpatialReference,
 //                                    outputLayer,
 //                                    new Color(255, 255, 255, 0),
 //                                    Color.BLACK);
+
+                final CoordinateTransformation coordinateTransformation = CoordinateTransformation.CreateCoordinateTransformation(sourceSpatialReference,
+                                                                                                                                  targetSpatialReferenceSystem);
 
                 for(Feature feature = outputLayer.GetNextFeature(); feature != null; feature = outputLayer.GetNextFeature())
                 {
@@ -211,13 +216,11 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                     {
                         final double[] point = simplifiedGeometry.GetPoint(x);
 
-                        final Geometry pointGeometry = new Geometry(ogrConstants.wkbPoint);
-
-                        pointGeometry.AddPoint(round(point[0], coordinatePrecision),
-                                               round(point[1], coordinatePrecision),
-                                               round(point[2], coordinatePrecision));
-
-                        pointCollection.AddGeometry(pointGeometry);
+                        pointCollection.AddGeometry(warp(point[0],
+                                                         point[1],
+                                                         point[2],
+                                                         coordinateTransformation,
+                                                         coordinatePrecision));
                     }
                 }
             }
@@ -263,11 +266,11 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                         Arrays.asList("footway")));
             }
 
-            this.description = String.format("Elevation model routing network generated from source data %s, band %d. Original pixel size was %fm x %fm. Contains %d nodes and %d edges. Created with parameters, contour interval: %s, pixel no data value: %s, contour simplification tolerance: %s, triangulation tolerance: %s.",
+            this.description = String.format("Elevation model routing network generated from source data %s, band %d. Contains %d nodes and %d edges. Created with parameters, contour interval: %s, pixel no data value: %s, contour simplification tolerance: %s, triangulation tolerance: %s.",
                                              file.getName(),
                                              rasterBand,
-                                             metersPerPixel.getWidth(),
-                                             metersPerPixel.getHeight(),
+                                             //metersPerPixel.getWidth(), // Original pixel size was %fm x %fm.
+                                             //metersPerPixel.getHeight(),
                                              this.nodes.size(),
                                              this.edges.size(),
                                              contourElevationInterval,
@@ -283,6 +286,23 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         {
             dataset.delete();
         }
+    }
+
+    private static Geometry warp(final double                   x,
+                                 final double                   y,
+                                 final double                   z,
+                                 final CoordinateTransformation coordinateTransformation,
+                                 final int                      coordinatePrecision)
+    {
+        final Geometry pointGeometry = new Geometry(ogrConstants.wkbPoint);
+
+        final double[] point = coordinateTransformation.TransformPoint(x, y, z);
+
+        pointGeometry.AddPoint(round(point[0], coordinatePrecision),
+                               round(point[1], coordinatePrecision),
+                               round(point[2], coordinatePrecision));
+
+        return pointGeometry;
     }
 
     private static void renderContours(final String           contoursFilePath,
@@ -359,22 +379,22 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                    .doubleValue();
     }
 
-    private Dimensions<Double> getMetersPerPixel(final Dataset dataset)
-    {
-        final GeoTransformation transformation = new GeoTransformation(dataset.GetGeoTransform());
-
-        final BoundingBox bounds = transformation.getBounds(dataset);
-
-        final double rasterWidthKilometers = this.haversineDistance(bounds.getBottomLeft(),
-                                                                    bounds.getBottomRight());
-
-        final double rasterHeightKilometers = this.haversineDistance(bounds.getTopLeft(),
-                                                                     bounds.getBottomLeft());
-
-        //noinspection MagicNumber // 1km = 1000m
-        return new Dimensions<>((rasterWidthKilometers *1000.0) / (double)dataset.getRasterXSize(),
-                                (rasterHeightKilometers*1000.0) / (double)dataset.getRasterYSize());
-    }
+//    private Dimensions<Double> getMetersPerPixel(final Dataset dataset)
+//    {
+//        final GeoTransformation transformation = new GeoTransformation(dataset.GetGeoTransform());
+//
+//        final BoundingBox bounds = transformation.getBounds(dataset);
+//
+//        final double rasterWidthKilometers = this.haversineDistance(bounds.getBottomLeft(),
+//                                                                    bounds.getBottomRight());
+//
+//        final double rasterHeightKilometers = this.haversineDistance(bounds.getTopLeft(),
+//                                                                     bounds.getBottomLeft());
+//
+//        //noinspection MagicNumber // 1km = 1000m
+//        return new Dimensions<>((rasterWidthKilometers *1000.0) / (double)dataset.getRasterXSize(),
+//                                (rasterHeightKilometers*1000.0) / (double)dataset.getRasterYSize());
+//    }
 
     @Override
     public List<Pair<String, Type>> getNodeAttributeDescriptions()
@@ -436,20 +456,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         return this.rasterHeight;
     }
 
-    private Coordinate<Double> toWgs84(final double x,
-                                       final double y)
-    {
-        if(this.sourceSpatialReferenceIsNotWgs84)
-        {
-            final double[] coordinate = this.sourceToWgs84Transformation.TransformPoint(x, y);
-
-            return new Coordinate<>(coordinate[0],
-                                    coordinate[1]);
-        }
-
-        return new Coordinate<>(x, y);
-    }
-
     private Node getNode(final double[] coordinate)
     {
         final int coordinateHash = Arrays.hashCode(coordinate);
@@ -458,7 +464,9 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         final double latitude  = coordinate[1];
         final Double elevation = coordinate.length > 2 ? coordinate[2] : null;
 
-        final String key = Double.toString(longitude) + '_' + Double.toString(latitude) + '_' + (elevation != null ? Double.toString(coordinate[2]) : "");
+
+
+        final String key = Double.toString(longitude) + '_' + Double.toString(latitude) + '_' + (elevation != null ? Double.toString(coordinate[2]) : "");  // TODO this could be smarter...
 
         if(this.nodeMap.containsKey(key))
         {
@@ -477,37 +485,53 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         return node;
     }
 
-    /**
-     * Calculates the Haversine distance between two coordinates
-     *
-     * @return The Haversine distance in kilometers between two points
-     *
-     * @see <a href="https://goo.gl/QkG1Vu">Haversine Formula</a>
-     */
-    private double haversineDistance(final Coordinate<Double> from,
-                                     final Coordinate<Double> to)
-    {
-        final Coordinate<Double> coordinate0 = this.toWgs84(from.getX(), from.getY());
-        final Coordinate<Double> coordinate1 = this.toWgs84(to.getX(),   to.getY());
-
-        final double fromLongitude = coordinate0.getX();
-        final double fromLatitude  = coordinate0.getY();
-        final double toLongitude   = coordinate1.getX();
-        final double toLatitude    = coordinate1.getY();
-
-        // Implementation taken from: https://goo.gl/QkG1Vu
-        final double dLat = Math.toRadians(toLatitude  - fromLatitude);
-        final double dLon = Math.toRadians(toLongitude - fromLongitude);
-
-        final double fromLatitudeRadians = Math.toRadians(fromLatitude);
-        final double toLatitudeRadians   = Math.toRadians(toLatitude);
-
-        // Pandolf equation literally calls these two values "a" and "c"
-        final double a = haversin(dLat) + StrictMath.cos(fromLatitudeRadians) * StrictMath.cos(toLatitudeRadians) * haversin(dLon);
-        final double c = 2 * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return RADIUS_OF_EARTH_KILOMETERS * c;
-    }
+//    /**
+//     * Calculates the Haversine distance between two coordinates
+//     *
+//     * @return The Haversine distance in kilometers between two points
+//     *
+//     * @see <a href="https://goo.gl/QkG1Vu">Haversine Formula</a>
+//     */
+//    private double haversineDistance(final Coordinate<Double> from,
+//                                     final Coordinate<Double> to)
+//    {
+////        private Coordinate<Double> toWgs84(final double x,
+////                                           final double y)
+////        {
+////            final CoordinateTransformation  sourceToWgs84Transformation;
+////            sourceToWgs84Transformation = CoordinateTransformation.CreateCoordinateTransformation(sourceSpatialReference,
+////                                                                                                           wgs84SpatialReference);
+////
+////                final double[] coordinate = this.sourceToWgs84Transformation.TransformPoint(x, y);
+////
+////                return new Coordinate<>(coordinate[0],
+////                                        coordinate[1]);
+////            }
+////
+////            return new Coordinate<>(x, y);
+////        }
+//
+//        final Coordinate<Double> coordinate0 = this.toWgs84(from.getX(), from.getY());
+//        final Coordinate<Double> coordinate1 = this.toWgs84(to.getX(),   to.getY());
+//
+//        final double fromLongitude = coordinate0.getX();
+//        final double fromLatitude  = coordinate0.getY();
+//        final double toLongitude   = coordinate1.getX();
+//        final double toLatitude    = coordinate1.getY();
+//
+//        // Implementation taken from: https://goo.gl/QkG1Vu
+//        final double dLat = Math.toRadians(toLatitude  - fromLatitude);
+//        final double dLon = Math.toRadians(toLongitude - fromLongitude);
+//
+//        final double fromLatitudeRadians = Math.toRadians(fromLatitude);
+//        final double toLatitudeRadians   = Math.toRadians(toLatitude);
+//
+//        // Pandolf equation literally calls these two values "a" and "c"
+//        final double a = haversin(dLat) + StrictMath.cos(fromLatitudeRadians) * StrictMath.cos(toLatitudeRadians) * haversin(dLon);
+//        final double c = 2 * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//
+//        return RADIUS_OF_EARTH_KILOMETERS * c;
+//    }
 
     /**
      * The Haversine function
@@ -528,8 +552,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     private final BoundingBox               bounds;
     private final String                    description;
     private final CoordinateReferenceSystem coordinateReferenceSystem;
-    private final CoordinateTransformation  sourceToWgs84Transformation;
-    private final boolean                   sourceSpatialReferenceIsNotWgs84;
     private final int                       rasterWidth;
     private final int                       rasterHeight;
     private final ProgressCallback          progressCallback;

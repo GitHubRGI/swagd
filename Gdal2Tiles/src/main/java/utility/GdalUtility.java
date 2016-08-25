@@ -137,12 +137,10 @@ public final class GdalUtility
             final Dataset openDataset = GdalUtility.doesDataSetMatchCRS(dataset, coordinateReferenceSystem)
                                         ? GdalUtility.warpDatasetToSrs(dataset,
                                                                        GdalUtility.getSpatialReference(dataset),
-                                                                       GdalUtility.getSpatialReference(
-                                                                               coordinateReferenceSystem))
+                                                                       GdalUtility.getSpatialReference(coordinateReferenceSystem))
                                         : GdalUtility.reprojectDatasetToSrs(dataset,
                                                                             GdalUtility.getSpatialReference(dataset),
-                                                                            GdalUtility.getSpatialReference(
-                                                                                    coordinateReferenceSystem));
+                                                                            GdalUtility.getSpatialReference(coordinateReferenceSystem));
 
             if(openDataset == null)
             {
@@ -432,6 +430,37 @@ public final class GdalUtility
         final SpatialReference srs = new SpatialReference();
         srs.ImportFromWkt(CrsProfileFactory.create(crs).getWellKnownText());
         return srs;
+    }
+
+    public static SpatialReference createSpatialReference(final CoordinateReferenceSystem coordinateReferenceSystem)
+    {
+        final SpatialReference spatialReferenceSystem = new SpatialReference();
+
+        final int    identifier = coordinateReferenceSystem.getIdentifier();
+        final String authority  = coordinateReferenceSystem.getAuthority()
+                                                          .toUpperCase();
+
+        final int srsImportError;
+
+        if(authority.equals("EPSG"))
+        {
+            srsImportError = spatialReferenceSystem.ImportFromEPSG(identifier);
+        }
+        else if(authority.equals("EPSGA"))
+        {
+            srsImportError = spatialReferenceSystem.ImportFromEPSGA(identifier);
+        }
+        else
+        {
+            throw new RuntimeException("Currently only EPSG and EPSGA codes can be be used in a coordinate reference systems");
+        }
+
+        if(srsImportError != gdalconstConstants.CE_None)
+        {
+            throw new RuntimeException(new GdalError().getMessage());
+        }
+
+        return spatialReferenceSystem;
     }
 
     /**
@@ -1660,8 +1689,7 @@ public final class GdalUtility
 
             if(this.readX + this.readXSize > dataset.GetRasterXSize())
             {
-                this.writeXSize =
-                        (int)(this.writeXSize * ((float)(dataset.GetRasterXSize() - this.readX) / this.readXSize));
+                this.writeXSize = (int)(this.writeXSize * ((float)(dataset.GetRasterXSize() - this.readX) / this.readXSize));
                 this.readXSize = dataset.GetRasterXSize() - this.readX;
             }
 
@@ -1676,8 +1704,7 @@ public final class GdalUtility
 
             if(this.readY + this.readYSize > dataset.GetRasterYSize())
             {
-                this.writeYSize =
-                        (int)(this.writeYSize * ((float)(dataset.GetRasterYSize() - this.readY) / this.readYSize));
+                this.writeYSize = (int)(this.writeYSize * ((float)(dataset.GetRasterYSize() - this.readY) / this.readYSize));
                 this.readYSize = dataset.GetRasterYSize() - this.readY;
             }
         }

@@ -27,6 +27,7 @@ package com.rgi.dem2gh;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.util.CmdArgs;
+import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.routingnetworks.dem.DemRoutingNetworkStoreReader;
 import com.rgi.routingnetworks.image.ImageRoutingNetworkStoreWriter;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
@@ -149,7 +150,8 @@ public final class Dem2Graphhopper
                                   "osmreader.osm=" + osmXmlFile     // input osm
                                 };
 
-        final GraphHopper graphHopper = new GraphHopper().init(CmdArgs.read(inputs));
+        //final GraphHopper graphHopper = new GraphHopper().init(CmdArgs.read(inputs));
+        final GraphHopper graphHopper = new AdditionalFieldGraphHopper((fromIndex, toIndex, pointList, flags, wayOsmId) -> 9999999).init(CmdArgs.read(inputs));
 
         try
         {
@@ -285,6 +287,7 @@ public final class Dem2Graphhopper
                                                                                                options.getCoordinatePrecision(),
                                                                                                options.getSimplificationTolerance(),
                                                                                                options.getTriangulationTolerance(),
+                                                                                               new CoordinateReferenceSystem("EPSG", 4326),
                                                                                                new ConsoleProgressCallback());
 
         System.out.format("\n...finished! (%s)\n",
