@@ -504,58 +504,6 @@ public class GdalUtilityTest
     }
 
     /**
-     * Tests getBounds(Dataset) throws an
-     * IllegalArgumentException when the image is tilted
-     */
-    @Test(expected = DataFormatException.class)
-    public void verifyGetBoundsException2() throws DataFormatException, URISyntaxException
-    {
-        final File rawData = TestUtility.loadFileFromDisk("NonGeo.tif");
-        final double[] argins = { 0.0, 1.0, 3.0, 0.0, 0.0, 1.0 };
-
-        final Dataset testData = gdal.Open(rawData.toString(), gdalconstConstants.GA_Update );
-
-        final double[] original = testData.GetGeoTransform();
-        testData.SetGeoTransform(argins);
-        try
-        {
-            GdalUtility.getBounds(testData);
-            fail("Expected GdalUtility method getBounds(Dataset) to throw a DataFormatException.");
-        }
-        finally
-        {
-            testData.SetGeoTransform(original);
-            testData.delete();
-        }
-    }
-
-    /**
-     * Tests getBounds(Dataset) throws an
-     * IllegalArgumentException when the image is tilted
-     */
-    @Test(expected = DataFormatException.class)
-    public void verifyGetBoundsException3() throws DataFormatException, URISyntaxException
-    {
-        final File rawData = TestUtility.loadFileFromDisk("NonGeo.tif");
-        final double[] argins = { 0.0, 1.0, 0.0, 0.0, 5.0, 1.0 };
-
-        final Dataset testData = gdal.Open(rawData.toString(), gdalconstConstants.GA_Update );
-
-        final double[] original = testData.GetGeoTransform();
-        testData.SetGeoTransform(argins);
-        try
-        {
-            GdalUtility.getBounds(testData);
-            fail("Expected GdalUtility method getBounds(Dataset) to throw a DataFormatException.");
-        }
-        finally
-        {
-            testData.SetGeoTransform(original);
-            testData.delete();
-        }
-    }
-
-    /**
      * Test getBounds(dataset)
      */
     @Test
