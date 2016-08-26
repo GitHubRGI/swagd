@@ -24,6 +24,7 @@
 package com.rgi.g2t;
 
 import com.rgi.common.BoundingBox;
+import com.rgi.common.Dimensions;
 import com.rgi.common.coordinate.Coordinate;
 import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
@@ -151,7 +152,8 @@ public class GeoTransformationTest
             final GeoTransformation geoTransformation = new GeoTransformation(affineTransform);
             assertEquals("GeoTransformation method getBounds(Dataset) did not return the correct BoundingBox",
                          box,
-                         geoTransformation.getBounds(data));
+                         geoTransformation.getBounds(new Dimensions<>(data.getRasterXSize(),
+                                                                      data.getRasterYSize())));
         }
         finally
         {

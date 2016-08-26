@@ -102,13 +102,21 @@ public class GeoTransformation
      *             GDAL {@link Dataset}
      * @return Returns the geographic bounds of a dataset based on the geotransformation
      */
-    public BoundingBox getBounds(final Dataset dataset) // TODO take pixel dimensions instead
+    public BoundingBox getBounds(final Dimensions<Integer> rasterDimensions) // TODO take pixel dimensions instead
+    {
+        final Coordinate<Double> bottomRight = this.getBottomRight(rasterDimensions);
+
+        return new BoundingBox(this.topLeft.getX(),
+                               bottomRight.getY(),
+                               bottomRight.getX(),
+                               this.topLeft.getY());
+    }
+
+    public Coordinate getBottomRight(final Dimensions<Integer> rasterDimensions)
     {
         // based on some code found here: https://github.com/naturalatlas/node-gdal/blob/master/examples/gdalinfo.js#L29-L67
-        return new BoundingBox(this.affineTransform[0],
-                               this.affineTransform[3] + (dataset.getRasterXSize() * this.affineTransform[4]) + (dataset.getRasterYSize() * this.affineTransform[5]),
-                               this.affineTransform[0] + (dataset.getRasterXSize() * this.affineTransform[1]) + (dataset.getRasterYSize() * this.affineTransform[2]),
-                               this.affineTransform[3]);
+        return new Coordinate<>(this.affineTransform[0] + (rasterDimensions.getWidth() * this.affineTransform[1]) + (rasterDimensions.getHeight() * this.affineTransform[2]),
+                                this.affineTransform[3] + (rasterDimensions.getWidth() * this.affineTransform[4]) + (rasterDimensions.getHeight() * this.affineTransform[5]));
     }
 
     /**

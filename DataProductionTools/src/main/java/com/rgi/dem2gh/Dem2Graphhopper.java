@@ -204,9 +204,11 @@ public final class Dem2Graphhopper
                     {
                         for(final String subFilename : directoryList)
                         {
-                            zipOutputStream.putNextEntry(new ZipEntry(subFilename));
+                            final String entryFilename = directory.getName() + File.separator + subFilename;
 
-                            try(final FileInputStream fileInputStream = new FileInputStream(directory.getName() + File.separator + subFilename))
+                            zipOutputStream.putNextEntry(new ZipEntry(entryFilename));
+
+                            try(final FileInputStream fileInputStream = new FileInputStream(entryFilename))
                             {
                                 int readLength;
                                 while((readLength = fileInputStream.read(buffer)) > 0)
@@ -325,7 +327,7 @@ public final class Dem2Graphhopper
 
         final double seconds = duration.toNanos() / 1.0e9d;
 
-        final DecimalFormat df = new DecimalFormat(".##");
+        final DecimalFormat df = new DecimalFormat("#.##");
         df.setRoundingMode(RoundingMode.DOWN);
 
         timeString.append(df.format(seconds))

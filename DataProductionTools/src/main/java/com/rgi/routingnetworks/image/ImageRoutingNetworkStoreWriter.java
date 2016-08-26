@@ -165,7 +165,8 @@ public class ImageRoutingNetworkStoreWriter implements RoutingNetworkStoreWriter
 
     private Dataset createRaster(final SpatialReference spatialReference)
     {
-        final Vector imageCreationOptions = new Vector(1);
+        @SuppressWarnings("UseOfObsoleteCollectionType")
+        final Vector<String> imageCreationOptions = new Vector<>(1);
 
         imageCreationOptions.add("COMPRESS=LZW");
 

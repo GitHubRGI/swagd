@@ -34,6 +34,7 @@ import com.rgi.common.tile.TileOrigin;
 import com.rgi.common.tile.scheme.TileMatrixDimensions;
 import com.rgi.common.tile.scheme.TileScheme;
 import com.rgi.common.tile.scheme.ZoomTimesTwo;
+import com.rgi.g2t.GeoTransformation;
 import com.rgi.g2t.TilingException;
 import com.rgi.store.tiles.TileStoreException;
 import org.gdal.gdal.Band;
@@ -442,17 +443,15 @@ public final class GdalUtility
 
         final int srsImportError;
 
-        if(authority.equals("EPSG"))
+        switch(authority)
         {
-            srsImportError = spatialReferenceSystem.ImportFromEPSG(identifier);
-        }
-        else if(authority.equals("EPSGA"))
-        {
-            srsImportError = spatialReferenceSystem.ImportFromEPSGA(identifier);
-        }
-        else
-        {
-            throw new RuntimeException("Currently only EPSG and EPSGA codes can be be used in a coordinate reference systems");
+            case "EPSG":  srsImportError = spatialReferenceSystem.ImportFromEPSG(identifier);
+                          break;
+
+            case "EPSGA": srsImportError = spatialReferenceSystem.ImportFromEPSGA(identifier);
+                          break;
+
+            default:      throw new RuntimeException("Currently only EPSG and EPSGA codes can be be used in a coordinate reference systems");
         }
 
         if(srsImportError != gdalconstConstants.CE_None)
@@ -511,16 +510,9 @@ public final class GdalUtility
         {
             throw new IllegalArgumentException("Input dataset cannot be null.");
         }
-        final double[] outputGeotransform = dataset.GetGeoTransform();
-        if(outputGeotransform[2] != 0 || outputGeotransform[4] != 0)
-        {
-            throw new DataFormatException("Raster's georeference contains a rotation or skew, which is not supported.  Please use gdalwarp first.");
-        }
 
-        return new BoundingBox(outputGeotransform[0],
-                               outputGeotransform[3] + dataset.GetRasterYSize() * outputGeotransform[5],
-                               outputGeotransform[0] + dataset.GetRasterXSize() * outputGeotransform[1],
-                               outputGeotransform[3]);
+        return new GeoTransformation(dataset.GetGeoTransform()).getBounds(new Dimensions<>(dataset.getRasterXSize(),
+                                                                                           dataset.getRasterYSize()));
     }
 
     /**

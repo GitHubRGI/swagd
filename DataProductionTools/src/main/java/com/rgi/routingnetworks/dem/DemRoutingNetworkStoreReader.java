@@ -64,19 +64,19 @@ import java.util.Vector;
 /**
  * @author Luke Lambert
  */
-@SuppressWarnings("UseOfObsoleteCollectionType")    // GDAL's Java API uses 'Vector' an obsolete collection type
 public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 {
     /**
      * Constructor
      *
-     * @param file                      File containing the digital elevation model dataset
-     * @param rasterBand                Band of the raster to treat as elevation data
-     * @param contourElevationInterval  Contour Elevation interval (elevation values will be multiples of the interval)
-     * @param noDataValue               Value that indicates that a pixel contains no elevation data, and is to be ignored (nullable)
-     * @param coordinatePrecision       Number of decimal places to round the coordinates. A negative value will cause no rounding to occur
-     * @param simplificationTolerance   Tolerance used to simplify the contour rings that are used in the triangulation of the data
-     * @param triangulationTolerance    Snaps points that are within a tolerance's distance from one another (we THINK)
+     * @param file                            File containing the digital elevation model dataset
+     * @param rasterBand                      Band of the raster to treat as elevation data
+     * @param contourElevationInterval        Contour Elevation interval (elevation values will be multiples of the interval)
+     * @param noDataValue                     Value that indicates that a pixel contains no elevation data, and is to be ignored (nullable)
+     * @param coordinatePrecision             Number of decimal places to round the coordinates. A negative value will cause no rounding to occur
+     * @param simplificationTolerance         Tolerance used to simplify the contour rings that are used in the triangulation of the data
+     * @param triangulationTolerance          Snaps points that are within a tolerance's distance from one another (we THINK)
+     * @param targetCoordinateReferenceSystem Coordinate system for all output
      * @throws RoutingNetworkStoreException thrown if the resulting network would contain invalid data
      */
     public DemRoutingNetworkStoreReader(final File                      file,
@@ -102,14 +102,15 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     /**
      * Constructor
      *
-     * @param file                      File containing the digital elevation model dataset
-     * @param rasterBand                Band of the raster to treat as elevation data
-     * @param contourElevationInterval  Contour Elevation interval (elevation values will be multiples of the interval)
-     * @param noDataValue               Value that indicates that a pixel contains no elevation data, and is to be ignored (nullable)
-     * @param coordinatePrecision       Number of decimal places to round the coordinates. A negative value will cause no rounding to occur
-     * @param simplificationTolerance   Tolerance used to simplify the contour rings that are used in the triangulation of the data
-     * @param triangulationTolerance    Snaps points that are within a tolerance's distance from one another (we THINK)
-     * @param progressCallback          Callback to observe process progress. Ignored if null.
+     * @param file                            File containing the digital elevation model dataset
+     * @param rasterBand                      Band of the raster to treat as elevation data
+     * @param contourElevationInterval        Contour Elevation interval (elevation values will be multiples of the interval)
+     * @param noDataValue                     Value that indicates that a pixel contains no elevation data, and is to be ignored (nullable)
+     * @param coordinatePrecision             Number of decimal places to round the coordinates. A negative value will cause no rounding to occur
+     * @param simplificationTolerance         Tolerance used to simplify the contour rings that are used in the triangulation of the data
+     * @param triangulationTolerance          Snaps points that are within a tolerance's distance from one another (we THINK)
+     * @param targetCoordinateReferenceSystem Coordinate system for all output
+     * @param progressCallback                Callback to observe process progress. Ignored if null.
      * @throws RoutingNetworkStoreException thrown if the resulting network would contain invalid data
      */
     public DemRoutingNetworkStoreReader(final File                      file,
@@ -125,11 +126,11 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 
         this.coordinateReferenceSystem = targetCoordinateReferenceSystem;
 
-        final SpatialReference targetSpatialReferenceSystem;
+        final SpatialReference targetSpatialReference;
 
         try
         {
-            targetSpatialReferenceSystem = GdalUtility.createSpatialReference(targetCoordinateReferenceSystem);
+            targetSpatialReference = GdalUtility.createSpatialReference(targetCoordinateReferenceSystem);
         }
         catch(final RuntimeException ex)
         {
@@ -142,15 +143,8 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         {
             this.rasterWidth      = dataset.getRasterXSize();
             this.rasterHeight     = dataset.getRasterYSize();
-            this.progressCallback = progressCallback;
 
             //final Dimensions<Double> metersPerPixel = this.getMetersPerPixel(dataset); // TODO
-
-            // We cannot tile an image with no geo referencing information
-            if(!GdalUtility.hasGeoReference(dataset))
-            {
-                throw new IllegalArgumentException("Input raster image has no georeference.");
-            }
 
             final SpatialReference sourceSpatialReference = new SpatialReference(dataset.GetProjection());
 
@@ -165,16 +159,16 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                                                  sourceSpatialReference);
 
                 // http://www.gdal.org/gdal__alg_8h.html#aceaf98ad40f159cbfb626988c054c085
-                final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand         - The band to read raster data from. The whole band will be processed
+                final int gdalError = gdal.ContourGenerate(dataset.GetRasterBand(rasterBand),         // Band             srcBand                  - The band to read raster data from. The whole band will be processed
                                                            contourElevationInterval,                  // double           contourElevationInterval - The elevation interval between contours generated
-                                                           0,                                         // double           contourBase     - The "base" relative to which contour intervals are applied. This is normally zero, but could be different. To generate 10m contours at 5, 15, 25, ... the ContourBase would be 5
-                                                           null,                                      // double[]         fixedLevels     - The list of fixed contour levels at which contours should be generated. It will contain FixedLevelCount entries, and may be NULL
-                                                           (noDataValue == null) ? 0   : 1,           // int              useNoData       - If TRUE the noDataValue will be used
-                                                           (noDataValue == null) ? 0.0 : noDataValue, // double           noDataValue     - The value to use as a "no data" value. That is, a pixel value which should be ignored in generating contours as if the value of the pixel were not known
-                                                           outputLayer,                               // Layer            dstLayer        - The layer to which new contour vectors will be written. Each contour will have a LINESTRING geometry attached to it
-                                                           -1,                                        // int              idField         - If not -1 this will be used as a field index to indicate where a unique id should be written for each feature (contour) written
-                                                           -1,                                        // int              elevField       - If not -1 this will be used as a field index to indicate where the elevation value of the contour should be written
-                                                           this.progressCallback);                                     // ProgressCallback callback        - A ProgressCallback that may be used to report progress to the user, or to interrupt the algorithm. May be NULL if not required
+                                                           0,                                         // double           contourBase              - The "base" relative to which contour intervals are applied. This is normally zero, but could be different. To generate 10m contours at 5, 15, 25, ... the ContourBase would be 5
+                                                           null,                                      // double[]         fixedLevels              - The list of fixed contour levels at which contours should be generated. It will contain FixedLevelCount entries, and may be NULL
+                                                           (noDataValue == null) ? 0   : 1,           // int              useNoData                - If TRUE the noDataValue will be used
+                                                           (noDataValue == null) ? 0.0 : noDataValue, // double           noDataValue              - The value to use as a "no data" value. That is, a pixel value which should be ignored in generating contours as if the value of the pixel were not known
+                                                           outputLayer,                               // Layer            dstLayer                 - The layer to which new contour vectors will be written. Each contour will have a LINESTRING geometry attached to it
+                                                           -1,                                        // int              idField                  - If not -1 this will be used as a field index to indicate where a unique id should be written for each feature (contour) written
+                                                           -1,                                        // int              elevField                - If not -1 this will be used as a field index to indicate where the elevation value of the contour should be written
+                                                           progressCallback);                         // ProgressCallback callback                 - A ProgressCallback that may be used to report progress to the user, or to interrupt the algorithm. May be NULL if not required
 
                 if(gdalError != gdalconstConstants.CE_None)
                 {
@@ -182,17 +176,17 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                 }
 
                 // Render Contours (for debug purposes)
-//                this.renderContours(file.getName() + ".contours.tif",
-//                                    this.rasterWidth,
-//                                    this.rasterHeight,
-//                                    new GeoTransformation(dataset.GetGeoTransform()).getBounds(dataset),
-//                                    sourceSpatialReference,
-//                                    outputLayer,
-//                                    new Color(255, 255, 255, 0),
-//                                    Color.BLACK);
+                renderContours(file.getName() + ".contours.tif",
+                               this.rasterWidth,
+                               this.rasterHeight,
+                               GdalUtility.getBounds(dataset),
+                               sourceSpatialReference,
+                               outputLayer,
+                               new Color(255, 255, 255, 0),
+                               Color.BLACK);
 
                 final CoordinateTransformation coordinateTransformation = CoordinateTransformation.CreateCoordinateTransformation(sourceSpatialReference,
-                                                                                                                                  targetSpatialReferenceSystem);
+                                                                                                                                  targetSpatialReference);
 
                 for(Feature feature = outputLayer.GetNextFeature(); feature != null; feature = outputLayer.GetNextFeature())
                 {
@@ -314,6 +308,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                        final Color            background,
                                        final Color            foreground)
     {
+        @SuppressWarnings("UseOfObsoleteCollectionType")
         final Vector<String> imageCreationOptions = new Vector<>(1);
 
         imageCreationOptions.add("COMPRESS=LZW");
@@ -464,8 +459,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         final double latitude  = coordinate[1];
         final Double elevation = coordinate.length > 2 ? coordinate[2] : null;
 
-
-
         final String key = Double.toString(longitude) + '_' + Double.toString(latitude) + '_' + (elevation != null ? Double.toString(coordinate[2]) : "");  // TODO this could be smarter...
 
         if(this.nodeMap.containsKey(key))
@@ -532,19 +525,19 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 //
 //        return RADIUS_OF_EARTH_KILOMETERS * c;
 //    }
-
-    /**
-     * The Haversine function
-     *
-     * @param value
-     *         The angle between to points in radians
-     *
-     * @return The haversine
-     */
-    private static double haversin(final double value)
-    {
-        return StrictMath.pow(StrictMath.sin(value / 2), 2);
-    }
+//
+//    /**
+//     * The Haversine function
+//     *
+//     * @param value
+//     *         The angle between to points in radians
+//     *
+//     * @return The haversine
+//     */
+//    private static double haversin(final double value)
+//    {
+//        return StrictMath.pow(StrictMath.sin(value / 2), 2);
+//    }
 
     private final List<Node>                nodes   = new LinkedList<>();
     private final List<Edge>                edges   = new LinkedList<>();
@@ -554,16 +547,15 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     private final CoordinateReferenceSystem coordinateReferenceSystem;
     private final int                       rasterWidth;
     private final int                       rasterHeight;
-    private final ProgressCallback          progressCallback;
 
-    private static final double           RADIUS_OF_EARTH_KILOMETERS = 6372.8;
-    private static final int              WGS84_EPSG_IDENTIFIER      = 4326;
-    private static final SpatialReference wgs84SpatialReference      = new SpatialReference();
-
-    static
-    {
-        wgs84SpatialReference.ImportFromEPSG(WGS84_EPSG_IDENTIFIER);
-    }
+    //private static final double           RADIUS_OF_EARTH_KILOMETERS = 6372.8;
+    //private static final int              WGS84_EPSG_IDENTIFIER      = 4326;
+    //private static final SpatialReference wgs84SpatialReference      = new SpatialReference();
+    //
+    //static
+    //{
+    //    wgs84SpatialReference.ImportFromEPSG(WGS84_EPSG_IDENTIFIER);
+    //}
 
     // TODO when progress is implemented, we'll want to use something like the following:
     // from ogr2ogr.java - https://searchcode.com/codesearch/view/18938479/
