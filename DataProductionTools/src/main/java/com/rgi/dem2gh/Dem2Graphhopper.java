@@ -150,8 +150,7 @@ public final class Dem2Graphhopper
                                   "osmreader.osm=" + osmXmlFile     // input osm
                                 };
 
-        //final GraphHopper graphHopper = new GraphHopper().init(CmdArgs.read(inputs));
-        final GraphHopper graphHopper = new AdditionalFieldGraphHopper((fromIndex, toIndex, pointList, flags, wayOsmId) -> 9999999).init(CmdArgs.read(inputs));
+        final GraphHopper graphHopper = new GraphHopper().init(CmdArgs.read(inputs));
 
         try
         {
