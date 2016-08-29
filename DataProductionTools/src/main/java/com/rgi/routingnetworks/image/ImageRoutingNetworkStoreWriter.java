@@ -27,6 +27,7 @@ package com.rgi.routingnetworks.image;
 import com.rgi.common.BoundingBox;
 import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
+import com.rgi.dem2gh.Utility;
 import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.Node;
 import com.rgi.store.routingnetworks.NodeDimensionality;
@@ -37,21 +38,14 @@ import org.gdal.gdal.ProgressCallback;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconstConstants;
 import org.gdal.ogr.DataSource;
-import org.gdal.ogr.Feature;
-import org.gdal.ogr.Geometry;
-import org.gdal.ogr.Layer;
-import org.gdal.ogr.ogr;
-import org.gdal.ogr.ogrConstants;
 import org.gdal.osr.SpatialReference;
 import utility.GdalError;
+import utility.GdalUtility;
 
 import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -122,31 +116,29 @@ public class ImageRoutingNetworkStoreWriter implements RoutingNetworkStoreWriter
                       final List<Pair<String, Type>>  edgeAttributeDescriptions, // not used
                       final CoordinateReferenceSystem coordinateReferenceSystem) throws RoutingNetworkStoreException
     {
-        if(!coordinateReferenceSystem.getAuthority().equalsIgnoreCase("EPSG"))
-        {
-            throw new RuntimeException("Currently only EPSG codes can be used in coordinate reference systems");
-        }
+        final SpatialReference sourceSpatialReference;
 
-        final SpatialReference sourceSpatialReference = new SpatialReference();
-        sourceSpatialReference.ImportFromEPSG(coordinateReferenceSystem.getIdentifier());
+        try
+        {
+            sourceSpatialReference = GdalUtility.createSpatialReference(coordinateReferenceSystem);
+        }
+        catch(final RuntimeException ex)
+        {
+            throw new RoutingNetworkStoreException(ex);
+        }
 
         final Dataset rasterDataset = this.createRaster(sourceSpatialReference);
 
         try
         {
-            final DataSource dataSource = ogr.GetDriverByName("Memory")
-                                             .CreateDataSource("vector data");
-
+            final DataSource dataSource = Utility.createDataSource(nodes,
+                                                                   edges,
+                                                                   sourceSpatialReference);
             try
             {
-                final Layer edgeLayer = createEdgeLayer(dataSource,
-                                                        nodes,
-                                                        edges,
-                                                        sourceSpatialReference);
-
                 final int rasterizeError = gdal.RasterizeLayer(rasterDataset,
                                                                new int[]{1, 2, 3, 4},
-                                                               edgeLayer,
+                                                               dataSource.GetLayer(0),
                                                                new double[]{ this.foreground.getRed(),
                                                                              this.foreground.getGreen(),
                                                                              this.foreground.getBlue(),
@@ -173,7 +165,8 @@ public class ImageRoutingNetworkStoreWriter implements RoutingNetworkStoreWriter
 
     private Dataset createRaster(final SpatialReference spatialReference)
     {
-        final Vector imageCreationOptions = new Vector(1);
+        @SuppressWarnings("UseOfObsoleteCollectionType")
+        final Vector<String> imageCreationOptions = new Vector<>(1);
 
         imageCreationOptions.add("COMPRESS=LZW");
 
@@ -209,56 +202,6 @@ public class ImageRoutingNetworkStoreWriter implements RoutingNetworkStoreWriter
         }
 
         return rasterDataset;
-    }
-
-    private static Layer createEdgeLayer(final DataSource       dataSource,
-                                         final Collection<Node> nodes,
-                                         final Iterable<Edge>   edges,
-                                         final SpatialReference spatialReference)
-    {
-         final Map<Integer, Node> nodeMap = new HashMap<>(nodes.size());
-
-        for(final Node node : nodes)
-        {
-            nodeMap.put(node.getIdentifier(), node);
-        }
-
-        final Layer edgeLayer = dataSource.CreateLayer("edges",
-                                                       spatialReference,
-                                                       ogrConstants.wkbLineString);
-
-        try
-        {
-            for(final Edge edge : edges)
-            {
-                final Feature edgeFeature = new Feature(edgeLayer.GetLayerDefn());
-
-                final Geometry line = new Geometry(ogrConstants.wkbLineString);
-
-                final Node node0 = nodeMap.get(edge.getFrom());
-                final Node node1 = nodeMap.get(edge.getTo());
-
-                line.AddPoint(node0.getX(), node0.getY());
-                line.AddPoint(node1.getX(), node1.getY());
-
-                if(edgeFeature.SetGeometry(line) != gdalconstConstants.CE_None)
-                {
-                    throw new RuntimeException(new GdalError().getMessage());
-                }
-
-                if(edgeLayer.CreateFeature(edgeFeature) != gdalconstConstants.CE_None)
-                {
-                    throw new RuntimeException(new GdalError().getMessage());
-                }
-            }
-        }
-        catch(final Throwable th)
-        {
-            edgeLayer.delete();
-            throw th;
-        }
-
-        return edgeLayer;
     }
 
     private final File             imageFile;
