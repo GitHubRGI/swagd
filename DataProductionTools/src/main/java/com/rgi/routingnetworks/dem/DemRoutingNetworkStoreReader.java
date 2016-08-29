@@ -141,10 +141,8 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
 
         try
         {
-            this.rasterWidth      = dataset.getRasterXSize();
-            this.rasterHeight     = dataset.getRasterYSize();
-
-            //final Dimensions<Double> metersPerPixel = this.getMetersPerPixel(dataset); // TODO
+            this.rasterWidth  = dataset.getRasterXSize();
+            this.rasterHeight = dataset.getRasterYSize();
 
             final SpatialReference sourceSpatialReference = new SpatialReference(dataset.GetProjection());
 
@@ -244,15 +242,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                 final Node node0 = this.getNode(edge.GetPoint(0));
                 final Node node1 = this.getNode(edge.GetPoint(1));
 
-                // Debug when coordinates are too close
-    //            if(this.haversineDistance(new Coordinate<>(node0.getX(),
-    //                                                       node0.getY()),
-    //                                      new Coordinate<>(node1.getX(),
-    //                                                       node1.getY())) <= 0.0)
-    //            {
-    //                throw new RoutingNetworkStoreException("Attempting to add an edge with a cartesian distance of 0");
-    //            }
-
                 this.edges.add(new Edge(this.edges.size(),
                                         node0.getIdentifier(),
                                         node1.getIdentifier(),
@@ -263,8 +252,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
             this.description = String.format("Elevation model routing network generated from source data %s, band %d. Contains %d nodes and %d edges. Created with parameters, contour interval: %s, pixel no data value: %s, contour simplification tolerance: %s, triangulation tolerance: %s.",
                                              file.getName(),
                                              rasterBand,
-                                             //metersPerPixel.getWidth(), // Original pixel size was %fm x %fm.
-                                             //metersPerPixel.getHeight(),
                                              this.nodes.size(),
                                              this.edges.size(),
                                              contourElevationInterval,
@@ -374,23 +361,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                    .doubleValue();
     }
 
-//    private Dimensions<Double> getMetersPerPixel(final Dataset dataset)
-//    {
-//        final GeoTransformation transformation = new GeoTransformation(dataset.GetGeoTransform());
-//
-//        final BoundingBox bounds = transformation.getBounds(dataset);
-//
-//        final double rasterWidthKilometers = this.haversineDistance(bounds.getBottomLeft(),
-//                                                                    bounds.getBottomRight());
-//
-//        final double rasterHeightKilometers = this.haversineDistance(bounds.getTopLeft(),
-//                                                                     bounds.getBottomLeft());
-//
-//        //noinspection MagicNumber // 1km = 1000m
-//        return new Dimensions<>((rasterWidthKilometers *1000.0) / (double)dataset.getRasterXSize(),
-//                                (rasterHeightKilometers*1000.0) / (double)dataset.getRasterYSize());
-//    }
-
     @Override
     public List<Pair<String, Type>> getNodeAttributeDescriptions()
     {
@@ -478,67 +448,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         return node;
     }
 
-//    /**
-//     * Calculates the Haversine distance between two coordinates
-//     *
-//     * @return The Haversine distance in kilometers between two points
-//     *
-//     * @see <a href="https://goo.gl/QkG1Vu">Haversine Formula</a>
-//     */
-//    private double haversineDistance(final Coordinate<Double> from,
-//                                     final Coordinate<Double> to)
-//    {
-////        private Coordinate<Double> toWgs84(final double x,
-////                                           final double y)
-////        {
-////            final CoordinateTransformation  sourceToWgs84Transformation;
-////            sourceToWgs84Transformation = CoordinateTransformation.CreateCoordinateTransformation(sourceSpatialReference,
-////                                                                                                           wgs84SpatialReference);
-////
-////                final double[] coordinate = this.sourceToWgs84Transformation.TransformPoint(x, y);
-////
-////                return new Coordinate<>(coordinate[0],
-////                                        coordinate[1]);
-////            }
-////
-////            return new Coordinate<>(x, y);
-////        }
-//
-//        final Coordinate<Double> coordinate0 = this.toWgs84(from.getX(), from.getY());
-//        final Coordinate<Double> coordinate1 = this.toWgs84(to.getX(),   to.getY());
-//
-//        final double fromLongitude = coordinate0.getX();
-//        final double fromLatitude  = coordinate0.getY();
-//        final double toLongitude   = coordinate1.getX();
-//        final double toLatitude    = coordinate1.getY();
-//
-//        // Implementation taken from: https://goo.gl/QkG1Vu
-//        final double dLat = Math.toRadians(toLatitude  - fromLatitude);
-//        final double dLon = Math.toRadians(toLongitude - fromLongitude);
-//
-//        final double fromLatitudeRadians = Math.toRadians(fromLatitude);
-//        final double toLatitudeRadians   = Math.toRadians(toLatitude);
-//
-//        // Pandolf equation literally calls these two values "a" and "c"
-//        final double a = haversin(dLat) + StrictMath.cos(fromLatitudeRadians) * StrictMath.cos(toLatitudeRadians) * haversin(dLon);
-//        final double c = 2 * StrictMath.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-//
-//        return RADIUS_OF_EARTH_KILOMETERS * c;
-//    }
-//
-//    /**
-//     * The Haversine function
-//     *
-//     * @param value
-//     *         The angle between to points in radians
-//     *
-//     * @return The haversine
-//     */
-//    private static double haversin(final double value)
-//    {
-//        return StrictMath.pow(StrictMath.sin(value / 2), 2);
-//    }
-
     private final List<Node>                nodes   = new LinkedList<>();
     private final List<Edge>                edges   = new LinkedList<>();
     private final Map<String, Node>         nodeMap = new TreeMap<>();
@@ -547,15 +456,6 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     private final CoordinateReferenceSystem coordinateReferenceSystem;
     private final int                       rasterWidth;
     private final int                       rasterHeight;
-
-    //private static final double           RADIUS_OF_EARTH_KILOMETERS = 6372.8;
-    //private static final int              WGS84_EPSG_IDENTIFIER      = 4326;
-    //private static final SpatialReference wgs84SpatialReference      = new SpatialReference();
-    //
-    //static
-    //{
-    //    wgs84SpatialReference.ImportFromEPSG(WGS84_EPSG_IDENTIFIER);
-    //}
 
     // TODO when progress is implemented, we'll want to use something like the following:
     // from ogr2ogr.java - https://searchcode.com/codesearch/view/18938479/
