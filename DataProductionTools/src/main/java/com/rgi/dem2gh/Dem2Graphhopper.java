@@ -27,7 +27,6 @@ package com.rgi.dem2gh;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.util.CmdArgs;
-import com.graphhopper.util.shapes.BBox;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.routingnetworks.dem.DemRoutingNetworkStoreReader;
 import com.rgi.routingnetworks.image.ImageRoutingNetworkStoreWriter;
@@ -80,7 +79,7 @@ public final class Dem2Graphhopper
 
         final String inputFilename = options.getInputFile().getName();
 
-        final String baseOutputFileName = inputFilename.substring(0, inputFilename.indexOf('.'));
+        final String baseOutputFileName = inputFilename.substring(0, inputFilename.lastIndexOf('.'));
 
         try
         {
@@ -163,8 +162,6 @@ public final class Dem2Graphhopper
             graphHopper.setElevationProvider(tagElevationProvider);
 
             graphHopper.importOrLoad(); // Creates binary output
-
-            final BBox bbox = graphHopper.getGraphHopperStorage().getBounds();
 
             final File graphHopperOutputDirectory = new File(graphHopperOutputDirectoryName);
 
