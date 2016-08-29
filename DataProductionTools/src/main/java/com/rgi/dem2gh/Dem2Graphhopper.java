@@ -27,6 +27,7 @@ package com.rgi.dem2gh;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.util.CmdArgs;
+import com.graphhopper.util.shapes.BBox;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.routingnetworks.dem.DemRoutingNetworkStoreReader;
 import com.rgi.routingnetworks.image.ImageRoutingNetworkStoreWriter;
@@ -163,6 +164,8 @@ public final class Dem2Graphhopper
 
             graphHopper.importOrLoad(); // Creates binary output
 
+            final BBox bbox = graphHopper.getGraphHopperStorage().getBounds();
+
             final File graphHopperOutputDirectory = new File(graphHopperOutputDirectoryName);
 
             // Create Zip from binary folder output
@@ -203,7 +206,7 @@ public final class Dem2Graphhopper
                     {
                         for(final String subFilename : directoryList)
                         {
-                            final String entryFilename = directory.getName() + File.separator + subFilename;
+                            final String entryFilename = directory.getName() + '/' + subFilename;
 
                             zipOutputStream.putNextEntry(new ZipEntry(entryFilename));
 
