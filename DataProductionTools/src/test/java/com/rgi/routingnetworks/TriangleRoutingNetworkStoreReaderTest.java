@@ -69,7 +69,7 @@ public class TriangleRoutingNetworkStoreReaderTest
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     public void testTriangleToOsmAndGraphhopper() throws RoutingNetworkStoreException, IOException
     {
-        final String datasetName = "mwtc.1";
+        final String datasetName = "MWTC_1m_Elevation_Small_v1.3_trim.4326.tif.1";
 
         final Path baseFolder = Paths.get("C:/Users/corp/Desktop/sample data/networks/triangle/");
 
@@ -78,7 +78,7 @@ public class TriangleRoutingNetworkStoreReaderTest
         final File nodesFile = datasetFolder.resolve(datasetName + ".node").toFile();
         final File edgesFile = datasetFolder.resolve(datasetName + ".edge").toFile();
 
-        final String baseOutputFileName = "MWTC_renner";
+        final String baseOutputFileName = "MWTC_1m_Elevation_Small_v1.3_trim.4326";
 
         final RoutingNetworkStoreReader triangleNetworkStoreReader = new TriangleRoutingNetworkStoreReader(nodesFile,
                                                                                                            edgesFile,
