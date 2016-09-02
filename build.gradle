@@ -16,10 +16,10 @@ allprojects
 
     repositories
     {
-        mavenLocal()
+        ///mavenLocal()
         mavenCentral()
     }
-    
+
     apply plugin: 'java'
     apply plugin: 'cobertura'
     apply plugin: 'com.github.johnrengelman.shadow'
@@ -30,8 +30,8 @@ allprojects
         testCompile 'junit:junit:4.+'
 
         // Cobertura reports will not run without the following
-        testRuntime "org.slf4j:slf4j-log4j12:1.7.5"
-        testRuntime "log4j:log4j:1.2.7"
+        testRuntime "org.slf4j:slf4j-log4j12:1.7.21"
+        testRuntime "log4j:log4j:1.2.17"
     }
 
     cobertura

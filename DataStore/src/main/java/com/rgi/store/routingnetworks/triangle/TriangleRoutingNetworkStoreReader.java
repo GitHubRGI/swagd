@@ -29,9 +29,10 @@ import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.Node;
+import com.rgi.store.routingnetworks.NodeDimensionality;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
-import com.rgi.store.routingnetworks.NodeDimensionality;
+import com.rgi.store.routingnetworks.Utility;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +49,7 @@ import java.util.stream.Collectors;
  * <a href="https://www.cs.cmu.edu/~quake/triangle.html">Triangle</a>, a
  * two-dimensional mesh generator and Delaunay triangulator. At the time of
  * writing, it's not certain if the Triangle-associated file formats originated
- * there, or if they're shared with systems.</p>
+ * there, or if they're shared with other systems.</p>
  *
  * <p>The Triangle program outputs the following file types, depending on what
  * <a href="https://www.cs.cmu.edu/~quake/triangle.switch.html">input
@@ -225,8 +226,10 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
         this.elevationAttributeIndex   = elevationAttributeIndex;
         this.nodeFileHeader            = NodeFileHeader.from(nodeFile);
         this.edgeFileHeader            = EdgeFileHeader.from(edgeFile);
-        this.nodeAttributeDescriptions = new ArrayList<>(nodeAttributeDescriptions);
         this.coordinateReferenceSystem = coordinateReferenceSystem;
+        this.nodeAttributeDescriptions = new ArrayList<>(nodeAttributeDescriptions == null
+                                                                                    ? Collections.emptyList()
+                                                                                    : nodeAttributeDescriptions);
 
         final int nonElevationAttributes = this.nodeFileHeader.getAttributeCount() - (elevationAttributeIndex < 0 ? 0 : 1);
 
@@ -237,11 +240,9 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
                                                              this.nodeAttributeDescriptions.size()));
         }
 
-        this.nodes = this.parseNodes();
-
-        this.bounds = calculateBounds(this.nodes);
-
-        this.edges = this.parseEdges();
+        this.nodes  = this.parseNodes();
+        this.bounds = Utility.calculateBounds(this.nodes);
+        this.edges  = this.parseEdges();
     }
 
     @Override
@@ -348,43 +349,6 @@ public class TriangleRoutingNetworkStoreReader implements RoutingNetworkStoreRea
         }
     }
 
-    private static BoundingBox calculateBounds(final Iterable<Node> nodes)
-    {
-        final double[] bbox = { Double.NaN, // x min
-                                Double.NaN, // y min
-                                Double.NaN, // x max
-                                Double.NaN  // y max
-                              };
-
-        nodes.forEach(node -> { final double x = node.getX();
-                                final double y = node.getY();
-
-                                if(Double.isNaN(bbox[0]) || x < bbox[0])
-                                {
-                                    bbox[0] = x;
-                                }
-
-                                if(Double.isNaN(bbox[2]) || x > bbox[2])
-                                {
-                                    bbox[2] = x;
-                                }
-
-                                if(Double.isNaN(bbox[1]) || y < bbox[1])
-                                {
-                                    bbox[1] = y;
-                                }
-
-                                if(Double.isNaN(bbox[3]) || y > bbox[3])
-                                {
-                                    bbox[3] = y;
-                                }
-                              });
-
-        return new BoundingBox(bbox[0],
-                               bbox[1],
-                               bbox[2],
-                               bbox[3]);
-    }
 
     private final File                      nodeFile;
     private final File                      edgeFile;

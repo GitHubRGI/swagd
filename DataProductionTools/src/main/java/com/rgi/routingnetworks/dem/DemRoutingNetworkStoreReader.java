@@ -246,7 +246,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
                                         node0.getIdentifier(),
                                         node1.getIdentifier(),
                                         EdgeDirecctionality.TWO_WAY,
-                                        Arrays.asList("footway")));
+                                        Collections.emptyList()));
             }
 
             this.description = String.format("Elevation model routing network generated from source data %s, band %d. Contains %d nodes and %d edges. Created with parameters, contour interval: %s, pixel no data value: %s, contour simplification tolerance: %s, triangulation tolerance: %s.",
@@ -370,7 +370,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
     @Override
     public List<Pair<String, Type>> getEdgeAttributeDescriptions()
     {
-        return Arrays.asList(Pair.of("highway", String.class));
+        return Collections.emptyList();
     }
 
     @Override
@@ -429,7 +429,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
         final double latitude  = coordinate[1];
         final Double elevation = coordinate.length > 2 ? coordinate[2] : null;
 
-        final String key = Double.toString(longitude) + '_' + Double.toString(latitude) + '_' + (elevation != null ? Double.toString(coordinate[2]) : "");  // TODO this could be smarter...
+        final String key = Double.toString(longitude) + '_' + Double.toString(latitude) + '_' + (elevation != null ? Double.toString(elevation) : "");  // TODO this could be smarter...
 
         if(this.nodeMap.containsKey(key))
         {
