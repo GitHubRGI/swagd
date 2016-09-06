@@ -31,7 +31,11 @@ import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.routingnetworks.dem.DemRoutingNetworkStoreReader;
 import com.rgi.routingnetworks.image.ImageRoutingNetworkStoreWriter;
-import com.rgi.store.routingnetworks.*;
+import com.rgi.store.routingnetworks.Edge;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
+import com.rgi.store.routingnetworks.Utility;
 import com.rgi.store.routingnetworks.osm.OsmXmlRoutingNetworkStoreWriter;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -153,7 +157,7 @@ public final class Dem2Graphhopper
         final List<Pair<String, Type>> edgeAttributeDescriptions = new ArrayList(inputRoutingNetworkStoreReader.getEdgeAttributeDescriptions());
         edgeAttributeDescriptions.add(Pair.of("highway", String.class));
 
-        return com.rgi.store.routingnetworks.Utility.transform(node -> node,
+        return Utility.transform(node -> node,
                                  edge -> { final List<Object> attributes = new ArrayList(edge.getAttributes());
                                            attributes.add("footway");
                                            return new Edge(edge.getIdentifier(),

@@ -16,8 +16,8 @@
     <orderEntry type="library" name="Gradle: net.sf.trove4j:trove4j:3.0.3" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.slf4j:slf4j-log4j12:1.7.21" level="project" />
     <orderEntry type="library" name="Gradle: org.apache.xmlgraphics:xmlgraphics-commons:2.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: log4j:log4j:1.2.17" level="project" />
     <orderEntry type="library" name="Gradle: com.google.protobuf:protobuf-java:2.6.1" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: log4j:log4j:1.2.17" level="project" />
     <orderEntry type="library" name="Gradle: org.openstreetmap.osmosis:osmosis-osm-binary:0.44.1" level="project" />
     <orderEntry type="library" name="Gradle: commons-io:commons-io:1.3.1" level="project" />
     <orderEntry type="library" name="Gradle: commons-logging:commons-logging:1.0.4" level="project" />
