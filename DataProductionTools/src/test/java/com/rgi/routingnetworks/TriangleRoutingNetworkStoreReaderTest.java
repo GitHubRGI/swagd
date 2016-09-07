@@ -181,13 +181,18 @@ public class TriangleRoutingNetworkStoreReaderTest
 
             final File graphHopperOutputDirectory = new File(graphHopperOutputDirectoryName);
 
-            // Create Zip from binary folder output
-            zipDirectory(graphHopperOutputDirectory, 9);
-
-            // Delete the temporary folder
-            if(graphHopperOutputDirectory.exists())
+            try
             {
-                recursivelyDeleteDirectory(graphHopperOutputDirectory);
+                // Create Zip from binary folder output
+                zipDirectory(graphHopperOutputDirectory, 9);
+            }
+            finally
+            {
+                // Delete the temporary folder
+                if(graphHopperOutputDirectory.exists())
+                {
+                    recursivelyDeleteDirectory(graphHopperOutputDirectory);
+                }
             }
         }
         finally
@@ -210,6 +215,7 @@ public class TriangleRoutingNetworkStoreReaderTest
                     zipOutputStream.setLevel(compressionLevel);
 
                     final String[] directoryList = directory.list();
+
                     if(directoryList != null)
                     {
                         @SuppressWarnings("CheckForOutOfMemoryOnLargeArrayAllocation")
@@ -217,11 +223,9 @@ public class TriangleRoutingNetworkStoreReaderTest
 
                         for(final String subFilename : directoryList)
                         {
-                            final String entryFilename = directory.getName() + '/' + subFilename;
+                            zipOutputStream.putNextEntry(new ZipEntry(directory.getName() + '/' + subFilename));
 
-                            zipOutputStream.putNextEntry(new ZipEntry(entryFilename));
-
-                            try(final FileInputStream fileInputStream = new FileInputStream(entryFilename))
+                            try(final FileInputStream fileInputStream = new FileInputStream(directory.getAbsolutePath() + '/' + subFilename))
                             {
                                 int readLength;
                                 //noinspection NestedAssignment
@@ -230,8 +234,10 @@ public class TriangleRoutingNetworkStoreReaderTest
                                     zipOutputStream.write(buffer, 0, readLength);
                                 }
                             }
-
-                            zipOutputStream.closeEntry();
+                            finally
+                            {
+                                zipOutputStream.closeEntry();
+                            }
                         }
                     }
                 }

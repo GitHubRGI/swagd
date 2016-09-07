@@ -205,13 +205,18 @@ public final class Dem2Graphhopper
 
             final File graphHopperOutputDirectory = new File(graphHopperOutputDirectoryName);
 
-            // Create Zip from binary folder output
-            zipDirectory(graphHopperOutputDirectory, 9);
-
-            // Delete the temporary folder
-            if(graphHopperOutputDirectory.exists())
+            try
             {
-                recursivelyDeleteDirectory(graphHopperOutputDirectory);
+                // Create Zip from binary folder output
+                zipDirectory(graphHopperOutputDirectory, 9);
+            }
+            finally
+            {
+                // Delete the temporary folder
+                if(graphHopperOutputDirectory.exists())
+                {
+                    recursivelyDeleteDirectory(graphHopperOutputDirectory);
+                }
             }
         }
         finally
@@ -241,16 +246,13 @@ public final class Dem2Graphhopper
                     if(directoryList != null)
                     {
                         @SuppressWarnings("CheckForOutOfMemoryOnLargeArrayAllocation")
-
                         final byte[] buffer = new byte[1024];
 
                         for(final String subFilename : directoryList)
                         {
-                            final String entryFilename = directory.getName() + '/' + subFilename;
+                            zipOutputStream.putNextEntry(new ZipEntry(directory.getName() + '/' + subFilename));
 
-                            zipOutputStream.putNextEntry(new ZipEntry(entryFilename));
-
-                            try(final FileInputStream fileInputStream = new FileInputStream(entryFilename))
+                            try(final FileInputStream fileInputStream = new FileInputStream(directory.getAbsolutePath() + '/' + subFilename))
                             {
                                 int readLength;
                                 //noinspection NestedAssignment
@@ -259,8 +261,10 @@ public final class Dem2Graphhopper
                                     zipOutputStream.write(buffer, 0, readLength);
                                 }
                             }
-
-                            zipOutputStream.closeEntry();
+                            finally
+                            {
+                                zipOutputStream.closeEntry();
+                            }
                         }
                     }
                 }
