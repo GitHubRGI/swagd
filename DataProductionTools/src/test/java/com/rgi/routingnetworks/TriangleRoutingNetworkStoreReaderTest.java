@@ -28,7 +28,6 @@ import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.util.CmdArgs;
 import com.rgi.common.Pair;
-import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.dem2gh.ConsoleProgressCallback;
 import com.rgi.dem2gh.TagElevationProvider;
 import com.rgi.routingnetworks.image.ImageRoutingNetworkStoreWriter;
@@ -38,7 +37,6 @@ import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
 import com.rgi.store.routingnetworks.Utility;
 import com.rgi.store.routingnetworks.osm.OsmXmlRoutingNetworkStoreWriter;
-import com.rgi.store.routingnetworks.triangle.TriangleRoutingNetworkStoreReader;
 import org.junit.Test;
 
 import java.awt.Color;
@@ -51,7 +49,6 @@ import java.lang.reflect.Type;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
@@ -69,38 +66,38 @@ public class TriangleRoutingNetworkStoreReaderTest
     @SuppressWarnings("JUnitTestMethodWithNoAssertions")
     public void testTriangleToOsmAndGraphhopper() throws RoutingNetworkStoreException, IOException
     {
-        final String datasetName = "MWTC_1m_Elevation_Small_v1.3_trim.4326.tif.1";
-
-        final Path baseFolder = Paths.get("C:/Users/corp/Desktop/sample data/networks/triangle/");
-
-        final Path datasetFolder = baseFolder.resolve(datasetName);
-
-        final File nodesFile = datasetFolder.resolve(datasetName + ".node").toFile();
-        final File edgesFile = datasetFolder.resolve(datasetName + ".edge").toFile();
-
-        final String baseOutputFileName = "MWTC_1m_Elevation_Small_v1.3_trim.4326";
-
-        final RoutingNetworkStoreReader triangleNetworkStoreReader = new TriangleRoutingNetworkStoreReader(nodesFile,
-                                                                                                           edgesFile,
-                                                                                                           0,
-                                                                                                           null,
-                                                                                                           new CoordinateReferenceSystem("EPSG", 4326));
-
-        final RoutingNetworkStoreReader networkStoreReader = addHighwayTags(triangleNetworkStoreReader);
-
-        final File osmXmlOutputFile = writeOsmNetwork(baseOutputFileName, networkStoreReader);
-
-        writeGraphHopperBinaryNetwork(baseOutputFileName, osmXmlOutputFile);
-
-        final double scale = 1.0;
-
-        final int imageWidth  = (int)(12762 * scale);
-        final int imageHeight = (int)(15897 * scale);
-
-        writeImageNetwork(baseOutputFileName,
-                          triangleNetworkStoreReader,
-                          imageWidth,
-                          imageHeight);
+//        final String datasetName = "MWTC_1m_Elevation_Small_v1.3_trim.4326.tif.1";
+//
+//        final Path baseFolder = Paths.get("C:/Users/corp/Desktop/sample data/networks/triangle/");
+//
+//        final Path datasetFolder = baseFolder.resolve(datasetName);
+//
+//        final File nodesFile = datasetFolder.resolve(datasetName + ".node").toFile();
+//        final File edgesFile = datasetFolder.resolve(datasetName + ".edge").toFile();
+//
+//        final String baseOutputFileName = "MWTC_1m_Elevation_Small_v1.3_trim.4326";
+//
+//        final RoutingNetworkStoreReader triangleNetworkStoreReader = new TriangleRoutingNetworkStoreReader(nodesFile,
+//                                                                                                           edgesFile,
+//                                                                                                           0,
+//                                                                                                           null,
+//                                                                                                           new CoordinateReferenceSystem("EPSG", 4326));
+//
+//        final RoutingNetworkStoreReader networkStoreReader = addHighwayTags(triangleNetworkStoreReader);
+//
+//        final File osmXmlOutputFile = writeOsmNetwork(baseOutputFileName, networkStoreReader);
+//
+//        writeGraphHopperBinaryNetwork(baseOutputFileName, osmXmlOutputFile);
+//
+//        final double scale = 1.0;
+//
+//        final int imageWidth  = (int)(12762 * scale);
+//        final int imageHeight = (int)(15897 * scale);
+//
+//        writeImageNetwork(baseOutputFileName,
+//                          triangleNetworkStoreReader,
+//                          imageWidth,
+//                          imageHeight);
 
     }
 

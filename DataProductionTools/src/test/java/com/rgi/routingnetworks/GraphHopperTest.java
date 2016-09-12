@@ -49,12 +49,13 @@ public class GraphHopperTest
     @Test
     public void testGraphHopperMounted() throws IOException
     {
-        final String inputFilename = "c:/users/corp/desktop/ouagadougou_full.osm";
-
-        final String baseOutputFileName = inputFilename.substring(0, inputFilename.lastIndexOf('.'));
-
-        writeGraphHopperBinaryNetwork(baseOutputFileName,
-                                      new File(inputFilename));
+//        //final String inputFilename = "C:/Users/corp/Desktop/sample data/networks/osm/kansascity.osm.pbf";
+//        final String inputFilename = "C:/Users/corp/Desktop/sample data/networks/osm/ouagadougou_full.osm";
+//
+//        final String baseOutputFileName = inputFilename.substring(0, inputFilename.lastIndexOf('.'));
+//
+//        writeGraphHopperBinaryNetwork(baseOutputFileName,
+//                                      new File(inputFilename));
     }
 
     private static void writeGraphHopperBinaryNetwork(final String baseOutputFileName,
