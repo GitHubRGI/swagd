@@ -27,12 +27,15 @@ package com.rgi.dem2gh;
 import com.graphhopper.GraphHopper;
 import com.graphhopper.reader.dem.ElevationProvider;
 import com.graphhopper.util.CmdArgs;
-import com.graphhopper.util.shapes.BBox;
+import com.rgi.common.Pair;
 import com.rgi.common.coordinate.CoordinateReferenceSystem;
 import com.rgi.routingnetworks.dem.DemRoutingNetworkStoreReader;
 import com.rgi.routingnetworks.image.ImageRoutingNetworkStoreWriter;
+import com.rgi.store.routingnetworks.Edge;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreException;
+import com.rgi.store.routingnetworks.RoutingNetworkStoreReader;
 import com.rgi.store.routingnetworks.RoutingNetworkStoreWriter;
+import com.rgi.store.routingnetworks.Utility;
 import com.rgi.store.routingnetworks.osm.OsmXmlRoutingNetworkStoreWriter;
 import org.kohsuke.args4j.CmdLineParser;
 
@@ -42,6 +45,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.math.RoundingMode;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -50,6 +54,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DecimalFormat;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -63,6 +69,7 @@ public final class Dem2Graphhopper
     {
     }
 
+    @SuppressWarnings("NumericCastThatLosesPrecision")
     public static void main(final String[] args)
     {
         final CommandLineOptions options = new CommandLineOptions();
@@ -80,7 +87,7 @@ public final class Dem2Graphhopper
 
         final String inputFilename = options.getInputFile().getName();
 
-        final String baseOutputFileName = inputFilename.substring(0, inputFilename.indexOf('.'));
+        final String baseOutputFileName = inputFilename.substring(0, inputFilename.lastIndexOf('.'));
 
         try
         {
@@ -88,13 +95,21 @@ public final class Dem2Graphhopper
 
             final DemRoutingNetworkStoreReader demNetworkReader = createDemRoutingNetworkStoreReader(options);
 
-            final File osmXmlOutputFile = writeOsmNetwork(baseOutputFileName, demNetworkReader);
+            final RoutingNetworkStoreReader osmRoutingNetworkStoreReader = addHighwayTags(demNetworkReader);
+
+            final File osmXmlOutputFile = writeOsmNetwork(baseOutputFileName, osmRoutingNetworkStoreReader);
 
             writeGraphHopperBinaryNetwork(baseOutputFileName, osmXmlOutputFile);
 
             if(options.getOutputRasterizedNetwork())
             {
-                writeImageNetwork(options, baseOutputFileName, demNetworkReader);
+                final int imageWidth  = (int)(demNetworkReader.getRasterWidth() * options.getOutputRasterScale());
+                final int imageHeight = (int)(demNetworkReader.getRasterHeight()* options.getOutputRasterScale());
+
+                writeImageNetwork(baseOutputFileName,
+                                  demNetworkReader,
+                                  imageWidth,
+                                  imageHeight);
             }
 
             System.out.format("Total process finished in %s seconds\n",
@@ -107,9 +122,10 @@ public final class Dem2Graphhopper
         }
     }
 
-    private static void writeImageNetwork(final CommandLineOptions           options,
-                                          final String                       baseOutputFileName,
-                                          final DemRoutingNetworkStoreReader demNetworkReader) throws RoutingNetworkStoreException
+    private static void writeImageNetwork(final String                    baseOutputFileName,
+                                          final RoutingNetworkStoreReader networkReader,
+                                          final int                       imageWidth,
+                                          final int                       imageHeight) throws RoutingNetworkStoreException
     {
         final long startTime = System.currentTimeMillis();
 
@@ -120,24 +136,47 @@ public final class Dem2Graphhopper
 
         //noinspection NumericCastThatLosesPrecision
         new ImageRoutingNetworkStoreWriter(rasterizedNetworkFile,
-                                           (int)(demNetworkReader.getRasterWidth() * options.getOutputRasterScale()),
-                                           (int)(demNetworkReader.getRasterHeight()* options.getOutputRasterScale()),
+                                           imageWidth,
+                                           imageHeight,
                                            new Color(255, 255, 255,   0),   // Transparent
                                            Color.BLACK,
-                                           demNetworkReader.getBounds(),
-                                           new ConsoleProgressCallback()).write(demNetworkReader.getNodes(),
-                                                                                demNetworkReader.getEdges(),
-                                                                                demNetworkReader.getNodeDimensionality(),
-                                                                                demNetworkReader.getNodeAttributeDescriptions(),
-                                                                                demNetworkReader.getEdgeAttributeDescriptions(),
-                                                                                demNetworkReader.getCoordinateReferenceSystem());
+                                           networkReader.getBounds(),
+                                           new ConsoleProgressCallback()).write(networkReader.getNodes(),
+                                                                                networkReader.getEdges(),
+                                                                                networkReader.getNodeDimensionality(),
+                                                                                networkReader.getNodeAttributeDescriptions(),
+                                                                                networkReader.getEdgeAttributeDescriptions(),
+                                                                                networkReader.getCoordinateReferenceSystem());
 
         System.out.format(" ...finished! (%s)\n",
                           elapsedTime(System.currentTimeMillis() - startTime));
     }
 
+    private static RoutingNetworkStoreReader addHighwayTags(final RoutingNetworkStoreReader inputRoutingNetworkStoreReader) throws RoutingNetworkStoreException
+    {
+        final List<Pair<String, Type>> edgeAttributeDescriptions = new ArrayList(inputRoutingNetworkStoreReader.getEdgeAttributeDescriptions());
+        edgeAttributeDescriptions.add(Pair.of("highway", String.class));
+
+        return Utility.transform(node -> node,
+                                 edge -> { final List<Object> attributes = new ArrayList(edge.getAttributes());
+                                           attributes.add("footway");
+                                           return new Edge(edge.getIdentifier(),
+                                                           edge.getFrom(),
+                                                           edge.getTo(),
+                                                           edge.getEdgeDirectionality(),
+                                                           attributes);
+                                         },
+                                 inputRoutingNetworkStoreReader.getNodeAttributeDescriptions(),
+                                 edgeAttributeDescriptions,
+                                 inputRoutingNetworkStoreReader.getNodes(),
+                                 inputRoutingNetworkStoreReader.getEdges(),
+                                 inputRoutingNetworkStoreReader.getCoordinateReferenceSystem(),
+                                 inputRoutingNetworkStoreReader.getDescription(),
+                                 inputRoutingNetworkStoreReader.getNodeDimensionality());
+    }
+
     private static void writeGraphHopperBinaryNetwork(final String baseOutputFileName,
-                                                      final File   osmXmlFile) throws IOException, InterruptedException
+                                                      final File   osmXmlFile) throws IOException
     {
         final long startTime = System.currentTimeMillis();
 
@@ -164,17 +203,20 @@ public final class Dem2Graphhopper
 
             graphHopper.importOrLoad(); // Creates binary output
 
-            final BBox bbox = graphHopper.getGraphHopperStorage().getBounds();
-
             final File graphHopperOutputDirectory = new File(graphHopperOutputDirectoryName);
 
-            // Create Zip from binary folder output
-            zipDirectory(graphHopperOutputDirectory, 9);
-
-            // Delete the temporary folder
-            if(graphHopperOutputDirectory.exists())
+            try
             {
-                recursivelyDeleteDirectory(graphHopperOutputDirectory);
+                // Create Zip from binary folder output
+                zipDirectory(graphHopperOutputDirectory, 9);
+            }
+            finally
+            {
+                // Delete the temporary folder
+                if(graphHopperOutputDirectory.exists())
+                {
+                    recursivelyDeleteDirectory(graphHopperOutputDirectory);
+                }
             }
         }
         finally
@@ -195,31 +237,34 @@ public final class Dem2Graphhopper
         {
             try(final BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream))
             {
-                try(final ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream))
+                try(final ZipOutputStream zipOutputStream = new ZipOutputStream(bufferedOutputStream))
                 {
                     zipOutputStream.setLevel(compressionLevel);
 
-                    final byte[] buffer = new byte[1024];
-
                     final String[] directoryList = directory.list();
+
                     if(directoryList != null)
                     {
+                        @SuppressWarnings("CheckForOutOfMemoryOnLargeArrayAllocation")
+                        final byte[] buffer = new byte[1024];
+
                         for(final String subFilename : directoryList)
                         {
-                            final String entryFilename = directory.getName() + '/' + subFilename;
+                            zipOutputStream.putNextEntry(new ZipEntry(directory.getName() + '/' + subFilename));
 
-                            zipOutputStream.putNextEntry(new ZipEntry(entryFilename));
-
-                            try(final FileInputStream fileInputStream = new FileInputStream(entryFilename))
+                            try(final FileInputStream fileInputStream = new FileInputStream(directory.getAbsolutePath() + '/' + subFilename))
                             {
                                 int readLength;
+                                //noinspection NestedAssignment
                                 while((readLength = fileInputStream.read(buffer)) > 0)
                                 {
                                     zipOutputStream.write(buffer, 0, readLength);
                                 }
                             }
-
-                            zipOutputStream.closeEntry();
+                            finally
+                            {
+                                zipOutputStream.closeEntry();
+                            }
                         }
                     }
                 }
@@ -251,8 +296,8 @@ public final class Dem2Graphhopper
                            });
     }
 
-    private static File writeOsmNetwork(final String                       baseOutputFileName,
-                                        final DemRoutingNetworkStoreReader demNetworkReader) throws RoutingNetworkStoreException
+    private static File writeOsmNetwork(final String                    baseOutputFileName,
+                                        final RoutingNetworkStoreReader networkReader) throws RoutingNetworkStoreException
     {
         final long startTime = System.currentTimeMillis();
 
@@ -262,15 +307,15 @@ public final class Dem2Graphhopper
                           osmXmlOutputFile.getName());
 
         final RoutingNetworkStoreWriter networkWriter = new OsmXmlRoutingNetworkStoreWriter(osmXmlOutputFile,
-                                                                                            demNetworkReader.getBounds(),
-                                                                                            demNetworkReader.getDescription());
+                                                                                            networkReader.getBounds(),
+                                                                                            networkReader.getDescription());
 
-        networkWriter.write(demNetworkReader.getNodes(),
-                            demNetworkReader.getEdges(),
-                            demNetworkReader.getNodeDimensionality(),
-                            demNetworkReader.getNodeAttributeDescriptions(),
-                            demNetworkReader.getEdgeAttributeDescriptions(),
-                            demNetworkReader.getCoordinateReferenceSystem());
+        networkWriter.write(networkReader.getNodes(),
+                            networkReader.getEdges(),
+                            networkReader.getNodeDimensionality(),
+                            networkReader.getNodeAttributeDescriptions(),
+                            networkReader.getEdgeAttributeDescriptions(),
+                            networkReader.getCoordinateReferenceSystem());
 
         System.out.format(" ...finished! (%s)\n",
                           elapsedTime(System.currentTimeMillis() - startTime));

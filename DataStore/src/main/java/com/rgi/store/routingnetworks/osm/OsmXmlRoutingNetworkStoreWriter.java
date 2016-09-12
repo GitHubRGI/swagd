@@ -76,6 +76,16 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
             throw new RoutingNetworkStoreException("OSM XML must be using the EPSG:4326 coordinate reference system.");
         }
 
+
+        final List<String> edgeAttributeNames = edgeAttributeDescriptions.stream()
+                                                                         .map(Pair::getLeft)
+                                                                         .collect(Collectors.toList());
+
+        if(!edgeAttributeNames.contains(WAY_HIGHWAY_TAG_KEY))
+        {
+            throw new RoutingNetworkStoreException("Edge attribute descriptions must contain at least one entry named '" + WAY_HIGHWAY_TAG_KEY + '\'');
+        }
+
         try(final Writer writer = Files.newBufferedWriter(this.osmXmlFile.toPath(),
                                                           Charset.forName("UTF-8")))
         {
@@ -100,9 +110,6 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
 
             writer.append('\n');
 
-            final List<String> edgeAttributeNames = edgeAttributeDescriptions.stream()
-                                                                             .map(Pair::getLeft)
-                                                                             .collect(Collectors.toList());
 
             for(final Edge edge : edges)
             {
@@ -256,6 +263,8 @@ public class OsmXmlRoutingNetworkStoreWriter implements RoutingNetworkStoreWrite
         //noinspection MagicNumber
         return StrictMath.pow(StrictMath.sin(value / 2.0D), 2.0D);
     }
+
+    public static final String WAY_HIGHWAY_TAG_KEY = "highway";
 
     private final File        osmXmlFile;
     private final String      description;

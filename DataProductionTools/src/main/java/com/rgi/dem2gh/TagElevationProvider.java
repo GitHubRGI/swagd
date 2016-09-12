@@ -67,10 +67,10 @@ public class TagElevationProvider implements ElevationProvider
     public double getEle(final double lat,
                          final double lon)
     {
-        final Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
-        final List<?> list = this.strTree.query(point.getEnvelopeInternal());
+        final Point        point = geometryFactory.createPoint(new Coordinate(lon, lat));
+        final List<Double> list  = this.strTree.query(point.getEnvelopeInternal());
 
-        return list.isEmpty() ? Double.NaN : (Double)list.get(0);
+        return list.isEmpty() ? Double.NaN : list.get(0);
     }
 
     /**
