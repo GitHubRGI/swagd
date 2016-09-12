@@ -108,7 +108,7 @@ public class DemRoutingNetworkStoreReader implements RoutingNetworkStoreReader
      * @param noDataValue                     Value that indicates that a pixel contains no elevation data, and is to be ignored (nullable)
      * @param coordinatePrecision             Number of decimal places to round the coordinates. A negative value will cause no rounding to occur
      * @param simplificationTolerance         Tolerance used to simplify the contour rings that are used in the triangulation of the data
-     * @param triangulationTolerance          Snaps points that are within a tolerance's distance from one another (we THINK)
+     * @param triangulationTolerance          The distance tolerance below which points are considered identical
      * @param targetCoordinateReferenceSystem Coordinate system for all output
      * @param progressCallback                Callback to observe process progress. Ignored if null.
      * @throws RoutingNetworkStoreException thrown if the resulting network would contain invalid data
