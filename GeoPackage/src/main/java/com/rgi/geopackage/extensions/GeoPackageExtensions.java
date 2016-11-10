@@ -23,16 +23,6 @@
 
 package com.rgi.geopackage.extensions;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.rgi.common.util.jdbc.JdbcUtility;
 import com.rgi.geopackage.GeoPackage;
 import com.rgi.geopackage.core.GeoPackageCore;
@@ -42,6 +32,16 @@ import com.rgi.geopackage.utility.DatabaseUtility;
 import com.rgi.geopackage.utility.SelectBuilder;
 import com.rgi.geopackage.verification.VerificationIssue;
 import com.rgi.geopackage.verification.VerificationLevel;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 'Extensions' subsystem of the {@link GeoPackage} implementation
@@ -372,7 +372,7 @@ public class GeoPackageExtensions
                 "(table_name     TEXT,          -- Name of the table that requires the extension. When NULL, the extension is required for the entire GeoPackage. SHALL NOT be NULL when the column_name is not NULL.\n" +
                 " column_name    TEXT,          -- Name of the column that requires the extension. When NULL, the extension is required for the entire table.\n"                                                         +
                 " extension_name TEXT NOT NULL, -- The case sensitive name of the extension that is required, in the form <author>_<extension_name>.\n"                                                                  +
-                " definition     TEXT NOT NULL, -- Definition of the extension in the form specfied by the template in GeoPackage Extension Template (Normative) or reference thereto.\n"                                +
+                " definition     TEXT NOT NULL, -- Definition of the extension in the form specified by the template in GeoPackage Extension Template (Normative) or reference thereto.\n"                                +
                 " scope          TEXT NOT NULL, -- Indicates scope of extension effects on readers / writers: read-write or write-only in lowercase.\n"                                                                  +
                 " CONSTRAINT ge_tce UNIQUE (table_name, column_name, extension_name))";
     }

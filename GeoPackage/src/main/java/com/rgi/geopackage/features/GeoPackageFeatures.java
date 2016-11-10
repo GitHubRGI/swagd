@@ -854,17 +854,17 @@ public class GeoPackageFeatures
     {
         this.createGeometryColumnTableNoCommit(); // Create the feature metadata table
 
-        final String insertTileMatrix = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
-                                                      GeoPackageFeatures.GeometryColumnsTableName,
-                                                      "table_name",
-                                                      "column_name",
-                                                      "geometry_type_name",
-                                                      "srs_id",
-                                                      "z",
-                                                      "m");
+        final String insertGeometryColumn = String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s) VALUES (?, ?, ?, ?, ?, ?)",
+                                                          GeoPackageFeatures.GeometryColumnsTableName,
+                                                          "table_name",
+                                                          "column_name",
+                                                          "geometry_type_name",
+                                                          "srs_id",
+                                                          "z",
+                                                          "m");
 
         JdbcUtility.update(this.databaseConnection,
-                           insertTileMatrix,
+                           insertGeometryColumn,
                            preparedStatement -> { preparedStatement.setString(1, tableName);
                                                   preparedStatement.setString(2, geometryColumn.getName());
                                                   preparedStatement.setString(3, geometryColumn.getType());

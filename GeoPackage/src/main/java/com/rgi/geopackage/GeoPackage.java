@@ -204,7 +204,7 @@ public class GeoPackage implements AutoCloseable
             DatabaseUtility.setPragmaForeignKeys(this.databaseConnection, true);
             DatabaseUtility.setPragmaJournalModeMemory(this.databaseConnection);
 
-            // this was moved below setting the pragmas because is starts a transaction and causes setPragmaSynchronousOff to throw an exception
+            // This was moved below the pragmas because it starts a transaction and causes setPragmaSynchronousOff to throw an exception
             this.databaseConnection.setAutoCommit(false);
 
             this.core       = new GeoPackageCore      (this.databaseConnection, isNewFile);
@@ -465,5 +465,5 @@ public class GeoPackage implements AutoCloseable
     private final GeoPackageMetadata   metadata;
     private final GeoPackageExtensions extensions;
 
-    private static final byte[] GeoPackageSqliteApplicationId = {(byte) 'G', (byte) 'P', (byte) '1', (byte) '0'};
+    private static final byte[] GeoPackageSqliteApplicationId = {(byte) 'G', (byte) 'P', (byte) '1', (byte) '2'};
 }

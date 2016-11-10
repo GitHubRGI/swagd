@@ -279,7 +279,7 @@ public class DatabaseUtility
             throw new IllegalArgumentException("The table name must begin with a letter (A..Z, a..z) or an underscore (_) and may only be followed by letters, underscores, or numbers");
         }
 
-        if(tableName.startsWith("gpkg_"))
+        if(tableName.toLowerCase().startsWith("gpkg_"))
         {
             throw new IllegalArgumentException("The table name may not start with the reserved prefix 'gpkg_'");
         }

@@ -113,7 +113,7 @@ public class FeaturesVerifier extends Verifier
     {
         final List<String> missingFeatureTables = this.contentsFeatureTableNames
                                                       .stream()
-                                                      .filter(this::hasPrimaryKey)
+                                                      .filter(tableName -> !this.hasPrimaryKey(tableName))
                                                       .collect(Collectors.toList());
 
         assertTrue(String.format("The following feature table entries in the gpkg_contents table are missing or are missing a primary key column: %s",

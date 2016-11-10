@@ -83,7 +83,7 @@ public interface ColumnDefault
     }
 
     /**
-     * Creates a string literal of the form '<string>'. Single quotes in the
+     * Creates a string literal of the form '&lt;string&gt;'. Single quotes in the
      * string value will be escaped with an additional single quote e.g. '
      * becomes ''
      *
@@ -102,7 +102,7 @@ public interface ColumnDefault
     }
 
     /**
-     * Creates a blob literal in the form X'<hex digits>'
+     * Creates a blob literal in the form X'&lt;hex digits&gt;'
      *
      * @param value
      *             Array of bytes representing a binary blob

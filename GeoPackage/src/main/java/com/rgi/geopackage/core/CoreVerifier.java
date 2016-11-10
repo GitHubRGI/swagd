@@ -39,7 +39,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -153,25 +152,26 @@ public class CoreVerifier extends Verifier
      * Requirement 2
      *
      * <blockquote>
-     * A GeoPackage SHALL contain 0x47503130 ("GP10" in ASCII)
-     * in the application id field of the SQLite database header
-     * to indicate a GeoPackage version 1.0 file.
+     * A GeoPackage SHALL contain an appropriate value in the application ID
+     * field of the SQLite database header to indicate that it is a GeoPackage.
+     * The value SHALL have a prefix of 0x4750 ("GP" in ASCII). A value of
+     * 0x47503132 ("GP12" in ASCII) SHALL indicate a GeoPackage version 1.2 file.
      * </blockquote>
-     * @throws AssertionError throws if it fails to meet the specified requirement;
+     * @throws AssertionError throws if it fails to meet the specified requirement
      */
     @Requirement(reference = "Requirement 2",
-                 text      = "A GeoPackage SHALL contain 0x47503130 ('GP10' in ASCII) in the application id field of the SQLite database header to indicate a GeoPackage version 1.0 file.")
+                 text      = "A GeoPackage SHALL contain an appropriate value in the application ID field of the SQLite database header to indicate that it is a GeoPackage. The value SHALL have a prefix of 0x4750 (\"GP\" in ASCII). A value of 0x47503132 (\"GP12\" in ASCII) SHALL indicate a GeoPackage version 1.2 file.")
     public void requirement2() throws AssertionError
     {
-        final int  sizeOfInt = 4;
-        final byte[] data = new byte[sizeOfInt];    // 4 bytes in an int
+        final int  sizeOfPrefix = 2;
+        final byte[] data = new byte[sizeOfPrefix];    // 4 bytes in an int
 
         try(RandomAccessFile randomAccessFile = new RandomAccessFile(this.file, "r"))
         {
             final long applicationIdByteOffset = 68;
             randomAccessFile.seek(applicationIdByteOffset);
             assertTrue("The file does not have enough bytes to contain a GeoPackage.",
-                       randomAccessFile.read(data, 0, sizeOfInt) == sizeOfInt,
+                       randomAccessFile.read(data, 0, sizeOfPrefix) == sizeOfPrefix,
                        Severity.Warning);
         }
         catch(final Exception ex)
@@ -179,19 +179,11 @@ public class CoreVerifier extends Verifier
             throw new AssertionError(ex, Severity.Error);
         }
 
-        // application id
-        // http://www.sqlite.org/fileformat2.html
-        // http://www.geopackage.org/spec/#_sqlite_container
-        // A GeoPackage SHALL contain 0x47503130 ("GP10" in ASCII) in the
-        // application id field of the SQLite database header to indicate a
-        // GeoPackage version 1.0 file.
-        // The bytes 'G', 'P', '1', '0' are equivalent to 0x47503130
-        final int expectedAppId = 0x47503130;
-
-        final int applicationId = ByteBuffer.wrap(data).asIntBuffer().get();
-
-        assertTrue(String.format("Bad Application ID: 0x%08x Expected: 0x%08x", applicationId, expectedAppId),
-                   applicationId == expectedAppId,
+        assertTrue(String.format("Bad Application ID prefix: \"%c%c\" Expected: \"GP\"",
+                                 data[0],
+                                 data[1]),
+                   data[0] == 'G' &&
+                   data[1] == 'P',
                    Severity.Warning);
     }
 
