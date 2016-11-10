@@ -364,8 +364,6 @@ public class FeaturesVerifier extends Verifier
     {
         try
         {
-            final BinaryHeader binaryHeader = new BinaryHeader(geoPackageBinaryBlob);
-
             final Geometry geometry = this.createGeometry(geoPackageBinaryBlob);   // correctly encoded per ISO 13249-3 clause 5.1.46
 
             return binaryHeader.getEnvelopeContentsIndicator() != EnvelopeContentsIndicator.NoEnvelope ||
