@@ -5,8 +5,8 @@ codebase here will be kept for archive purposes.
 
 The GitLab codebase splits SWAGD into a few pieces:
 
-* (SWAGD core)[https://gitlab.com/GitLabRGI/swagd]
-* (RGI Suite)[https://gitlab.com/GitLabRGI/rgi-suite]
-* (Data Production Tools)[https://gitlab.com/GitLabRGI/data-production-tools]
+* [SWAGD core](https://gitlab.com/GitLabRGI/swagd)
+* [RGI Suite](https://gitlab.com/GitLabRGI/rgi-suite)
+* [Data Production Tools](https://gitlab.com/GitLabRGI/data-production-tools)
 
 See these individual repositories for more targeted SWAGD functionality.
