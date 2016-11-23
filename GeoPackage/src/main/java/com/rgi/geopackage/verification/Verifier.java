@@ -322,10 +322,11 @@ public class Verifier
     {
         final Set<UniqueDefinition> uniqueDefinitions = new HashSet<>();
 
-        final Collection<String> indexNames = JdbcUtility.select(this.sqliteConnection,
-                                                                 String.format("PRAGMA index_list(%s);", tableName),
-                                                                 null,
-                                                                 resultSet -> resultSet.getString("name")); // TODO this will collect primary keys (automatically unique) and group uniques - I don't think we want that
+        final Collection<String> indexNames = JdbcUtility.filterSelect(this.sqliteConnection,
+                                                                       String.format("PRAGMA index_list(%s);", tableName),
+                                                                       null,
+                                                                       resultSet -> resultSet.getBoolean("unique"),
+                                                                       resultSet -> resultSet.getString("name"));
 
         for(final String indexName : indexNames)
         {
