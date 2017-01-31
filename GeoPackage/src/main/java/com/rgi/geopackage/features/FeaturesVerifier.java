@@ -113,7 +113,7 @@ public class FeaturesVerifier extends Verifier
     {
         final List<String> missingFeatureTables = this.contentsFeatureTableNames
                                                       .stream()
-                                                      .filter(this::hasPrimaryKey)
+                                                      .filter(tableName -> !this.hasPrimaryKey(tableName))
                                                       .collect(Collectors.toList());
 
         assertTrue(String.format("The following feature table entries in the gpkg_contents table are missing or are missing a primary key column: %s",
@@ -364,9 +364,9 @@ public class FeaturesVerifier extends Verifier
     {
         try
         {
-            final BinaryHeader binaryHeader = new BinaryHeader(geoPackageBinaryBlob);
+            final BinaryHeader binaryHeader = new BinaryHeader(geoPackageBinaryBlob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
 
-            final Geometry geometry = this.createGeometry(geoPackageBinaryBlob);   // correctly encoded per ISO 13249-3 clause 5.1.46
+            final Geometry geometry = this.createGeometry(binaryHeader, geoPackageBinaryBlob);   // correctly encoded per ISO 13249-3 clause 5.1.46
 
             return binaryHeader.getEnvelopeContentsIndicator() != EnvelopeContentsIndicator.NoEnvelope ||
                    binaryHeader.getEnvelope().equals(geometry.createEnvelope());
@@ -377,10 +377,9 @@ public class FeaturesVerifier extends Verifier
         }
     }
 
-    private Geometry createGeometry(final byte[] geoPackageBinaryBlob) throws WellKnownBinaryFormatException
+    private Geometry createGeometry(final BinaryHeader binaryHeader,
+                                    final byte[] geoPackageBinaryBlob) throws WellKnownBinaryFormatException
     {
-        final BinaryHeader binaryHeader = new BinaryHeader(geoPackageBinaryBlob);   // This will throw if the array length is too short to contain a header (or if it's not long enough to contain the envelope type specified)
-
         if(binaryHeader.getBinaryType() == BinaryType.Standard)
         {
             final int headerByteLength = binaryHeader.getByteSize();

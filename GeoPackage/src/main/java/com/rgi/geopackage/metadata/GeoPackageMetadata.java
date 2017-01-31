@@ -23,6 +23,13 @@
 
 package com.rgi.geopackage.metadata;
 
+import com.rgi.common.util.jdbc.ResultSetStream;
+import com.rgi.geopackage.utility.DatabaseUtility;
+import com.rgi.geopackage.utility.SelectBuilder;
+import com.rgi.geopackage.verification.VerificationIssue;
+import com.rgi.geopackage.verification.VerificationLevel;
+
+import javax.activation.MimeType;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,14 +43,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import javax.activation.MimeType;
-
-import com.rgi.common.util.jdbc.ResultSetStream;
-import com.rgi.geopackage.utility.DatabaseUtility;
-import com.rgi.geopackage.utility.SelectBuilder;
-import com.rgi.geopackage.verification.VerificationIssue;
-import com.rgi.geopackage.verification.VerificationLevel;
 
 /**
  * @author Luke Lambert
@@ -493,12 +492,12 @@ public class GeoPackageMetadata
         // http://www.geopackage.org/spec/#gpkg_metadata_cols
         // http://www.geopackage.org/spec/#gpkg_metadata_sql
         return "CREATE TABLE " + GeoPackageMetadata.MetadataTableName + "\n" +
-                "(id              INTEGER CONSTRAINT m_pk PRIMARY KEY ASC NOT NULL UNIQUE,             -- Metadata primary key\n"                                                                      +
-                " md_scope        TEXT                                    NOT NULL DEFAULT 'dataset',  -- Case sensitive name of the data scope to which this metadata applies; see Metadata Scopes\n" +
-                " md_standard_uri TEXT                                    NOT NULL,                    -- URI reference to the metadata structure definition authority\n"                              +
-                " mime_type       TEXT                                    NOT NULL DEFAULT 'text/xml', -- MIME encoding of metadata\n"                                                                 +
-                " metadata        TEXT                                    NOT NULL                     -- metadata\n"                                                                                  +
-                ");";
+               "(id              INTEGER CONSTRAINT m_pk PRIMARY KEY ASC NOT NULL UNIQUE,             -- Metadata primary key\n"                                                                      +
+               " md_scope        TEXT                                    NOT NULL DEFAULT 'dataset',  -- Case sensitive name of the data scope to which this metadata applies; see Metadata Scopes\n" +
+               " md_standard_uri TEXT                                    NOT NULL,                    -- URI reference to the metadata structure definition authority\n"                              +
+               " mime_type       TEXT                                    NOT NULL DEFAULT 'text/xml', -- MIME encoding of metadata\n"                                                                 +
+               " metadata        TEXT                                    NOT NULL                     -- metadata\n"                                                                                  +
+               ");";
     }
 
     @SuppressWarnings("static-method")
@@ -507,15 +506,15 @@ public class GeoPackageMetadata
         // http://www.geopackage.org/spec/#gpkg_metadata_reference_cols
         // http://www.geopackage.org/spec/#gpkg_metadata_reference_sql
         return "CREATE TABLE " + GeoPackageMetadata.MetadataReferenceTableName + "\n" +
-                "(reference_scope TEXT     NOT NULL,                                                -- Lowercase metadata reference scope; one of 'geopackage', 'table','column', 'row', 'row/col'\n" +
-                " table_name      TEXT,                                                             -- Name of the table to which this metadata reference applies, or NULL for reference_scope of 'geopackage'\n" +
-                " column_name     TEXT,                                                             -- Name of the column to which this metadata reference applies; NULL for reference_scope of 'geopackage','table' or 'row', or the name of a column in the table_name table for reference_scope of 'column' or 'row/col'\n" +
-                " row_id_value    INTEGER,                                                          -- NULL for reference_scope of 'geopackage', 'table' or 'column', or the rowed of a row record in the table_name table for reference_scope of 'row' or 'row/col'\n" +
-                " timestamp       DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')), -- timestamp value in ISO 8601 format as defined by the strftime function '%Y-%m-%dT%H:%M:%fZ' format string applied to the current time\n" +
-                " md_file_id      INTEGER  NOT NULL,                                                -- gpkg_metadata table id column value for the metadata to which this gpkg_metadata_reference applies\n" +
-                " md_parent_id    INTEGER,                                                          -- gpkg_metadata table id column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if md_file_id forms the root of a metadata hierarchy\n" +
-                " CONSTRAINT crmr_mfi_fk FOREIGN KEY (md_file_id) REFERENCES gpkg_metadata(id),\n" +
-                " CONSTRAINT crmr_mpi_fk FOREIGN KEY (md_parent_id) REFERENCES gpkg_metadata(id));";
+               "(reference_scope TEXT     NOT NULL,                                                -- Lowercase metadata reference scope; one of 'geopackage', 'table','column', 'row', 'row/col'\n" +
+               " table_name      TEXT,                                                             -- Name of the table to which this metadata reference applies, or NULL for reference_scope of 'geopackage'\n" +
+               " column_name     TEXT,                                                             -- Name of the column to which this metadata reference applies; NULL for reference_scope of 'geopackage','table' or 'row', or the name of a column in the table_name table for reference_scope of 'column' or 'row/col'\n" +
+               " row_id_value    INTEGER,                                                          -- NULL for reference_scope of 'geopackage', 'table' or 'column', or the rowed of a row record in the table_name table for reference_scope of 'row' or 'row/col'\n" +
+               " timestamp       DATETIME NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')), -- timestamp value in ISO 8601 format as defined by the strftime function '%Y-%m-%dT%H:%M:%fZ' format string applied to the current time\n" +
+               " md_file_id      INTEGER  NOT NULL,                                                -- gpkg_metadata table id column value for the metadata to which this gpkg_metadata_reference applies\n" +
+               " md_parent_id    INTEGER,                                                          -- gpkg_metadata table id column value for the hierarchical parent gpkg_metadata for the gpkg_metadata to which this gpkg_metadata_reference applies, or NULL if md_file_id forms the root of a metadata hierarchy\n" +
+               " CONSTRAINT crmr_mfi_fk FOREIGN KEY (md_file_id) REFERENCES gpkg_metadata(id),\n" +
+               " CONSTRAINT crmr_mpi_fk FOREIGN KEY (md_parent_id) REFERENCES gpkg_metadata(id));";
     }
 
     /**
